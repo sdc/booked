@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked SchedulerBooked SchedulereIt is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -12,7 +12,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
 *}
-{include file='..\..\tpl\Email\emailheader.tpl'}
+
 
 	Bokningsdetaljer:
 	<br/>
@@ -24,6 +24,11 @@ alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
 	Slutar: {formatdate date=$EndDate key=reservation_email}<br/>
 	<br/>
 	Bokning: {$ResourceName}<br/>
+
+	{if $ResourceImage}
+		<div class="resource-image"><img src="{$ScriptUrl}/{$ResourceImage}"/></div>
+	{/if}
+
 	<br/>
 	Rubrik: {$Title}<br/>
 	<br/>
@@ -49,4 +54,3 @@ alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
 	<a href="{$ScriptUrl}/{$ICalUrl}">Lägg till i Outlook</a> |
 	<a href="{$ScriptUrl}">Logga in i Bokningsprogrammet</a>
 
-{include file='..\..\tpl\Email\emailfooter.tpl'}

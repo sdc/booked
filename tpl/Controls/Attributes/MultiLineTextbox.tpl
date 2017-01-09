@@ -1,5 +1,5 @@
 {*
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -16,12 +16,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 *}
-<label class="customAttribute" for="{$attributeName}">{$attribute->Label()|escape}:</label>
-{if $align=='vertical'}
-<br/>
-{/if}
+<div class="form-group {if !$searchmode && $attribute->Required()}has-feedback{/if} {$class}">
+<label class="customAttribute" for="{$attributeId}">{$attribute->Label()}</label>
 {if $readonly}
-<span class="attributeValue {$class}">{$attribute->Value()|escape|nl2br}</span>
+<span class="attributeValue {$class}">{$attribute->Value()|nl2br}</span>
 {else}
-<textarea id="{$attributeName}" name="{$attributeName}" class="customAttribute textbox {$class}">{$attribute->Value()|escape}</textarea>
+<textarea id="{$attributeId}" name="{$attributeName}" rows="2" class="customAttribute form-control {$inputClass}" {if $attribute->Required() && !$searchmode}required{/if}>{$attribute->Value()}</textarea>
+	{if $attribute->Required() && !$searchmode}
+	<i class="glyphicon glyphicon-asterisk form-control-feedback" data-bv-icon-for="{$attributeId}"></i>
+	{/if}
 {/if}
+</div>

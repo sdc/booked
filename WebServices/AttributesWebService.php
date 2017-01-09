@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -20,7 +20,7 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 
 require_once(ROOT_DIR . 'lib/WebService/namespace.php');
 require_once(ROOT_DIR . 'lib/Application/Attributes/namespace.php');
-require_once(ROOT_DIR . 'WebServices/Responses/CustomAttributesResponse.php');
+require_once(ROOT_DIR . 'WebServices/Responses/CustomAttributes/CustomAttributesResponse.php');
 
 class AttributesWebService
 {
@@ -77,4 +77,3 @@ class AttributesWebService
 	}
 }
 
-?>

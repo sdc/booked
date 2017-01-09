@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 *}
-{include file='..\..\tpl\Email\emailheader.tpl'}
+
 
 	Szczegóły rezerwacji:
 	<br/>
@@ -33,6 +33,11 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 		{else}
 		Zasób: {$ResourceName}<br/>
 	{/if}
+
+	{if $ResourceImage}
+		<div class="resource-image"><img src="{$ScriptUrl}/{$ResourceImage}"/></div>
+	{/if}
+
 	Tytuł: {$Title}<br/>
 	Opis: {$Description}<br/>
 
@@ -61,4 +66,3 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 	<br/>
 	<a href="{$ScriptUrl}/{$ReservationUrl}">Podgląd rezerwacji</a> | <a href="{$ScriptUrl}">Zaloguj się do Booked Scheduler</a>
 
-{include file='..\..\tpl\Email\emailfooter.tpl'}

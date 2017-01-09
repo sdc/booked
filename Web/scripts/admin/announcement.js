@@ -3,61 +3,70 @@ function AnnouncementManagement(opts) {
 
 	var elements = {
 		activeId: $('#activeId'),
-		announcementList: $('table.list'),
+		announcementList: $('#announcementList'),
 
 		editDialog: $('#editDialog'),
 		deleteDialog: $('#deleteDialog'),
+		emailDialog: $('#emailDialog'),
 
 		addForm: $('#addForm'),
 		form: $('#editForm'),
 		deleteForm: $('#deleteForm'),
+		emailForm: $('#emailForm'),
 
-        editText: $('#editText'),
-        editBegin: $('#editBegin'),
-        editEnd: $('#editEnd'),
-        editPriority: $('#editPriority')
+		editText: $('#editText'),
+		editBegin: $('#editBegin'),
+		editEnd: $('#editEnd'),
+		editPriority: $('#editPriority'),
+		editUserGroups: $('#editUserGroups'),
+		editResourceGroups: $('#editResourceGroups'),
+
+		emailCount: $('#emailCount')
 	};
 
 	var announcements = new Object();
 
-    AnnouncementManagement.prototype.init = function() {
+	AnnouncementManagement.prototype.init = function () {
 
-		ConfigureAdminDialog(elements.editDialog, 550, 300);
-		ConfigureAdminDialog(elements.deleteDialog,  500, 200);
-
-		elements.announcementList.delegate('a.update', 'click', function(e) {
+		elements.announcementList.delegate('a.update', 'click', function (e) {
 			setActiveId($(this));
 			e.preventDefault();
 		});
 
-		elements.announcementList.delegate('.edit', 'click', function() {
+		elements.announcementList.delegate('.edit', 'click', function () {
 			editAnnouncement();
 		});
-		elements.announcementList.delegate('.delete', 'click', function() {
+		elements.announcementList.delegate('.sendEmail', 'click', function () {
+			emailAnnouncement();
+		});
+		elements.announcementList.delegate('.delete', 'click', function () {
 			deleteAnnouncement();
 		});
 
-		$(".save").click(function() {
+		$(".save").click(function () {
 			$(this).closest('form').submit();
 		});
 
-		$(".cancel").click(function() {
-			$(this).closest('.dialog').dialog("close");
+		$(".cancel").click(function () {
+			$(this).closest('.dialog').modal("hide");
 		});
 
-		ConfigureAdminForm(elements.addForm, getSubmitCallback(options.actions.add));
-		ConfigureAdminForm(elements.deleteForm, getSubmitCallback(options.actions.deleteAnnouncement));
-		ConfigureAdminForm(elements.form, getSubmitCallback(options.actions.edit));
+		ConfigureAsyncForm(elements.addForm, getSubmitCallback(options.actions.add));
+		ConfigureAsyncForm(elements.deleteForm, getSubmitCallback(options.actions.deleteAnnouncement));
+		ConfigureAsyncForm(elements.form, getSubmitCallback(options.actions.edit));
+		ConfigureAsyncForm(elements.emailForm, getSubmitCallback(options.actions.email), function() {
+			elements.emailDialog.modal('hide');}
+		);
 	};
 
-	var getSubmitCallback = function(action) {
-		return function() {
+	var getSubmitCallback = function (action) {
+		return function () {
 			return options.submitUrl + "?aid=" + getActiveId() + "&action=" + action;
 		};
 	};
 
 	function setActiveId(activeElement) {
-		var id = activeElement.parents('td').siblings('td.id').find(':hidden').val();
+		var id = activeElement.closest('tr').attr('data-announcement-id');
 		elements.activeId.val(id);
 	}
 
@@ -65,29 +74,46 @@ function AnnouncementManagement(opts) {
 		return elements.activeId.val();
 	}
 
-	var editAnnouncement = function() {
+	var editAnnouncement = function () {
 		var announcement = getActiveAnnouncement();
 		elements.editText.val(HtmlDecode(announcement.text));
 		elements.editBegin.val(announcement.start);
-        elements.editBegin.trigger('change');
+		elements.editBegin.trigger('change');
 		elements.editEnd.val(announcement.end);
 		elements.editEnd.trigger('change');
 		elements.editPriority.val(announcement.priority);
 
-		elements.editDialog.dialog('open');
+		elements.editUserGroups.val($.map(announcement.groupIds, function(i){
+			return i + "";
+		}));
+		elements.editUserGroups.trigger('change');
+
+		elements.editResourceGroups.val($.map(announcement.resourceIds, function(i){
+			return i + "";
+		}));
+		elements.editResourceGroups.trigger('change');
+
+		elements.editDialog.modal('show');
 	};
 
-	var deleteAnnouncement = function() {
-		elements.deleteDialog.dialog('open');
+	var emailAnnouncement = function() {
+		var announcement = getActiveAnnouncement();
+
+		ajaxGet(options.getEmailCountUrl + '&aid=' +announcement.id, function(){}, function(data) {
+			elements.emailCount.text(data.users);
+			elements.emailDialog.modal('show');
+		});
 	};
 
-	var getActiveAnnouncement = function ()
-	{
+	var deleteAnnouncement = function () {
+		elements.deleteDialog.modal('show');
+	};
+
+	var getActiveAnnouncement = function () {
 		return announcements[getActiveId()];
 	};
 
-	AnnouncementManagement.prototype.addAnnouncement = function(id, text, start, end, priority)
-	{
-		announcements[id] = {id: id, text: text, start: start, end: end, priority: priority};
-	}
+	AnnouncementManagement.prototype.addAnnouncement = function (id, text, start, end, priority, groupIds, resourceIds) {
+		announcements[id] = {id: id, text: text, start: start, end: end, priority: priority, groupIds: groupIds, resourceIds: resourceIds};
+	};
 }

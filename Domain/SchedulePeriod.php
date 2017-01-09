@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -190,5 +190,3 @@ class NonSchedulePeriod extends SchedulePeriod
 		return new NonSchedulePeriod($this->_begin->ToTimezone($timezone), $this->_end->ToTimezone($timezone), $this->_label);
 	}
 }
-
-?>

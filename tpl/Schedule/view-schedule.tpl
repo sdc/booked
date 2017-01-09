@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -19,28 +19,39 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 {extends file="Schedule/schedule.tpl"}
 
 {block name="header"}
-{include file='globalheader.tpl' cssFiles='css/schedule.css,css/view-schedule.css,css/jquery.qtip.min.css'}
+	{include file='globalheader.tpl'}
 {/block}
 
 {block name="actions"}{/block}
 
 {block name="scripts-common"}
 	{jsfile src="js/jquery.qtip.min.js"}
+	{jsfile src="js/moment.min.js"}
 	{jsfile src="schedule.js"}
 	{jsfile src="resourcePopup.js"}
+	{jsfile src="js/tree.jquery.js"}
+	{jsfile src="js/jquery.cookie.js"}
+	<script type="text/javascript">
 
-<script type="text/javascript">
-
-$(document).ready(function() {
-	var scheduleOptions = {
-		reservationUrlTemplate: "view-reservation.php?{QueryStringKeys::REFERENCE_NUMBER}=[referenceNumber]",
-		summaryPopupUrl: "ajax/respopup.php"
-	};
-	var schedule = new Schedule(scheduleOptions, {$ResourceGroupsAsJson});
-	schedule.initNavigation();
-	schedule.initReservations();
-	schedule.initResources();
-});
-</script>
-
+		$(document).ready(function () {
+			var scheduleOptions = {
+				reservationUrlTemplate: "view-reservation.php?{QueryStringKeys::REFERENCE_NUMBER}=[referenceNumber]",
+				summaryPopupUrl: "ajax/respopup.php",
+				cookieName: "{$CookieName}",
+				scheduleId: "{$ScheduleId}",
+				scriptUrl: '{$ScriptUrl}',
+				selectedResources: [{','|implode:$ResourceIds}],
+				specificDates: [{foreach from=$SpecificDates item=d}'{$d->Format('Y-m-d')}',{/foreach}]
+			};
+			var schedule = new Schedule(scheduleOptions, {$ResourceGroupsAsJson});
+			{if $AllowGuestBooking}
+			schedule.init();
+			{else}
+			schedule.initNavigation();
+			schedule.initReservations();
+			schedule.initResourceFilter();
+			schedule.initResources();
+			{/if}
+		});
+	</script>
 {/block}

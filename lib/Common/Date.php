@@ -1,20 +1,20 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
-Copyright 2012-2014 Trustees of Columbia University in the City of New York
-
-This file is part of Booked SchedulerBooked SchedulereIt is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later versBooked SchedulerduleIt is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE . See {the
-}
-GNU General Public License for more details .
-
-You should {have
-} received a copy of the GNU General Public License
-alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright 2011-2016 Nick Korbel
+ * Copyright 2012-2014 Trustees of Columbia University in the City of New York
+ *
+ * This file is part of Booked Scheduler is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE . See {the
+ * }
+ * GNU General Public License for more details .
+ *
+ * You should {have
+ * } received a copy of the GNU General Public License
+ * along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 //$serverTimezone = ini_get('date.timezone');
@@ -109,14 +109,39 @@ class Date
 			return NullDate::Instance();
 		}
 
-		$date = DateTime::createFromFormat('Y-m-d\TH:i:s+', $dateString);
+/*
+ * This wasn't producing correct results. 
+ * Parameter $datestring is provided in ISO 8601 format and therefore has the correct timezone
+ * This then needs to be converted to UTC.
+ * 
+		$offset = '';
+		$strLen = strlen($dateString);
+		$hourAdjustment = 0;
+		$minuteAdjustment = 0;
+		if ($strLen > 5)
+		{
+			$offset = substr($dateString, -5);
+			$hourAdjustment = substr($offset, 1, 2);
+			$minuteAdjustment = substr($offset, 3, 2);
+		}
 
-		$timeOffsetString = $date->getTimezone()->getName();
-		$offsetParts = explode(':', $timeOffsetString);
+		if (BookedStringHelper::Contains($offset, '+'))
+		{
+			$hourAdjustment *= -1;
+			$minuteAdjustment *= -1;
+		}
 
-		$d = new Date($date->format(Date::SHORT_FORMAT), 'UTC');
-		$offsetMinutes = ($offsetParts[0] * -60) + $offsetParts[1];
-		return $d->AddMinutes($offsetMinutes);
+		$parsed = date_parse($dateString);
+
+		$d = Date::Create($parsed['year'], $parsed['month'], $parsed['day'], $parsed['hour'] + $hourAdjustment, $parsed['minute'] + $minuteAdjustment,						  $parsed['second'], 'UTC');
+ */
+        
+        $dt = new DateTime($dateString);
+        $utc = $dt->setTimezone(new DateTimeZone('UTC'));
+
+		$d = Date::Create($utc->format('Y'), $utc->format('m'), $utc->format('d'), $utc->format('H'), $utc->format('i'), $utc->format('s'), 'UTC');
+
+		return $d;
 	}
 
 	/**
@@ -189,6 +214,11 @@ class Date
 	 */
 	public function ToIso()
 	{
+//		$offset = $this->date->getOffset();
+//		$hours = intval(intval($offset) / 3600);
+//		$minutes  = intval(($offset / 60) % 60);
+//		printf("offset = %d%d", $hours, $minutes);
+//		//die(' off '  .$offset . ' tz ' . $this->date->getTimezone()->getOffset());
 		return $this->Format(DateTime::ISO8601);
 	}
 
@@ -314,6 +344,20 @@ class Date
 	}
 
 	/**
+	 * Compares the time component of this date to the one passed in
+	 * Returns:
+	 * -1 if this time is less than the passed in time
+	 * 0 if the times are equal
+	 * 1 if this times is greater than the passed in times
+	 * @param Time $time
+	 * @return int comparison result
+	 */
+	public function CompareTimes(Time $time)
+	{
+		return $this->GetTime()->Compare($time);
+	}
+
+	/**
 	 * Compares this date to the one passed in
 	 * @param Date $end
 	 * @return bool if the current object is greater than the one passed in
@@ -410,6 +454,23 @@ class Date
 	}
 
 	/**
+	 * @return bool
+	 */
+	public function IsWeekday()
+	{
+		$weekday = $this->Weekday();
+		return $weekday != 0 && $weekday != 6;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function IsWeekend()
+	{
+		return !$this->IsWeekday();
+	}
+
+	/**
 	 * @param int $days
 	 * @return Date
 	 */
@@ -426,6 +487,15 @@ class Date
 	public function AddMonths($months)
 	{
 		return new Date($this->Format(self::SHORT_FORMAT) . " +" . $months . " months", $this->timezone);
+	}
+
+	/**
+	 * @param int $years
+	 * @return Date
+	 */
+	public function AddYears($years)
+	{
+		return new Date($this->Format(self::SHORT_FORMAT) . " +" . $years . " years", $this->timezone);
 	}
 
 	/**
@@ -535,7 +605,7 @@ class Date
 
 		$this->parts['hours'] = $parts[0];
 		$this->parts['minutes'] = $parts[1];
-		$this->parts['seconds'] =$parts[2];
+		$this->parts['seconds'] = $parts[2];
 		$this->parts['mon'] = $parts[3];
 		$this->parts['mday'] = $parts[4];
 		$this->parts['year'] = $parts[5];
@@ -724,6 +794,11 @@ class NullDate extends Date
 	{
 		return $this;
 	}
+
+	public function Compare(Date $date)
+	{
+		return -1;
+	}
 }
 
 class DateDiff
@@ -796,49 +871,70 @@ class DateDiff
 	 */
 	public static function FromTimeString($timeString)
 	{
-		if (strpos($timeString, 'd') === false && strpos($timeString, 'h') === false && strpos($timeString,
-																							   'm') === false
-		)
+		$hasDayHourMinute = strpos($timeString, 'd') !== false || strpos($timeString, 'h') !== false || strpos($timeString, 'm') !== false;
+		$hasTime = (strpos($timeString, ':') !== false);
+		if (!$hasDayHourMinute && !$hasTime)
 		{
-			throw new Exception('Time format must contain at least a day, hour or minute. For example: 12d1h22m');
+			throw new Exception('Time format must contain at least a day, hour or minute. For example: 12d1h22m or be a valid time HH:mm');
 		}
 
-		$matches = array();
-
-		preg_match('/(\d*d)?(\d*h)?(\d*m)?/i', $timeString, $matches);
-
-		$day = 0;
-		$hour = 0;
-		$minute = 0;
-		$num_set = 0;
-
-		if (isset($matches[1]))
+		if ($hasTime)
 		{
-			$num_set++;
-			$day = intval(substr($matches[1], 0, -1));
-		}
-		if (isset($matches[2]))
-		{
-			$num_set++;
-			$hour = intval(substr($matches[2], 0, -1));
-		}
-		if (isset($matches[3]))
-		{
-			$num_set++;
-			$minute = intval(substr($matches[3], 0, -1));
-		}
+			$parts = explode(':', $timeString);
 
-		if ($num_set == 0)
-		{
-			/**
-			 * We didn't actually match anything, throw an exception
-			 * instead of silently returning 0
-			 */
-
-			throw new Exception('Time format must be in day, hour, minute order');
+			if (count($parts) == 3)
+			{
+				$day = $parts[0];
+				$hour = $parts[1];
+				$minute = $parts[2];
+			}
+			else
+			{
+				$day = 0;
+				$hour = $parts[0];
+				$minute = $parts[1];
+			}
+			return self::Create($day, $hour, $minute);
 		}
+		else
+		{
+			$matches = array();
 
-		return self::Create($day, $hour, $minute);
+			preg_match('/(\d*d)?(\d*h)?(\d*m)?/i', $timeString, $matches);
+
+			$day = 0;
+			$hour = 0;
+			$minute = 0;
+			$num_set = 0;
+
+			if (isset($matches[1]))
+			{
+				$num_set++;
+				$day = intval(substr($matches[1], 0, -1));
+			}
+			if (isset($matches[2]))
+			{
+				$num_set++;
+				$hour = intval(substr($matches[2], 0, -1));
+			}
+			if (isset($matches[3]))
+			{
+				$num_set++;
+				$minute = intval(substr($matches[3], 0, -1));
+			}
+
+			if ($num_set == 0)
+			{
+				/**
+				 * We didn't actually match anything, throw an exception
+				 * instead of silently returning 0
+				 */
+
+				throw new Exception('Time format must be in day, hour, minute order');
+			}
+
+			return self::Create($day, $hour, $minute);
+		}
 	}
 
 	/**
@@ -888,12 +984,21 @@ class DateDiff
 		return $this->seconds > $diff->seconds;
 	}
 
+    /**
+	 * @param DateDiff $diff
+	 * @return bool
+	 */
+	public function GreaterThanOrEqual(DateDiff $diff)
+	{
+		return $this->seconds >= $diff->seconds;
+	}
+
 	/**
 	 * @return DateDiff
 	 */
 	public function Invert()
 	{
-		return new DateDiff($this->seconds*-1);
+		return new DateDiff($this->seconds * -1);
 	}
 
 	/**

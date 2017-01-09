@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -39,4 +39,3 @@ class LogoutPage extends LoginPage
 		return $this->GetQuerystring(QueryStringKeys::REDIRECT);
 	}
 }
-?>

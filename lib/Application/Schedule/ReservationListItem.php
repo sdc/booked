@@ -1,19 +1,19 @@
 <?php
+
 /**
-Copyright 2011-2014 Nick Korbel
-
-This file is part of Booked SchedulerBooked SchedulereIt is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later versBooked SchedulerduleIt is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
+ * Copyright 2011-2016 Nick Korbel
+ *
+ * This file is part of Booked Scheduler is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
+ */
 class ReservationListItem
 {
 	/**
@@ -101,6 +101,25 @@ class ReservationListItem
 		$bufferTime = $this->BufferTime();
 		return !empty($bufferTime) && $bufferTime->TotalSeconds() > 0;
 	}
+
+	/**
+	 * @param Date $date
+	 * @return bool
+	 */
+	public function CollidesWith(Date $date)
+	{
+		if ($this->HasBufferTime())
+		{
+			$range = new DateRange($this->StartDate()->SubtractInterval($this->BufferTime()),
+								   $this->EndDate()->AddInterval($this->BufferTime()));
+		}
+		else
+		{
+			$range = new DateRange($this->StartDate(), $this->EndDate());
+		}
+
+		return $range->Contains($date, false);
+	}
 }
 
 class BufferItem extends ReservationListItem
@@ -176,6 +195,7 @@ class BufferItem extends ReservationListItem
 	{
 		return $this->Id() . 'buffer_' . $this->location;
 	}
+
 	public function IsReservation()
 	{
 		return false;
@@ -194,6 +214,14 @@ class BufferItem extends ReservationListItem
 
 class BlackoutListItem extends ReservationListItem
 {
+    protected $blackoutItem;
+
+    public function __construct(BlackoutItemView $item)
+    {
+        $this->blackoutItem = $item;
+		parent::__construct($item);
+    }
+
 	/**
 	 * @param SchedulePeriod $start
 	 * @param SchedulePeriod $end
@@ -203,7 +231,7 @@ class BlackoutListItem extends ReservationListItem
 	 */
 	public function BuildSlot(SchedulePeriod $start, SchedulePeriod $end, Date $displayDate, $span)
 	{
-		return new BlackoutSlot($start, $end, $displayDate, $span, $this->item);
+		return new BlackoutSlot($start, $end, $displayDate, $span, $this->blackoutItem);
 	}
 
 	public function IsReservation()
@@ -211,4 +239,3 @@ class BlackoutListItem extends ReservationListItem
 		return false;
 	}
 }
-?>

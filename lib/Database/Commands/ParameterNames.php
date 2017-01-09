@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -20,6 +20,7 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 
 class ParameterNames
 {
+
 	private function __construct()
 	{
 	}
@@ -27,16 +28,21 @@ class ParameterNames
 	const ACCESSORY_ID = '@accessoryid';
 	const ACCESSORY_NAME = '@accessoryname';
 	const ACCESSORY_QUANTITY = '@quantity';
+	const ACCESSORY_MIN_QUANTITY = '@minimum_quantity';
+	const ACCESSORY_MAX_QUANTITY = '@maximum_quantity';
 
 	const ACTIVATION_CODE = '@activation_code';
 
+	const ALL_RESOURCES = '@all_resources';
 	const ALLOW_CALENDAR_SUBSCRIPTION = '@allow_calendar_subscription';
+	const ALLOW_PARTICIPATION = '@allow_participation';
 
 	const ANNOUNCEMENT_ID = '@announcementid';
 	const ANNOUNCEMENT_TEXT = '@text';
 	const ANNOUNCEMENT_PRIORITY = '@priority';
 
 	const ATTRIBUTE_ID = '@custom_attribute_id';
+	const ATTRIBUTE_ADMIN_ONLY = '@admin_only';
 	const ATTRIBUTE_CATEGORY = '@attribute_category';
 	const ATTRIBUTE_LABEL = '@display_label';
 	const ATTRIBUTE_POSSIBLE_VALUES = '@possible_values';
@@ -48,12 +54,25 @@ class ParameterNames
 	const ATTRIBUTE_ENTITY_ID = '@entity_id';
 	const ATTRIBUTE_ENTITY_IDS = '@entity_ids';
 	const ATTRIBUTE_UNIQUE_PER_ENTITY = '@unique_per_entity';
+	const ATTRIBUTE_SECONDARY_CATEGORY = '@secondary_category';
+	const ATTRIBUTE_SECONDARY_ENTITY_IDS = '@secondary_entity_ids';
+	const ATTRIBUTE_IS_PRIVATE = '@is_private';
+	const AUTO_RELEASE_MINUTES = '@auto_release_minutes';
 
 	const BLACKOUT_SERIES_ID = '@blackout_series_id';
 	const BLACKOUT_INSTANCE_ID = '@blackout_instance_id';
 
+	const CHECKIN_DATE = '@checkin_date';
+	const CHECKOUT_DATE = '@checkout_date';
+	const COLOR_ATTRIBUTE_TYPE = '@attribute_type';
+	const COLOR = '@color';
+	const COMPARISON_TYPE = '@comparison_type';
+	const COLOR_REQUIRED_VALUE = '@required_value';
+	const COLOR_ATTRIBUTE_ID = '@attribute_id';
 	const CURRENT_DATE = '@current_date';
 	const CURRENT_SERIES_ID = '@currentSeriesId';
+	const COLOR_RULE_ID = '@reservation_color_rule_id';
+	const CREDIT_COUNT = '@credit_count';
 
 	const DATE_CREATED = '@dateCreated';
 	const DATE_MODIFIED = '@dateModified';
@@ -61,6 +80,8 @@ class ParameterNames
 
 	const END_DATE = '@endDate';
 	const END_TIME = '@endTime';
+	const ENABLE_CHECK_IN = '@enable_check_in';
+	const ENFORCED_DAYS = '@enforcedDays';
 	const EMAIL_ADDRESS = '@email';
 	const EVENT_CATEGORY = '@event_category';
 	const EVENT_TYPE = '@event_type';
@@ -87,16 +108,30 @@ class ParameterNames
 	const ORGANIZATION = '@organization';
 
 	const PASSWORD = '@password';
+	const PARTICIPANT_ID = '@participant_id';
+	const PEAK_CREDIT_COUNT = '@peak_credit_count';
+	const PEAK_TIMES_ALL_DAY = '@all_day';
+	const PEAK_TIMES_START_TIME = '@start_time';
+	const PEAK_TIMES_END_TIME = '@end_time';
+	const PEAK_TIMES_EVERY_DAY = '@every_day';
+	const PEAK_TIMES_DAYS = '@peak_days';
+	const PEAK_TIMES_ALL_YEAR = '@all_year';
+	const PEAK_TIMES_BEGIN_DAY = '@begin_day';
+	const PEAK_TIMES_BEGIN_MONTH = '@begin_month';
+	const PEAK_TIMES_END_DAY = '@end_day';
+	const PEAK_TIMES_END_MONTH = '@end_month';
 	const PERIOD_AVAILABILITY_TYPE = '@periodType';
 	const PERIOD_DAY_OF_WEEK = '@day_of_week';
 	const PERIOD_LABEL = '@label';
 	const PHONE = '@phone';
 	const POSITION = '@position';
+	const PREVIOUS_END_DATE = '@previous_end_date';
 	const PUBLIC_ID = '@publicid';
 
 	const QUOTA_DURATION = '@duration';
 	const QUOTA_ID = '@quotaid';
 	const QUOTA_LIMIT = '@limit';
+	const QUOTA_SCOPE = '@scope';
 	const QUOTA_UNIT = '@unit';
 
 	const REMINDER_ID = '@reminder_id';
@@ -119,9 +154,12 @@ class ParameterNames
 
 	const RESERVATION_INSTANCE_ID = '@reservationid';
 	const RESERVATION_USER_LEVEL_ID = '@levelid';
+    const RESERVATION_WAITLIST_REQUEST_ID = '@reservation_waitlist_request_id';
 
 	const RESOURCE_ID = '@resourceid';
+	const RESOURCE_IDS = '@resourceids';
 	const RESOURCE_ALLOW_MULTIDAY = '@allow_multiday_reservations';
+	const RESOURCE_ALLOW_DISPLAY = '@allow_display';
 	const RESOURCE_AUTOASSIGN = '@autoassign';
 	const RESOURCE_CONTACT = '@contact_info';
 	const RESOURCE_COST = '@unit_cost';
@@ -194,4 +232,3 @@ class ParameterNames
 	const TIMEZONE_SELECTION_SETTING = '@timezone_setting';
 }
 
-?>

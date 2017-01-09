@@ -1,25 +1,25 @@
 <?php
+
 /**
-Copyright 2011-2014 Nick Korbel
-Copyright 2012-2014, Moritz Schepp, IST Austria
-Copyright 2012-2014, Alois Schloegl, IST Austria
-
-This file is part of Booked Scheduler.
-
-Booked Scheduler is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Booked Scheduler is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright 2011-2016 Nick Korbel
+ * Copyright 2012-2014, Moritz Schepp, IST Austria
+ * Copyright 2012-2014, Alois Schloegl, IST Austria
+ *
+ * This file is part of Booked Scheduler.
+ *
+ * Booked Scheduler is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Booked Scheduler is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 class Queries
 {
 	private function __construct()
@@ -30,6 +30,10 @@ class Queries
 			'INSERT INTO accessories (accessory_name, accessory_quantity)
 		VALUES (@accessoryname, @quantity)';
 
+	const ADD_ACCESSORY_RESOURCE =
+			'INSERT INTO resource_accessories (resource_id, accessory_id, minimum_quantity, maximum_quantity)
+		VALUES (@resourceid, @accessoryid, @minimum_quantity, @maximum_quantity)';
+
 	const ADD_ACCOUNT_ACTIVATION =
 			'INSERT INTO account_activation (user_id, activation_code, date_created) VALUES (@userid, @activation_code, @dateCreated)';
 
@@ -37,9 +41,17 @@ class Queries
 			'INSERT INTO announcements (announcement_text, priority, start_date, end_date)
 		VALUES (@text, @priority, @startDate, @endDate)';
 
+	const ADD_ANNOUNCEMENT_GROUP = 'INSERT INTO announcement_groups (announcementid, group_id) VALUES (@announcementid, @groupid)';
+
+	const ADD_ANNOUNCEMENT_RESOURCE = 'INSERT INTO announcement_resources (announcementid, resource_id) VALUES (@announcementid, @resourceid)';
+
 	const ADD_ATTRIBUTE =
-			'INSERT INTO custom_attributes (display_label, display_type, attribute_category, validation_regex, is_required, possible_values, sort_order, entity_id)
-		VALUES (@display_label, @display_type, @attribute_category, @validation_regex, @is_required, @possible_values, @sort_order, @entity_id)';
+			'INSERT INTO custom_attributes (display_label, display_type, attribute_category, validation_regex, is_required, possible_values, sort_order, admin_only, secondary_category, secondary_entity_ids, is_private)
+		VALUES (@display_label, @display_type, @attribute_category, @validation_regex, @is_required, @possible_values, @sort_order, @admin_only, @secondary_category, @secondary_entity_ids, @is_private)';
+
+	const ADD_ATTRIBUTE_ENTITY =
+			'INSERT INTO custom_attribute_entities (custom_attribute_id, entity_id)
+				VALUES (@custom_attribute_id, @entity_id)';
 
 	const ADD_ATTRIBUTE_VALUE =
 			'INSERT INTO custom_attribute_values (custom_attribute_id, attribute_category, attribute_value, entity_id)
@@ -66,6 +78,8 @@ class Queries
 	const ADD_GROUP_ROLE =
 			'INSERT INTO group_roles (group_id, role_id) VALUES (@groupid, @roleid)';
 
+	const ADJUST_USER_CREDITS = 'UPDATE users SET credit_count = credit_count - @credit_count WHERE user_id = @userid';
+
 	const ADD_LAYOUT =
 			'INSERT INTO layouts (timezone) VALUES (@timezone)';
 
@@ -74,16 +88,20 @@ class Queries
 		VALUES (@layoutid, @startTime, @endTime, @periodType, @label, @day_of_week)';
 
 	const ADD_QUOTA =
-			'INSERT INTO quotas (quota_limit, unit, duration, resource_id, group_id, schedule_id)
-		VALUES (@limit, @unit, @duration, @resourceid, @groupid, @scheduleid)';
+			'INSERT INTO quotas (quota_limit, unit, duration, resource_id, group_id, schedule_id, enforced_time_start, enforced_time_end, enforced_days, scope)
+			VALUES (@limit, @unit, @duration, @resourceid, @groupid, @scheduleid, @startTime, @endTime, @enforcedDays, @scope)';
+
+	const ADD_PEAK_TIMES =
+			'INSERT INTO peak_times (schedule_id, all_day, start_time, end_time, every_day, peak_days, all_year, begin_month, begin_day, end_month, end_day)
+			VALUES (@scheduleid, @all_day, @start_time, @end_time, @every_day, @peak_days, @all_year, @begin_month, @begin_day, @end_month, @end_day)';
 
 	const ADD_REMINDER =
-				'INSERT INTO reminders (user_id, address, message, sendtime, refnumber)
+			'INSERT INTO reminders (user_id, address, message, sendtime, refnumber)
 			VALUES (@user_id, @address, @message, @sendtime, @refnumber)';
 
 	const ADD_RESERVATION =
-			'INSERT INTO reservation_instances (start_date, end_date, reference_number, series_id)
-		VALUES (@startDate, @endDate, @referenceNumber, @seriesid)';
+			'INSERT INTO reservation_instances (start_date, end_date, reference_number, series_id, credit_count)
+		VALUES (@startDate, @endDate, @referenceNumber, @seriesid, @credit_count)';
 
 	const ADD_RESERVATION_ACCESSORY =
 			'INSERT INTO reservation_accessories (series_id, accessory_id, quantity)
@@ -92,6 +110,10 @@ class Queries
 	const ADD_RESERVATION_ATTACHMENT =
 			'INSERT INTO reservation_files (series_id, file_name, file_type, file_size, file_extension)
 		VALUES (@seriesid, @file_name, @file_type, @file_size, @file_extension)';
+
+	const ADD_RESERVATION_COLOR_RULE =
+			'INSERT INTO reservation_color_rules (custom_attribute_id, attribute_type, required_value, comparison_type, color)
+		VALUES (@custom_attribute_id, @attribute_type, @required_value, @comparison_type, @color)';
 
 	const ADD_RESERVATION_REMINDER =
 			'INSERT INTO reservation_reminders (series_id, minutes_prior, reminder_type)
@@ -104,11 +126,19 @@ class Queries
 	const ADD_RESERVATION_SERIES =
 			'INSERT INTO
         reservation_series (date_created, title, description, allow_participation, allow_anon_participation, repeat_type, repeat_options, type_id, status_id, owner_id)
-		VALUES (@dateCreated, @title, @description, false, false, @repeatType, @repeatOptions, @typeid, @statusid, @userid)';
+		VALUES (@dateCreated, @title, @description, @allow_participation, false, @repeatType, @repeatOptions, @typeid, @statusid, @userid)';
+
+	const ADD_RESERVATION_GUEST =
+			'INSERT INTO reservation_guests (reservation_instance_id, email, reservation_user_level)
+			VALUES (@reservationid, @email, @levelid)';
 
 	const ADD_RESERVATION_USER =
 			'INSERT INTO reservation_users (reservation_instance_id, user_id, reservation_user_level)
 		VALUES (@reservationid, @userid, @levelid)';
+
+    const ADD_RESERVATION_WAITLIST =
+        'INSERT INTO reservation_waitlist_requests (user_id, start_date, end_date, resource_id)
+      VALUES (@userid, @startDate, @endDate, @resourceid)';
 
 	const ADD_SAVED_REPORT =
 			'INSERT INTO saved_reports (report_name, user_id, date_created, report_details)
@@ -131,18 +161,19 @@ class Queries
 		VALUES (@userid, @dateModified, @session_token, @user_session_value)';
 
 	const AUTO_ASSIGN_PERMISSIONS =
-			'INSERT INTO
-          user_resource_permissions (user_id, resource_id)
-		SELECT
-			@userid as user_id, resource_id
-		FROM
-			resources
-		WHERE
-			autoassign=1';
+			'INSERT INTO user_resource_permissions (user_id, resource_id)
+		SELECT @userid as user_id, resource_id
+		FROM resources
+		WHERE autoassign=1';
+
+	const AUTO_ASSIGN_GUEST_PERMISSIONS =
+			'INSERT INTO user_resource_permissions (user_id, resource_id)
+		SELECT @userid as user_id, resource_id
+		FROM resources
+		WHERE schedule_id = @scheduleid';
 
 	const AUTO_ASSIGN_RESOURCE_PERMISSIONS =
-			'INSERT INTO
-				user_resource_permissions (user_id, resource_id)
+			'INSERT INTO user_resource_permissions (user_id, resource_id)
 			(
 			SELECT
 				user_id, @resourceid as resource_id
@@ -152,6 +183,8 @@ class Queries
 				   NOT EXISTS (SELECT * FROM user_resource_permissions p
                           WHERE u.user_id = p.user_id AND p.resource_id = @resourceid)
             )';
+
+	const AUTO_ASSIGN_CLEAR_RESOURCE_PERMISSIONS = 'DELETE FROM user_resource_permissions WHERE resource_id = @resourceid';
 
 	const CHECK_EMAIL =
 			'SELECT user_id
@@ -168,12 +201,17 @@ class Queries
 		FROM users
 		WHERE ( (username IS NOT NULL AND username = @username) OR (email IS NOT NULL AND email = @email) )';
 
+	const CLEANUP_USER_SESSIONS =
+            'DELETE FROM user_session WHERE utc_timestamp()>date_add(last_modified,interval 24 hour)';
+
 	const COOKIE_LOGIN =
 			'SELECT user_id, lastlogin, email
 		FROM users
 		WHERE user_id = @userid';
 
 	const DELETE_ACCESSORY = 'DELETE FROM accessories WHERE accessory_id = @accessoryid';
+
+	const DELETE_ACCESSORY_RESOURCES = 'DELETE FROM resource_accessories WHERE accessory_id = @accessoryid';
 
 	const DELETE_ATTRIBUTE = 'DELETE FROM custom_attributes WHERE custom_attribute_id = @custom_attribute_id';
 
@@ -202,7 +240,13 @@ class Queries
 
 	const DELETE_ORPHAN_LAYOUTS = 'DELETE l.* FROM layouts l LEFT JOIN schedules s ON l.layout_id = s.layout_id WHERE s.layout_id IS NULL';
 
+	const DELETE_PEAK_TIMES = 'DELETE FROM peak_times WHERE schedule_id = @scheduleid';
+
 	const DELETE_QUOTA = 'DELETE	FROM quotas	WHERE quota_id = @quotaid';
+
+	const DELETE_RESERVATION_COLOR_RULE_COMMAND = 'DELETE FROM reservation_color_rules WHERE reservation_color_rule_id = @reservation_color_rule_id';
+
+    const DELETE_RESERVATION_WAITLIST_COMMAND = 'DELETE FROM reservation_waitlist_requests WHERE reservation_waitlist_request_id = @reservation_waitlist_request_id';
 
 	const DELETE_RESOURCE_COMMAND = 'DELETE FROM resources WHERE resource_id = @resourceid';
 
@@ -214,7 +258,7 @@ class Queries
 		INNER JOIN reservation_resources rs ON s.series_id = rs.series_id
 		WHERE rs.resource_id = @resourceid';
 
-	const DELETE_RESOURCE_STATUS_REASON_COMMAND= 'DELETE FROM resource_status_reasons WHERE resource_status_reason_id = @resource_status_reason_id';
+	const DELETE_RESOURCE_STATUS_REASON_COMMAND = 'DELETE FROM resource_status_reasons WHERE resource_status_reason_id = @resource_status_reason_id';
 
 	const DELETE_RESOURCE_TYPE_COMMAND = 'DELETE FROM resource_types WHERE resource_type_id = @resource_type_id';
 
@@ -223,7 +267,7 @@ class Queries
 	const DELETE_SCHEDULE = 'DELETE FROM schedules WHERE schedule_id = @scheduleid';
 
 	const DELETE_SERIES =
-		'UPDATE reservation_series
+			'UPDATE reservation_series
 		    SET status_id = @statusid,
 			last_modified = @dateModified
 		  WHERE series_id = @seriesid';
@@ -242,6 +286,8 @@ class Queries
 			'SELECT * FROM users WHERE (username = @username OR email = @username)';
 
 	const GET_ACCESSORY_BY_ID = 'SELECT * FROM accessories WHERE accessory_id = @accessoryid';
+
+	const GET_ACCESSORY_RESOURCES = 'SELECT * FROM resource_accessories WHERE accessory_id = @accessoryid';
 
 	const GET_ACCESSORY_LIST =
 			'SELECT *, rs.status_id as status_id
@@ -262,9 +308,22 @@ class Queries
 			ri.start_date ASC';
 
 	const GET_ALL_ACCESSORIES =
-			'SELECT * FROM accessories ORDER BY accessory_name';
+			'SELECT a.*, c.num_resources,
+			(SELECT GROUP_CONCAT(CONCAT(ra.resource_id, ",", ra.minimum_quantity, ",", ra.maximum_quantity) SEPARATOR "!sep!")
+						FROM resource_accessories ra WHERE ra.accessory_id = a.accessory_id) as resource_accessory_list
+ 			FROM accessories a
+			LEFT JOIN (
+				SELECT accessory_id, COUNT(*) AS num_resources
+				FROM resource_accessories ra
+				GROUP BY ra.accessory_id
+				) AS c ON a.accessory_id = c.accessory_id
 
-	const GET_ALL_ANNOUNCEMENTS = 'SELECT * FROM announcements ORDER BY start_date';
+ 			ORDER BY accessory_name';
+
+	const GET_ALL_ANNOUNCEMENTS = 'SELECT a.*, 
+			(SELECT GROUP_CONCAT(ag.group_id) FROM announcement_groups ag WHERE ag.announcementid = a.announcementid) as group_ids,
+			(SELECT GROUP_CONCAT(ar.resource_id) FROM announcement_resources ar WHERE ar.announcementid = a.announcementid) as resource_ids
+			FROM announcements a ORDER BY start_date';
 
 	const GET_ALL_APPLICATION_ADMINS = 'SELECT *
             FROM users
@@ -300,7 +359,8 @@ class Queries
           WHERE ug.user_id = @userid AND g.admin_group_id IS NOT NULL)';
 
 	const GET_ALL_GROUP_USERS =
-			'SELECT *
+			'SELECT u.*, (SELECT GROUP_CONCAT(CONCAT(cav.custom_attribute_id, \'=\', cav.attribute_value) SEPARATOR "!sep!")
+			FROM custom_attribute_values cav WHERE cav.entity_id = u.user_id AND cav.attribute_category = 2) as attribute_list
 		FROM users u
 		WHERE u.user_id IN (
 		  SELECT DISTINCT (ug.user_id) FROM user_groups ug
@@ -319,8 +379,13 @@ class Queries
 
 	const GET_ALL_REMINDERS = 'SELECT * FROM reminders';
 
+    const GET_ALL_RESERVATION_WAITLIST_REQUESTS = 'SELECT * FROM reservation_waitlist_requests';
+
 	const GET_ALL_RESOURCES =
-			'SELECT r.*, s.admin_group_id as s_admin_group_id
+			'SELECT r.*, s.admin_group_id as s_admin_group_id,
+		(SELECT GROUP_CONCAT(CONCAT(cav.custom_attribute_id, \'=\', cav.attribute_value) SEPARATOR "!sep!")
+						FROM custom_attribute_values cav WHERE cav.entity_id = r.resource_id AND cav.attribute_category = 4) as attribute_list,
+		(SELECT GROUP_CONCAT(rga.resource_group_id SEPARATOR "!sep!") FROM resource_group_assignment rga WHERE rga.resource_id = r.resource_id) AS group_list
 		FROM resources r
 		INNER JOIN schedules s ON r.schedule_id = s.schedule_id
 		ORDER BY COALESCE(r.sort_order,0), r.name';
@@ -349,35 +414,56 @@ class Queries
 
 	const GET_ALL_RESOURCE_STATUS_REASONS = 'SELECT * FROM resource_status_reasons';
 
-	const GET_ALL_RESOURCE_TYPES = 'SELECT * FROM resource_types';
+	const GET_ALL_RESOURCE_TYPES = 'SELECT *,
+			(SELECT GROUP_CONCAT(CONCAT(cav.custom_attribute_id, \'=\', cav.attribute_value) SEPARATOR "!sep!")
+							FROM custom_attribute_values cav INNER JOIN custom_attribute_entities cae on cav.custom_attribute_id = cae.custom_attribute_id
+							WHERE cav.entity_id = r.resource_type_id AND cav.attribute_category = 5) as attribute_list
+							FROM resource_types r';
 
 	const GET_ALL_SAVED_REPORTS = 'SELECT * FROM saved_reports WHERE user_id = @userid ORDER BY report_name, date_created';
 
-	const GET_ALL_SCHEDULES = 'SELECT * FROM schedules s INNER JOIN layouts l ON s.layout_id = l.layout_id ORDER BY s.name';
+	const GET_ALL_SCHEDULES = 'SELECT s.*, l.timezone FROM schedules s INNER JOIN layouts l ON s.layout_id = l.layout_id ORDER BY s.name';
 
 	const GET_ALL_USERS_BY_STATUS =
 			'SELECT u.*,
-			(SELECT GROUP_CONCAT(CONCAT(p.name, "=", p.value) SEPARATOR ",")
-						FROM user_preferences p WHERE u.user_id = p.user_id) as preferences
+			(SELECT GROUP_CONCAT(CONCAT(p.name, "=", p.value) SEPARATOR "!sep!")
+						FROM user_preferences p WHERE u.user_id = p.user_id) as preferences,
+			(SELECT GROUP_CONCAT(CONCAT(cav.custom_attribute_id, \'=\', cav.attribute_value) SEPARATOR "!sep!")
+						FROM custom_attribute_values cav WHERE cav.entity_id = u.user_id AND cav.attribute_category = 2) as attribute_list
 			FROM users u
 			WHERE (0 = @user_statusid OR status_id = @user_statusid) ORDER BY lname, fname';
 
-	const GET_ANNOUNCEMENT_BY_ID = 'SELECT * FROM announcements WHERE announcementid = @announcementid';
+	const GET_ANNOUNCEMENT_BY_ID = 'SELECT a.*,
+ 		(SELECT GROUP_CONCAT(ag.group_id) FROM announcement_groups ag WHERE ag.announcementid = a.announcementid) as group_ids,
+		(SELECT GROUP_CONCAT(ar.resource_id) FROM announcement_resources ar WHERE ar.announcementid = a.announcementid) as resource_ids
+		FROM announcements a WHERE a.announcementid = @announcementid';
 
-	const GET_ATTRIBUTES_BY_CATEGORY = 'SELECT a.*,
-			CASE
-			WHEN a.attribute_category = 2 THEN CONCAT(u.fname, " ", u.lname)
-			WHEN a.attribute_category = 4 THEN r.name
-			WHEN a.attribute_category = 4 THEN rt.resource_type_name
-			ELSE null
-			END as entity_description
-			FROM custom_attributes a
-			LEFT JOIN users u ON u.user_id = a.entity_id AND a.attribute_category = 2
-			LEFT JOIN resources r ON r.resource_id = a.entity_id AND a.attribute_category = 4
-			LEFT JOIN resource_types rt ON rt.resource_type_id = a.entity_id AND a.attribute_category = 5
-		WHERE a.attribute_category = @attribute_category ORDER BY a.sort_order, a.display_label';
+	const GET_ATTRIBUTES_BASE_QUERY = 'SELECT a.*,
+				(SELECT GROUP_CONCAT(e.entity_id SEPARATOR "!sep!")
+							FROM custom_attribute_entities e WHERE e.custom_attribute_id = a.custom_attribute_id ORDER BY e.entity_id) as entity_ids,
+				CASE
+				WHEN a.attribute_category = 2 THEN (SELECT GROUP_CONCAT(CONCAT(u.fname, " ", u.lname) SEPARATOR "!sep!")
+													FROM users u INNER JOIN custom_attribute_entities e
+													WHERE e.custom_attribute_id = a.custom_attribute_id AND u.user_id = e.entity_id ORDER BY e.entity_id)
+				WHEN a.attribute_category = 4 THEN (SELECT GROUP_CONCAT(r.name SEPARATOR "!sep!")
+													FROM resources r INNER JOIN custom_attribute_entities e
+													WHERE e.custom_attribute_id = a.custom_attribute_id AND r.resource_id = e.entity_id ORDER BY e.entity_id)
+				WHEN a.attribute_category = 5  THEN (SELECT GROUP_CONCAT(rt.resource_type_name SEPARATOR "!sep!")
+													FROM resource_types rt INNER JOIN custom_attribute_entities e
+													WHERE e.custom_attribute_id = a.custom_attribute_id AND rt.resource_type_id = e.entity_id ORDER BY e.entity_id)
+				ELSE null
+				END as entity_descriptions,
+				CASE
+				WHEN a.secondary_category = 2 THEN (SELECT GROUP_CONCAT(CONCAT( fname, " ", lname ) SEPARATOR  "!sep!" ) FROM users WHERE FIND_IN_SET( user_id, a.secondary_entity_ids ))
+				WHEN a.secondary_category = 4 THEN (SELECT GROUP_CONCAT(name SEPARATOR  "!sep!" ) FROM resources WHERE FIND_IN_SET( resource_id, a.secondary_entity_ids ))
+				WHEN a.secondary_category = 5 THEN (SELECT GROUP_CONCAT(resource_type_name SEPARATOR  "!sep!" ) FROM resource_types WHERE FIND_IN_SET( resource_type_id, a.secondary_entity_ids ))
+				ELSE null
+				END as secondary_entity_descriptions
+				FROM custom_attributes a';
 
-	const GET_ATTRIBUTE_BY_ID = 'SELECT * FROM custom_attributes WHERE custom_attribute_id = @custom_attribute_id';
+	const GET_ATTRIBUTES_BY_CATEGORY_WHERE = ' WHERE a.attribute_category = @attribute_category ORDER BY a.sort_order, a.display_label';
+
+	const GET_ATTRIBUTE_BY_ID_WHERE = '	WHERE custom_attribute_id = @custom_attribute_id';
 
 	const GET_ATTRIBUTE_ALL_VALUES = 'SELECT * FROM custom_attribute_values WHERE attribute_category = @attribute_category';
 
@@ -408,7 +494,7 @@ class Queries
 		ORDER BY bi.start_date ASC';
 
 	const GET_BLACKOUT_LIST_FULL =
-		'SELECT bi.*, r.resource_id, r.name, u.*, bs.description, bs.title, bs.repeat_type, bs.repeat_options, schedules.schedule_id
+			'SELECT bi.*, r.resource_id, r.name, u.*, bs.description, bs.title, bs.repeat_type, bs.repeat_options, schedules.schedule_id
 					FROM blackout_instances bi
 					INNER JOIN blackout_series bs ON bi.blackout_series_id = bs.blackout_series_id
 					INNER JOIN blackout_series_resources bsr ON  bi.blackout_series_id = bsr.blackout_series_id
@@ -432,8 +518,10 @@ class Queries
 		ORDER BY r.name';
 
 	const GET_DASHBOARD_ANNOUNCEMENTS =
-			'SELECT announcement_text
-		FROM announcements
+			'SELECT a.*, 
+			(SELECT GROUP_CONCAT(ag.group_id) FROM announcement_groups ag WHERE ag.announcementid = a.announcementid) as group_ids,
+			(SELECT GROUP_CONCAT(ar.resource_id) FROM announcement_resources ar WHERE ar.announcementid = a.announcementid) as resource_ids
+			FROM announcements a
 		WHERE (start_date <= @current_date AND end_date >= @current_date) OR (end_date IS NULL)
 		ORDER BY priority, start_date, end_date';
 
@@ -462,7 +550,7 @@ class Queries
 	const GET_REMINDER_NOTICES = 'SELECT DISTINCT
 		rs.*,
 		ri.*,
-		u.*,
+		u.fname, u.lname, u.language, u.timezone, u.email,
 		r.name as resource_name
 		FROM reservation_instances ri
 		INNER JOIN reservation_series rs ON ri.series_id = rs.series_id
@@ -470,11 +558,11 @@ class Queries
 		INNER JOIN users u on ru.user_id = u.user_id
 		INNER JOIN reservation_resources ON reservation_resources.series_id = ri.series_id AND resource_level_id = 1
 		INNER JOIN resources r on reservation_resources.resource_id = r.resource_id
-		WHERE rs.status_id <> 2 AND (@reminder_type=0 AND date_sub(start_date,INTERVAL rr.minutes_prior MINUTE) = @current_date) OR (@reminder_type=1 AND date_sub(end_date,INTERVAL rr.minutes_prior MINUTE) = @current_date)';
+		WHERE rs.status_id <> 2 AND (reminder_type=@reminder_type AND date_sub(start_date,INTERVAL rr.minutes_prior MINUTE) = @current_date) OR (@reminder_type=1 AND date_sub(end_date,INTERVAL rr.minutes_prior MINUTE) = @current_date)';
 
 	const GET_REMINDERS_BY_USER = 'SELECT * FROM reminders WHERE user_id = @user_id';
 
-   	const GET_REMINDERS_BY_REFNUMBER = 'SELECT * FROM reminders WHERE refnumber = @refnumber';
+	const GET_REMINDERS_BY_REFNUMBER = 'SELECT * FROM reminders WHERE refnumber = @refnumber';
 
 	const GET_RESOURCE_BY_CONTACT_INFO =
 			'SELECT r.*, s.admin_group_id as s_admin_group_id
@@ -494,9 +582,21 @@ class Queries
 			INNER JOIN  schedules s ON r.schedule_id = s.schedule_id
 			WHERE r.public_id = @publicid';
 
-	const GET_RESOURCE_GROUP_BY_ID = 'SELECT * FROM resource_groups WHERE resource_group_id = @resourcegroupid';
+    const GET_RESOURCE_BY_NAME =
+        'SELECT r.*, s.admin_group_id as s_admin_group_id
+			FROM resources r
+			INNER JOIN  schedules s ON r.schedule_id = s.schedule_id
+			WHERE r.name = @resource_name';
+
+    const GET_RESOURCE_GROUP_BY_ID = 'SELECT * FROM resource_groups WHERE resource_group_id = @resourcegroupid';
+
+	const GET_RESOURCE_GROUP_ASSIGNMENTS = 'SELECT * FROM resource_group_assignment WHERE resource_id = @resourceid';
+
+	const GET_RESOURCE_GROUP_BY_PUBLIC_ID = 'SELECT * FROM resource_groups WHERE public_id = @publicid';
 
 	const GET_RESOURCE_TYPE_BY_ID = 'SELECT * FROM resource_types WHERE resource_type_id = @resource_type_id';
+
+	const GET_RESOURCE_TYPE_BY_NAME = 'SELECT * FROM resource_types WHERE resource_type_name = @resource_type_name';
 
 	const GET_RESERVATION_BY_ID =
 			'SELECT *
@@ -515,7 +615,7 @@ class Queries
 			status_id <> 2';
 
 	const GET_RESERVATION_FOR_EDITING =
-			'SELECT ri.*, rs.*, rr.*, u.user_id, u.fname, u.lname, u.email, r.schedule_id, r.name, rs.status_id as status_id
+			'SELECT ri.*, rs.*, rr.*, u.user_id, u.fname, u.lname, u.email, u.phone, r.schedule_id, r.name, rs.status_id as status_id
 		FROM reservation_instances ri
 		INNER JOIN reservation_series rs ON rs.series_id = ri.series_id
 		INNER JOIN users u ON u.user_id = rs.owner_id
@@ -545,7 +645,7 @@ class Queries
 //			GROUP BY ri.reservation_instance_id, rr.resource_id, ri.series_id
 //			ORDER BY ri.start_date ASC';
 
-const GET_RESERVATION_LIST_TEMPLATE =
+	const GET_RESERVATION_LIST_TEMPLATE =
 			'SELECT
 				[SELECT_TOKEN]
 			FROM reservation_instances ri
@@ -556,6 +656,8 @@ const GET_RESERVATION_LIST_TEMPLATE =
 			INNER JOIN reservation_resources rr ON rs.series_id = rr.series_id
 			INNER JOIN resources ON rr.resource_id = resources.resource_id
 			INNER JOIN schedules ON resources.schedule_id = schedules.schedule_id
+			LEFT JOIN reservation_reminders start_reminder ON start_reminder.series_id = rs.series_id AND start_reminder.reminder_type = 0
+			LEFT JOIN reservation_reminders end_reminder ON end_reminder.series_id = rs.series_id AND end_reminder.reminder_type = 1
 			[JOIN_TOKEN]
 			WHERE rs.status_id <> 2
 			[AND_TOKEN]
@@ -571,6 +673,18 @@ const GET_RESERVATION_LIST_TEMPLATE =
 	const GET_RESERVATION_ATTACHMENT = 'SELECT * FROM reservation_files WHERE file_id = @file_id';
 
 	const GET_RESERVATION_ATTACHMENTS_FOR_SERIES = 'SELECT * FROM reservation_files WHERE series_id = @seriesid';
+
+	const GET_RESERVATION_GUESTS =
+			'SELECT	rg.*
+		FROM reservation_guests rg
+		WHERE reservation_instance_id = @reservationid';
+
+	const GET_RESERVATION_COLOR_RULES = 'SELECT * FROM reservation_color_rules r
+		LEFT JOIN custom_attributes ca ON ca.custom_attribute_id = r.custom_attribute_id';
+
+	const GET_RESERVATION_COLOR_RULE = 'SELECT * FROM reservation_color_rules r
+		LEFT JOIN custom_attributes ca ON ca.custom_attribute_id = r.custom_attribute_id
+		WHERE reservation_color_rule_id=@reservation_color_rule_id';
 
 	const GET_RESERVATION_PARTICIPANTS =
 			'SELECT
@@ -593,6 +707,12 @@ const GET_RESERVATION_LIST_TEMPLATE =
 		WHERE rr.series_id = @seriesid
 		ORDER BY resource_level_id, r.name';
 
+	const GET_RESERVATION_SERIES_GUESTS =
+			'SELECT rg.*, ri.*
+			FROM reservation_guests rg
+			INNER JOIN reservation_instances ri ON rg.reservation_instance_id = ri.reservation_instance_id
+			WHERE series_id = @seriesid';
+
 	const GET_RESERVATION_SERIES_INSTANCES =
 			'SELECT *
 		FROM reservation_instances
@@ -604,7 +724,9 @@ const GET_RESERVATION_LIST_TEMPLATE =
 		INNER JOIN reservation_instances ri ON ru.reservation_instance_id = ri.reservation_instance_id
 		WHERE series_id = @seriesid';
 
-	const GET_SCHEDULE_TIME_BLOCK_GROUPS =
+    const GET_RESERVATION_WAITLIST_REQUEST = 'SELECT * FROM reservation_waitlist_requests WHERE reservation_waitlist_request_id = @reservation_waitlist_request_id';
+
+    const GET_SCHEDULE_TIME_BLOCK_GROUPS =
 			'SELECT
 			tb.label,
 			tb.end_label,
@@ -623,6 +745,8 @@ const GET_RESERVATION_LIST_TEMPLATE =
 			s.schedule_id = @scheduleid
 		ORDER BY tb.start_time';
 
+	const GET_PEAK_TIMES = 'SELECT * FROM peak_times WHERE schedule_id = @scheduleid';
+
 	const GET_SAVED_REPORT = 'SELECT * FROM saved_reports WHERE saved_report_id = @report_id AND user_id = @userid';
 
 	const GET_SCHEDULE_BY_ID =
@@ -638,8 +762,7 @@ const GET_RESERVATION_LIST_TEMPLATE =
 	const GET_SCHEDULE_RESOURCES =
 			'SELECT r.*, s.admin_group_id as s_admin_group_id FROM  resources r
 		INNER JOIN schedules s ON r.schedule_id = s.schedule_id
-		WHERE
-		  (-1 = @scheduleid OR r.schedule_id = @scheduleid)AND
+		WHERE (-1 = @scheduleid OR r.schedule_id = @scheduleid) AND
 			r.status_id <> 0
 		ORDER BY COALESCE(r.sort_order,0), r.name';
 
@@ -648,14 +771,13 @@ const GET_RESERVATION_LIST_TEMPLATE =
 			INNER JOIN users u ON u.user_id = a.user_id
 			WHERE activation_code = @activation_code AND u.status_id = @statusid';
 
-	const GET_USER_BY_ID =
-			'SELECT * FROM users WHERE user_id = @userid';
+	const GET_USER_BY_ID = 'SELECT * FROM users WHERE user_id = @userid';
 
-	const GET_USER_BY_PUBLIC_ID =
-			'SELECT * FROM users WHERE public_id = @publicid';
+	const GET_USER_BY_PUBLIC_ID = 'SELECT * FROM users WHERE public_id = @publicid';
 
-	const GET_USER_EMAIL_PREFERENCES =
-			'SELECT * FROM user_email_preferences WHERE user_id = @userid';
+	const GET_USER_COUNT = 'SELECT COUNT(*) as count FROM users';
+
+	const GET_USER_EMAIL_PREFERENCES = 'SELECT * FROM user_email_preferences WHERE user_id = @userid';
 
 	const GET_USER_GROUPS =
 			'SELECT g.*, r.role_level
@@ -681,6 +803,17 @@ const GET_RESERVATION_LIST_TEMPLATE =
 		WHERE
 			ug.user_id = @userid AND ug.group_id = grp.group_id AND grp.resource_id = r.resource_id';
 
+	const GET_USER_ADMIN_GROUP_RESOURCE_PERMISSIONS =
+			'SELECT r.resource_id, r.name FROM resources r
+		WHERE r.schedule_id IN (SELECT s.schedule_id FROM schedules s
+			INNER JOIN groups g ON g.group_id = s.admin_group_id
+			INNER JOIN user_groups ug on ug.group_id = g.group_id
+			WHERE ug.user_id = @userid)
+		OR r.resource_id IN (SELECT r2.resource_id FROM resources r2
+			INNER JOIN groups g ON g.group_id = r2.admin_group_id
+			INNER JOIN user_groups ug on ug.group_id = g.group_id
+			WHERE ug.user_id = @userid)';
+
 	const GET_USER_PREFERENCE = 'SELECT value FROM user_preferences WHERE user_id = @userid AND name = @name';
 
 	const GET_USER_PREFERENCES = 'SELECT name, value FROM user_preferences WHERE user_id = @userid';
@@ -698,6 +831,40 @@ const GET_RESERVATION_LIST_TEMPLATE =
 	const GET_USER_SESSION_BY_SESSION_TOKEN = 'SELECT * FROM user_session WHERE session_token = @session_token';
 
 	const GET_USER_SESSION_BY_USERID = 'SELECT * FROM user_session WHERE user_id = @userid';
+
+	const GET_VERSION = 'SELECT * FROM dbversion order by version_number desc limit 0,1';
+
+	const GET_RESOURCE_GROUP_PERMISSION = 'SELECT
+				g.*
+			FROM
+				group_resource_permissions grp, resources r, groups g
+			WHERE
+				r.resource_id = @resourceid AND r.resource_id = grp.resource_id AND g.group_id = grp.group_id';
+
+	const GET_RESOURCE_USER_PERMISSION = 'SELECT
+				u.*
+			FROM
+				user_resource_permissions urp, resources r, users u
+			WHERE
+				r.resource_id = @resourceid AND r.resource_id = urp.resource_id AND u.user_id = urp.user_id AND u.status_id = @user_statusid';
+
+	const GET_RESOURCE_USER_GROUP_PERMISSION = 'SELECT u.*
+			FROM
+				user_resource_permissions urp, resources r, users u
+			WHERE
+				r.resource_id = @resourceid AND r.resource_id = urp.resource_id AND u.user_id = urp.user_id AND u.status_id = @user_statusid
+		UNION 
+			SELECT u.* 
+			FROM users u 
+			INNER JOIN user_groups ug on u.user_id = ug.user_id 
+			WHERE group_id IN (
+				SELECT
+					g.group_id
+				FROM
+					group_resource_permissions grp, resources r, groups g
+				WHERE
+					r.resource_id = @resourceid AND r.resource_id = grp.resource_id AND g.group_id = grp.group_id) 
+			AND u.status_id = @user_statusid';
 
 	const MIGRATE_PASSWORD =
 			'UPDATE
@@ -728,6 +895,9 @@ const GET_RESERVATION_LIST_TEMPLATE =
 		VALUES
 			(@email, @password, @fname, @lname, @phone, @organization, @position, @username, @salt, @timezone, @language, @homepageid, @user_statusid, @dateCreated, @publicid, @scheduleid)';
 
+	const REMOVE_ATTRIBUTE_ENTITY =
+			'DELETE FROM custom_attribute_entities WHERE custom_attribute_id = @custom_attribute_id AND entity_id = @entity_id';
+
 	const REMOVE_ATTRIBUTE_VALUE =
 			'DELETE FROM custom_attribute_values WHERE custom_attribute_id = @custom_attribute_id AND entity_id = @entity_id';
 
@@ -747,6 +917,9 @@ const GET_RESERVATION_LIST_TEMPLATE =
 
 	const REMOVE_RESERVATION_INSTANCE =
 			'DELETE FROM reservation_instances WHERE reference_number = @referenceNumber';
+
+	const REMOVE_RESERVATION_GUEST =
+			'DELETE FROM reservation_guests WHERE reservation_instance_id = @reservationid AND email = @email';
 
 	const REMOVE_RESERVATION_REMINDER =
 			'DELETE FROM reservation_reminders WHERE series_id = @seriesid AND reminder_type = @reminder_type';
@@ -799,7 +972,8 @@ const GET_RESERVATION_LIST_TEMPLATE =
 	const UPDATE_ATTRIBUTE =
 			'UPDATE custom_attributes
 				SET display_label = @display_label, display_type = @display_type, attribute_category = @attribute_category,
-				validation_regex = @validation_regex, is_required = @is_required, possible_values = @possible_values, sort_order = @sort_order, entity_id = @entity_id
+				validation_regex = @validation_regex, is_required = @is_required, possible_values = @possible_values, sort_order = @sort_order, admin_only = @admin_only,
+				secondary_category = @secondary_category, secondary_entity_ids = @secondary_entity_ids, is_private = @is_private
 			WHERE custom_attribute_id = @custom_attribute_id';
 
 	const UPDATE_BLACKOUT_INSTANCE = 'UPDATE blackout_instances
@@ -829,7 +1003,11 @@ const GET_RESERVATION_LIST_TEMPLATE =
 		SET
 			series_id = @seriesid,
 			start_date = @startDate,
-			end_date = @endDate
+			end_date = @endDate,
+			checkin_date = @checkin_date,
+			checkout_date = @checkout_date,
+			previous_end_date = @previous_end_date,
+			credit_count = @credit_count
 		WHERE
 			reference_number = @referenceNumber';
 
@@ -843,7 +1021,8 @@ const GET_RESERVATION_LIST_TEMPLATE =
 			repeat_type = @repeatType,
 			repeat_options = @repeatOptions,
 			status_id = @statusid,
-			owner_id = @userid
+			owner_id = @userid,
+			allow_participation = @allow_participation
 		WHERE
 			series_id = @seriesid';
 
@@ -872,7 +1051,13 @@ const GET_RESERVATION_LIST_TEMPLATE =
 			resource_type_id = @resource_type_id,
 			status_id = @status_id,
 			resource_status_reason_id = @resource_status_reason_id,
-			buffer_time = @buffer_time
+			buffer_time = @buffer_time,
+			color = @color,
+			enable_check_in = @enable_check_in,
+			auto_release_minutes = @auto_release_minutes,
+			allow_display = @allow_display,
+			credit_count = @credit_count,
+			peak_credit_count = @peak_credit_count
 		WHERE
 			resource_id = @resourceid';
 
@@ -919,7 +1104,8 @@ const GET_RESERVATION_LIST_TEMPLATE =
 			public_id = @publicid,
 			language = @language,
 			lastlogin = @lastlogin,
-			default_schedule_id = @scheduleid
+			default_schedule_id = @scheduleid,
+			credit_count = @credit_count
 		WHERE
 			user_id = @userid';
 
@@ -944,7 +1130,7 @@ const GET_RESERVATION_LIST_TEMPLATE =
 			organization = COALESCE(@organization, organization),
 			position = COALESCE(@position, position)
 		WHERE
-			username = @username';
+			username = @username OR email = @email';
 
 	const UPDATE_USER_PREFERENCE = 'UPDATE user_preferences SET value = @value WHERE user_id = @userid AND name = @name';
 
@@ -952,9 +1138,8 @@ const GET_RESERVATION_LIST_TEMPLATE =
 			'UPDATE user_session
 		SET
 			last_modified = @dateModified,
-			session_token = @session_token,
 			user_session_value = @user_session_value
-		WHERE user_id = @userid';
+		WHERE user_id = @userid AND session_token = @session_token';
 
 	const VALIDATE_USER =
 			'SELECT user_id, password, salt, legacypassword
@@ -968,26 +1153,34 @@ class QueryBuilder
 					(ri.end_date >= @startDate AND ri.end_date <= @endDate) OR
 					(ri.start_date <= @startDate AND ri.end_date >= @endDate))';
 
-	public static $SELECT_LIST_FRAGMENT = 'ri.*, rs.date_created as date_created, rs.last_modified as last_modified, rs.description as description, rs.status_id as status_id, rs.title, rs.repeat_type,
-					owner.fname as owner_fname, owner.lname as owner_lname, owner.user_id as owner_id, owner.phone as owner_phone, owner.position as owner_position, owner.organization as owner_organization,
-					resources.name, resources.resource_id, resources.schedule_id, resources.status_id as resource_status_id, resources.resource_status_reason_id, resources.buffer_time, ru.reservation_user_level,
-					(SELECT GROUP_CONCAT(participants.user_id)
-						FROM reservation_users participants WHERE participants.reservation_instance_id = ri.reservation_instance_id AND participants.reservation_user_level = 2) as participant_list,
+	public static $SELECT_LIST_FRAGMENT = 'ri.*, rs.date_created as date_created, rs.last_modified as last_modified, rs.description as description, rs.status_id as status_id, rs.title, rs.repeat_type, rs.repeat_options,
+					owner.fname as owner_fname, owner.lname as owner_lname, owner.user_id as owner_id, owner.phone as owner_phone, owner.position as owner_position, owner.organization as owner_organization, owner.email as email,
+					resources.name, resources.resource_id, resources.schedule_id, resources.status_id as resource_status_id, resources.resource_status_reason_id, resources.buffer_time, resources.color, resources.enable_check_in, resources.auto_release_minutes, ru.reservation_user_level,
+					start_reminder.minutes_prior AS start_reminder_minutes, end_reminder.minutes_prior AS end_reminder_minutes,
+					(SELECT GROUP_CONCAT(groups.group_id)
+						FROM user_groups groups WHERE owner.user_id = groups.user_id) as owner_group_list,
 
-					(SELECT GROUP_CONCAT(invitees.user_id)
-						FROM reservation_users invitees WHERE invitees.reservation_instance_id = ri.reservation_instance_id AND invitees.reservation_user_level = 3) as invitee_list,
+					(SELECT GROUP_CONCAT(CONCAT(participants.user_id, \'=\', CONCAT(participant_users.fname, " ", participant_users.lname)) SEPARATOR "!sep!")
+						FROM reservation_users participants INNER JOIN users participant_users ON participants.user_id = participant_users.user_id WHERE participants.reservation_instance_id = ri.reservation_instance_id AND participants.reservation_user_level = 2) as participant_list,
+
+					(SELECT GROUP_CONCAT(CONCAT(invitees.user_id, \'=\', CONCAT(invitee_users.fname, " ", invitee_users.lname)) SEPARATOR "!sep!")
+						FROM reservation_users invitees INNER JOIN users invitee_users ON invitees.user_id = invitee_users.user_id WHERE invitees.reservation_instance_id = ri.reservation_instance_id AND invitees.reservation_user_level = 3) as invitee_list,
 
 					(SELECT GROUP_CONCAT(CONCAT(cav.custom_attribute_id,\'=\', cav.attribute_value) SEPARATOR "!sep!")
 						FROM custom_attribute_values cav WHERE cav.entity_id = ri.series_id AND cav.attribute_category = 1) as attribute_list,
 
 					(SELECT GROUP_CONCAT(CONCAT(p.name, "=", p.value) SEPARATOR "!sep!")
-						FROM user_preferences p WHERE owner.user_id = p.user_id) as preferences';
+						FROM user_preferences p WHERE owner.user_id = p.user_id) as preferences,
+						
+					(SELECT GROUP_CONCAT(CONCAT(guests.email, "=", guests.reservation_user_level) SEPARATOR "!sep!")
+						FROM reservation_guests guests WHERE guests.reservation_instance_id = ri.reservation_instance_id) as guest_list';
 
 	private static function Build($selectValue, $joinValue, $andValue)
 	{
 		return str_replace('[AND_TOKEN]', $andValue,
-			   str_replace('[JOIN_TOKEN]', $joinValue,
-			   str_replace('[SELECT_TOKEN]', $selectValue, Queries::GET_RESERVATION_LIST_TEMPLATE)));
+						   str_replace('[JOIN_TOKEN]', $joinValue,
+									   str_replace('[SELECT_TOKEN]', $selectValue,
+												   Queries::GET_RESERVATION_LIST_TEMPLATE)));
 	}
 
 	public static function GET_RESERVATION_LIST()
@@ -996,7 +1189,7 @@ class QueryBuilder
 					(@userid = -1 OR ru.user_id = @userid) AND
 					(@levelid = 0 OR ru.reservation_user_level = @levelid) AND
 					(@scheduleid = -1 OR resources.schedule_id = @scheduleid) AND
-					(@resourceid = -1 OR rr.resource_id = @resourceid)');
+					(@all_resources = 1 OR rr.resource_id IN (@resourceid))');
 	}
 
 	public static function GET_RESERVATION_LIST_FULL()
@@ -1011,4 +1204,3 @@ class QueryBuilder
 						   'AND ' . self::$DATE_FRAGMENT . ' AND a.accessory_name LIKE @accessoryname');
 	}
 }
-?>

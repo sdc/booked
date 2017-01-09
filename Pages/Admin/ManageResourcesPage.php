@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2011-2014 Nick Korbel
+ * Copyright 2011-2016 Nick Korbel
  *
  * This file is part of Booked Scheduler.
  *
@@ -20,6 +20,7 @@
 
 require_once(ROOT_DIR . 'Pages/Admin/AdminPage.php');
 require_once(ROOT_DIR . 'Pages/IPageable.php');
+require_once(ROOT_DIR . 'Pages/Ajax/AutoCompletePage.php');
 require_once(ROOT_DIR . 'Presenters/Admin/ManageSchedulesPresenter.php');
 require_once(ROOT_DIR . 'Domain/Access/ScheduleRepository.php');
 require_once(ROOT_DIR . 'lib/Application/Attributes/namespace.php');
@@ -99,6 +100,11 @@ interface IUpdateResourcePage
 	/**
 	 * @return string
 	 */
+	public function GetAutoAssignClear();
+
+	/**
+	 * @return string
+	 */
 	public function GetAllowSubscriptions();
 
 	/**
@@ -150,20 +156,17 @@ interface IManageResourcesPage extends IUpdateResourcePage, IActionPage, IPageab
 	public function AllSchedules($schedules);
 
 	/**
-	 * @abstract
 	 * @param $adminGroups GroupItemView[]|array
 	 * @return void
 	 */
 	public function BindAdminGroups($adminGroups);
 
 	/**
-	 * @abstract
-	 * @param $attributeList IEntityAttributeList
+	 * @param $attributeList CustomAttribute[]
 	 */
 	public function BindAttributeList($attributeList);
 
 	/**
-	 * @abstract
 	 * @return AttributeFormElement[]|array
 	 */
 	public function GetAttributes();
@@ -172,6 +175,11 @@ interface IManageResourcesPage extends IUpdateResourcePage, IActionPage, IPageab
 	 * @param $resources AdminResourceJson[]
 	 */
 	public function SetResourcesJson($resources);
+
+	/**
+	 * @param $response mixed
+	 */
+	public function SetJsonResponse($response);
 
 	/**
 	 * @param $resourceTypes ResourceType[]
@@ -247,6 +255,93 @@ interface IManageResourcesPage extends IUpdateResourcePage, IActionPage, IPageab
 	 * @return int
 	 */
 	public function GetEndNoticeNone();
+
+	/**
+	 * @return int
+	 */
+	public function GetPermissionUserId();
+
+	/**
+	 * @return int
+	 */
+	public function GetPermissionGroupId();
+
+	/**
+	 * @return string
+	 */
+	public function GetValue();
+
+	/**
+	 * @return string
+	 */
+	public function GetName();
+
+	/**
+	 * @return string
+	 */
+	public function GetAttributeId();
+
+	/**
+	 * @param BookableResource $resource
+	 */
+	public function BindUpdatedDuration($resource);
+
+	/**
+	 * @param BookableResource $resource
+	 */
+	public function BindUpdatedCapacity($resource);
+
+	/**
+	 * @param BookableResource $resource
+	 */
+	public function BindUpdatedAccess($resource);
+
+	/**
+	 * @param BookableResource $resource
+	 * @param ResourceGroup[] $groupList
+	 */
+	public function BindUpdatedResourceGroups($resource, $groupList);
+
+	public function SetAttributeValueAsJson($attributeValue);
+
+	/**
+	 * @param ResourceGroupTree $resourceGroups
+	 */
+	public function BindResourceGroups(ResourceGroupTree $resourceGroups);
+
+	/**
+	 * @return int[]
+	 */
+	public function GetResourceGroupIds();
+
+	/**
+	 * @return string
+	 */
+	public function GetColor();
+
+	/**
+	 * @return bool
+	 */
+	public function GetEnableCheckin();
+
+	/**
+	 * @return string
+	 */
+	public function GetAutoReleaseMinutes();
+
+	/**
+	 * @return int
+	 */
+	public function GetCredits();
+
+	/**
+	 * @return int
+	 */
+	public function GetPeakCredits();
+
+	public function BindUpdatedResourceCredits(BookableResource $resource);
+
+    public function ShowQRCode($qrCodeImageUrl, $resourceName);
 }
 
 class ManageResourcesPage extends ActionPage implements IManageResourcesPage
@@ -255,6 +350,7 @@ class ManageResourcesPage extends ActionPage implements IManageResourcesPage
 	 * @var ManageResourcesPresenter
 	 */
 	protected $presenter;
+	protected $pageablePage;
 
 	public function __construct()
 	{
@@ -271,12 +367,17 @@ class ManageResourcesPage extends ActionPage implements IManageResourcesPage
 
 		$this->pageablePage = new PageablePage($this);
 		$this->Set('YesNoOptions',
-				   array('' => '-', '1' => Resources::GetInstance()->GetString('Yes'), '0' => Resources::GetInstance()
-																									   ->GetString('No')));
+				   array('' => '-',
+						   '1' => Resources::GetInstance()->GetString('Yes'),
+						   '0' => Resources::GetInstance()->GetString('No'))
+		);
 		$this->Set('YesNoUnchangedOptions',
-				   array('-1' => Resources::GetInstance()->GetString('Unchanged'), '1' => Resources::GetInstance()
-																								   ->GetString('Yes'), '0' => Resources::GetInstance()
-																																	   ->GetString('No')));
+				   array('-1' => Resources::GetInstance()->GetString('Unchanged'),
+						   '1' => Resources::GetInstance()->GetString('Yes'),
+						   '0' => Resources::GetInstance()->GetString('No'))
+		);
+
+		$this->Set('CreditsEnabled', Configuration::Instance()->GetSectionKey(ConfigSection::CREDITS, ConfigKeys::CREDITS_ENABLED, new BooleanConverter()));
 	}
 
 	public function ProcessPageLoad()
@@ -339,12 +440,28 @@ class ManageResourcesPage extends ActionPage implements IManageResourcesPage
 
 	public function GetResourceId()
 	{
-		return $this->GetQuerystring(QueryStringKeys::RESOURCE_ID);
+		$id = $this->GetQuerystring(QueryStringKeys::RESOURCE_ID);
+		if (empty($id))
+		{
+			$id = $this->GetForm(FormKeys::PK);
+		}
+
+		return $id;
 	}
 
 	public function GetScheduleId()
 	{
 		return $this->GetForm(FormKeys::SCHEDULE_ID);
+	}
+
+	public function GetValue()
+	{
+		return $this->GetForm(FormKeys::VALUE);
+	}
+
+	public function GetName()
+	{
+		return $this->GetForm(FormKeys::NAME);
 	}
 
 	public function GetResourceName()
@@ -406,7 +523,7 @@ class ManageResourcesPage extends ActionPage implements IManageResourcesPage
 	 */
 	public function GetAllowMultiday()
 	{
-		return $this->GetForm(FormKeys::ALLOW_MULTIDAY);
+		return $this->GetCheckbox(FormKeys::ALLOW_MULTIDAY);
 	}
 
 	/**
@@ -414,7 +531,7 @@ class ManageResourcesPage extends ActionPage implements IManageResourcesPage
 	 */
 	public function GetRequiresApproval()
 	{
-		return $this->GetForm(FormKeys::REQUIRES_APPROVAL);
+		return $this->GetCheckbox(FormKeys::REQUIRES_APPROVAL);
 	}
 
 	/**
@@ -422,7 +539,15 @@ class ManageResourcesPage extends ActionPage implements IManageResourcesPage
 	 */
 	public function GetAutoAssign()
 	{
-		return $this->GetForm(FormKeys::AUTO_ASSIGN);
+		return $this->GetCheckbox(FormKeys::AUTO_ASSIGN);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function GetAutoAssignClear()
+	{
+		return $this->GetForm(FormKeys::AUTO_ASSIGN_CLEAR);
 	}
 
 	/**
@@ -478,7 +603,7 @@ class ManageResourcesPage extends ActionPage implements IManageResourcesPage
 	}
 
 	/**
-	 * @param $attributeList IEntityAttributeList
+	 * @param $attributeList CustomAttribute[]
 	 */
 	public function BindAttributeList($attributeList)
 	{
@@ -507,6 +632,11 @@ class ManageResourcesPage extends ActionPage implements IManageResourcesPage
 	public function SetResourcesJson($resources)
 	{
 		$this->SetJson($resources);
+	}
+
+	public function SetJsonResponse($response)
+	{
+		parent::SetJson($response);
 	}
 
 	/**
@@ -632,6 +762,127 @@ class ManageResourcesPage extends ActionPage implements IManageResourcesPage
 	{
 		return $this->GetForm(FormKeys::MAX_NOTICE_NONE);
 	}
+
+	/**
+	 * @param BookableResource $resource
+	 */
+	public function BindUpdatedDuration($resource)
+	{
+		$this->Set('resource', $resource);
+		$this->Display('Admin/Resources/manage_resources_duration.tpl');
+	}
+
+	/**
+	 * @param BookableResource $resource
+	 */
+	public function BindUpdatedCapacity($resource)
+	{
+		$this->Set('resource', $resource);
+		$this->Display('Admin/Resources/manage_resources_capacity.tpl');
+	}
+
+	/**
+	 * @param BookableResource $resource
+	 */
+	public function BindUpdatedAccess($resource)
+	{
+		$this->Set('resource', $resource);
+		$this->Display('Admin/Resources/manage_resources_access.tpl');
+	}
+
+	/**
+	 * @param BookableResource $resource
+	 * @param ResourceGroup[] $groupList
+	 */
+	public function BindUpdatedResourceGroups($resource, $groupList)
+	{
+		$this->Set('resource', $resource);
+		$this->Set('ResourceGroupList', $groupList);
+		$this->Display('Admin/Resources/manage_resources_groups.tpl');
+	}
+
+	/**
+	 * @return string
+	 */
+	public function GetAttributeId()
+	{
+		return $this->GetQuerystring(QueryStringKeys::ATTRIBUTE_ID);
+	}
+
+	public function SetAttributeValueAsJson($attributeValue)
+	{
+		$this->SetJson($attributeValue);
+	}
+
+	public function GetPermissionUserId()
+	{
+		return $this->GetForm(FormKeys::USER_ID);
+	}
+
+	public function GetPermissionGroupId()
+	{
+		return $this->GetForm(FormKeys::GROUP_ID);
+	}
+
+	/**
+	 * @param ResourceGroupTree $resourceGroups
+	 */
+	public function BindResourceGroups(ResourceGroupTree $resourceGroups)
+	{
+		$this->Set('ResourceGroups', json_encode($resourceGroups->GetGroups(false)));
+		$groupList = $resourceGroups->GetGroupList(false);
+		$this->Set('ResourceGroupList', $groupList);
+	}
+
+	public function GetResourceGroupIds()
+	{
+		$groupIds = $this->GetForm(FormKeys::GROUP_ID);
+		if (empty($groupIds))
+		{
+			return array();
+		}
+
+		return $groupIds;
+	}
+
+	public function GetColor()
+	{
+		return $this->GetForm(FormKeys::RESERVATION_COLOR);
+	}
+
+	public function GetEnableCheckin()
+	{
+		return $this->GetCheckbox(FormKeys::ENABLE_CHECK_IN);
+	}
+
+	public function GetAutoReleaseMinutes()
+	{
+		return $this->GetForm(FormKeys::AUTO_RELEASE_MINUTES);
+	}
+
+	public function GetCredits()
+	{
+		return $this->GetForm(FormKeys::CREDITS);
+	}
+
+	public function GetPeakCredits()
+	{
+		return $this->GetForm(FormKeys::PEAK_CREDITS);
+	}
+
+	public function BindUpdatedResourceCredits(BookableResource $resource)
+	{
+		$this->Set('resource', $resource);
+		$this->Display('Admin/Resources/manage_resources_credits.tpl');
+	}
+
+    public function ShowQRCode($qrCodeImageUrl, $resourceName)
+    {
+        $this->Set('QRImageUrl', $qrCodeImageUrl);
+        $this->Set('ResourceName', $resourceName);
+        
+        $this->Display('Admin/Resources/show_resource_qr.tpl');
+    }
 }
 
 class ResourceFilterValues
@@ -682,35 +933,50 @@ class ResourceFilterValues
 		$filter = new SqlFilterNull();
 		if (!empty($this->ResourceNameFilter))
 		{
-			$filter->_And(new SqlFilterLike(new SqlFilterColumn(TableNames::RESOURCES_ALIAS, ColumnNames::RESOURCE_NAME), $this->ResourceNameFilter));
+			$filter->_And(new SqlFilterLike(new SqlFilterColumn(TableNames::RESOURCES_ALIAS,
+																ColumnNames::RESOURCE_NAME),
+											$this->ResourceNameFilter));
 		}
 		if (!empty($this->ScheduleIdFilter))
 		{
-			$filter->_And(new SqlFilterEquals(new SqlFilterColumn(TableNames::RESOURCES_ALIAS, ColumnNames::SCHEDULE_ID), $this->ScheduleIdFilter));
+			$filter->_And(new SqlFilterEquals(new SqlFilterColumn(TableNames::RESOURCES_ALIAS,
+																  ColumnNames::SCHEDULE_ID), $this->ScheduleIdFilter));
 		}
 		if (!empty($this->ResourceTypeFilter))
 		{
-			$filter->_And(new SqlFilterEquals(new SqlFilterColumn(TableNames::RESOURCES_ALIAS, ColumnNames::RESOURCE_TYPE_ID), $this->ResourceTypeFilter));
+			$filter->_And(new SqlFilterEquals(new SqlFilterColumn(TableNames::RESOURCES_ALIAS,
+																  ColumnNames::RESOURCE_TYPE_ID),
+											  $this->ResourceTypeFilter));
 		}
 		if (!empty($this->ResourceStatusFilterId))
 		{
-			$filter->_And(new SqlFilterEquals(new SqlFilterColumn(TableNames::RESOURCES_ALIAS, ColumnNames::RESOURCE_STATUS_ID), $this->ResourceStatusFilterId));
+			$filter->_And(new SqlFilterEquals(new SqlFilterColumn(TableNames::RESOURCES_ALIAS,
+																  ColumnNames::RESOURCE_STATUS_ID),
+											  $this->ResourceStatusFilterId));
 		}
 		if (!empty($this->CapacityFilter))
 		{
-			$filter->_And(new SqlFilterGreaterThan(new SqlFilterColumn(TableNames::RESOURCES_ALIAS, ColumnNames::RESOURCE_MAX_PARTICIPANTS), $this->CapacityFilter, true));
+			$filter->_And(new SqlFilterGreaterThan(new SqlFilterColumn(TableNames::RESOURCES_ALIAS,
+																	   ColumnNames::RESOURCE_MAX_PARTICIPANTS),
+												   $this->CapacityFilter, true));
 		}
 		if ($this->RequiresApprovalFilter != '')
 		{
-			$filter->_And(new SqlFilterEquals(new SqlFilterColumn(TableNames::RESOURCES_ALIAS, ColumnNames::RESOURCE_REQUIRES_APPROVAL), $this->RequiresApprovalFilter));
+			$filter->_And(new SqlFilterEquals(new SqlFilterColumn(TableNames::RESOURCES_ALIAS,
+																  ColumnNames::RESOURCE_REQUIRES_APPROVAL),
+											  $this->RequiresApprovalFilter));
 		}
 		if ($this->AutoPermissionFilter != '')
 		{
-			$filter->_And(new SqlFilterEquals(new SqlFilterColumn(TableNames::RESOURCES_ALIAS, ColumnNames::RESOURCE_AUTOASSIGN), $this->AutoPermissionFilter));
+			$filter->_And(new SqlFilterEquals(new SqlFilterColumn(TableNames::RESOURCES_ALIAS,
+																  ColumnNames::RESOURCE_AUTOASSIGN),
+											  $this->AutoPermissionFilter));
 		}
 		if ($this->AllowMultiDayFilter != '')
 		{
-			$filter->_And(new SqlFilterEquals(new SqlFilterColumn(TableNames::RESOURCES_ALIAS, ColumnNames::RESOURCE_ALLOW_MULTIDAY), $this->AllowMultiDayFilter));
+			$filter->_And(new SqlFilterEquals(new SqlFilterColumn(TableNames::RESOURCES_ALIAS,
+																  ColumnNames::RESOURCE_ALLOW_MULTIDAY),
+											  $this->AllowMultiDayFilter));
 		}
 
 		if (!empty($this->Attributes))

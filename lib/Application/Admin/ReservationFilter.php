@@ -1,17 +1,17 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
-This file is part of Booked SchedulerBooked SchedulereIt is free software: you can redistribute it and/or modify
+This file is part of Booked Scheduler is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
-(at your option) any later versBooked SchedulerduleIt is distributed in the hope that it will be useful,
+(at your option) any later version is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
+along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 class ReservationFilter
@@ -119,12 +119,35 @@ class ReservationFilter
 	public function GetFilter()
 	{
 		$filter = new SqlFilterNull();
+		$surroundFilter = null;
+		$startFilter = null;
+		$endFilter = null;
 
+		if (!empty($this->startDate) && !empty($this->endDate)) {
+			$surroundFilter = new SqlFilterLessThan(new SqlRepeatingFilterColumn(null, ColumnNames::RESERVATION_START, 1), $this->startDate->ToDatabase(), true);
+			$surroundFilter->_And(new SqlFilterGreaterThan(new SqlRepeatingFilterColumn(null, ColumnNames::RESERVATION_END, 1), $this->endDate->AddDays(1)->ToDatabase(), true));
+		}
 		if (!empty($this->startDate)) {
-			$filter->_And(new SqlFilterGreaterThan(ColumnNames::RESERVATION_START, $this->startDate->ToDatabase(), true));
+			$startFilter = new SqlFilterGreaterThan(new SqlRepeatingFilterColumn(null, ColumnNames::RESERVATION_START, 2), $this->startDate->ToDatabase(), true);
+			$endFilter = new SqlFilterGreaterThan(new SqlRepeatingFilterColumn(null, ColumnNames::RESERVATION_END, 2), $this->startDate->ToDatabase(), true);
 		}
 		if (!empty($this->endDate)) {
-			$filter->_And(new SqlFilterLessThan(ColumnNames::RESERVATION_END, $this->endDate->AddDays(1)->ToDatabase(), true));
+			if ($startFilter == null)
+			{
+				$startFilter = new SqlFilterLessThan(new SqlRepeatingFilterColumn(null, ColumnNames::RESERVATION_START, 3), $this->endDate->AddDays(1)->ToDatabase(), true);
+			}
+			else
+			{
+				$startFilter->_And(new SqlFilterLessThan(new SqlRepeatingFilterColumn(null, ColumnNames::RESERVATION_START, 4), $this->endDate->AddDays(1)->ToDatabase(), true));
+			}
+			if ($endFilter == null)
+			{
+				$endFilter = new SqlFilterLessThan(new SqlRepeatingFilterColumn(null, ColumnNames::RESERVATION_END, 3), $this->endDate->AddDays(1)->ToDatabase(), true);
+			}
+			else
+			{
+				$endFilter->_And(new SqlFilterLessThan(new SqlRepeatingFilterColumn(null, ColumnNames::RESERVATION_END, 4), $this->endDate->AddDays(1)->ToDatabase(), true));
+			}
 		}
 		if (!empty($this->referenceNumber)) {
 			$filter->_And(new SqlFilterEquals(ColumnNames::REFERENCE_NUMBER, $this->referenceNumber));
@@ -149,43 +172,19 @@ class ReservationFilter
 		}
 		if (!empty($this->attributes))
 		{
-			$filteringAttributes = false;
+			$attributeFilter = AttributeFilter::Create(TableNames::RESERVATION_SERIES_ALIAS . '.' . ColumnNames::SERIES_ID, $this->attributes);
 
-			$f  = new SqlFilterFreeForm(TableNames::RESERVATION_SERIES_ALIAS . '.' . ColumnNames::SERIES_ID . ' IN (SELECT a0.' . ColumnNames::ATTRIBUTE_ENTITY_ID . ' FROM ' . TableNames::CUSTOM_ATTRIBUTE_VALUES . ' a0 ');
-
-			$attributeFragment = new SqlFilterNull();
-
-			/** @var $attribute Attribute */
-			foreach ($this->attributes as $i => $attribute)
+			if ($attributeFilter != null)
 			{
-				if ($attribute->Value() == null || $attribute->Value() == '')
-				{
-					continue;
-				}
-				$id = $attribute->Id();
-				$filteringAttributes = true;
-				$attributeId = new SqlRepeatingFilterColumn("a$id", ColumnNames::CUSTOM_ATTRIBUTE_ID, $id);
-				$attributeValue = new SqlRepeatingFilterColumn("a$id", ColumnNames::CUSTOM_ATTRIBUTE_VALUE, $id);
-
-				$idEquals = new SqlFilterEquals($attributeId, $attribute->Id());
-				$f->AppendSql('LEFT JOIN ' . TableNames::CUSTOM_ATTRIBUTE_VALUES . ' a' . $id . ' ON a0.entity_id = a' . $id . '.entity_id ');
-				if ($attribute->Type() == CustomAttributeTypes::MULTI_LINE_TEXTBOX || $attribute->Type() == CustomAttributeTypes::SINGLE_LINE_TEXTBOX)
-				{
-					$attributeFragment->_And($idEquals->_And(new SqlFilterLike($attributeValue, $attribute->Value())));
-				}
-				else
-				{
-					$attributeFragment->_And($idEquals->_And(new SqlFilterEquals($attributeValue, $attribute->Value())));
-				}
+				$filter->_And($attributeFilter);
 			}
+		}
 
-			$f->AppendSql("WHERE [attribute_list_token] )");
-			$f->Substitute('attribute_list_token', $attributeFragment);
-
-			if ($filteringAttributes)
-			{
-				$filter->_And($f);
-			}
+		if ($surroundFilter != null || $startFilter != null || $endFilter != null)
+		{
+			$dateFilter = new SqlFilterNull(true);
+			$dateFilter->_Or($surroundFilter)->_Or($startFilter)->_Or($endFilter);
+			$filter->_And($dateFilter);
 		}
 
 		foreach ($this->_and as $and)

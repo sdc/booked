@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -26,100 +26,94 @@ require_once(ROOT_DIR . 'Presenters/Reports/GenerateReportPresenter.php');
 interface IGenerateReportPage extends IDisplayableReportPage, IActionPage
 {
 	/**
-	 * @abstract
 	 * @return string|Report_Usage
 	 */
 	public function GetUsage();
 
 	/**
-	 * @abstract
 	 * @return string|Report_ResultSelection
 	 */
 	public function GetResultSelection();
 
 	/**
-	 * @abstract
 	 * @return string|Report_GroupBy
 	 */
 	public function GetGroupBy();
 
 	/**
-	 * @abstract
 	 * @return string|Report_Range
 	 */
 	public function GetRange();
 
 	/**
-	 * @abstract
 	 * @return string
 	 */
 	public function GetStart();
 
 	/**
-	 * @abstract
 	 * @return string
 	 */
 	public function GetEnd();
 
 	/**
-	 * @abstract
 	 * @return int
 	 */
 	public function GetResourceId();
 
 	/**
-	 * @abstract
 	 * @return int
 	 */
 	public function GetAccessoryId();
 
 	/**
-	 * @abstract
 	 * @return int
 	 */
 	public function GetScheduleId();
 
 	/**
-	 * @abstract
 	 * @return int
 	 */
 	public function GetUserId();
 
 	/**
-	 * @abstract
+	 * @return int
+	 */
+	public function GetParticipantId();
+
+	/**
 	 * @return int
 	 */
 	public function GetGroupId();
 
 	/**
-	 * @abstract
 	 * @return string
 	 */
 	public function GetReportName();
 
 	/**
-	 * @abstract
 	 * @param array|BookableResource[] $resources
 	 */
 	public function BindResources($resources);
 
 	/**
-	 * @abstract
 	 * @param array|AccessoryDto[] $accessories
 	 */
 	public function BindAccessories($accessories);
 
 	/**
-	 * @abstract
 	 * @param array|Schedule[] $schedules
 	 */
 	public function BindSchedules($schedules);
 
 	/**
-	 * @abstract
 	 * @param array|GroupItemView[] $groups
 	 */
 	public function BindGroups($groups);
+
+	/**
+	 * @return bool
+	 */
+	public function GetIncludeDeleted();
 }
 
 class GenerateReportPage extends ActionPage implements IGenerateReportPage
@@ -242,6 +236,14 @@ class GenerateReportPage extends ActionPage implements IGenerateReportPage
 	/**
 	 * @return int
 	 */
+	public function GetParticipantId()
+	{
+		return $this->GetValue(FormKeys::PARTICIPANT_ID);
+	}
+
+	/**
+	 * @return int
+	 */
 	public function GetGroupId()
 	{
 		return $this->GetValue(FormKeys::GROUP_ID);
@@ -330,6 +332,11 @@ class GenerateReportPage extends ActionPage implements IGenerateReportPage
 	{
 		$this->Set('Groups', $groups);
 	}
+
+	public function GetIncludeDeleted()
+	{
+		$include = $this->GetValue(FormKeys::INCLUDE_DELETED);
+		return isset($include);
+	}
 }
 
-?>

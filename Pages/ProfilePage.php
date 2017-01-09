@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -72,6 +72,11 @@ interface IProfilePage extends IPage, IActionPage
 	 * @return AttributeFormElement[]
 	 */
 	public function GetAttributes();
+
+	/**
+	 * @param IAuthenticationActionOptions $options
+	 */
+	public function SetAllowedActions($options);
 }
 
 class ProfilePage extends ActionPage implements IProfilePage
@@ -93,7 +98,7 @@ class ProfilePage extends ActionPage implements IProfilePage
 	public function ProcessPageLoad()
 	{
 		$this->presenter->PageLoad();
-		$this->Display('profile.tpl');
+		$this->Display('MyAccount/profile.tpl');
 	}
 
 	public function SetFirstName($firstName)
@@ -225,6 +230,17 @@ class ProfilePage extends ActionPage implements IProfilePage
 	{
 		return $this->server->GetQuerystring(QueryStringKeys::SCHEDULE_ID);
 	}
-}
 
-?>
+	/**
+	 * @param IAuthenticationActionOptions $options
+	 */
+	public function SetAllowedActions($options)
+	{
+		$this->Set('AllowEmailAddressChange', $options->AllowEmailAddressChange());
+		$this->Set('AllowNameChange', $options->AllowNameChange());
+		$this->Set('AllowOrganizationChange', $options->AllowOrganizationChange());
+		$this->Set('AllowPhoneChange', $options->AllowPhoneChange());
+		$this->Set('AllowPositionChange', $options->AllowPositionChange());
+		$this->Set('AllowUsernameChange', $options->AllowUsernameChange());
+	}
+}

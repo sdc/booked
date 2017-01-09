@@ -1,21 +1,21 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
-
-This file is part of Booked Scheduler.
-
-Booked Scheduler is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Booked Scheduler is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright 2011-2016 Nick Korbel
+ *
+ * This file is part of Booked Scheduler.
+ *
+ * Booked Scheduler is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Booked Scheduler is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 require_once(ROOT_DIR . 'Domain/Values/RoleLevel.php');
@@ -124,6 +124,16 @@ class User
 	protected $groups = array();
 
 	/**
+	 * @var UserGroup[]
+	 */
+	private $_addedGroups = array();
+
+	/**
+	 * @var UserGroup[]
+	 */
+	private $_removedGroups = array();
+
+	/**
 	 * @var array|UserGroup[]
 	 */
 	protected $groupsICanAdminister = array();
@@ -137,12 +147,28 @@ class User
 	}
 
 	/**
+	 * @return UserGroup[]
+	 */
+	public function GetAddedGroups()
+	{
+		return $this->_addedGroups;
+	}
+
+	/**
+	 * @return UserGroup[]
+	 */
+	public function GetRemovedGroups()
+	{
+		return $this->_removedGroups;
+	}
+
+	/**
 	 * @param int $groupId
 	 * @return bool
 	 */
 	public function IsInGroup($groupId)
 	{
-		foreach($this->groups as $group)
+		foreach ($this->groups as $group)
 		{
 			if ($group->GroupId == $groupId)
 			{
@@ -223,6 +249,14 @@ class User
 	public function GetPreferences()
 	{
 		return $this->preferences;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function IsRegistered()
+	{
+		return !empty($this->id);
 	}
 
 	public function ChangePreference($name, $value)
@@ -621,12 +655,29 @@ class User
 			foreach ($this->groups as $group)
 			{
 				if (
-					($group->GroupId == $resource->GetAdminGroupId()) ||
-					($group->GroupId == $resource->GetScheduleAdminGroupId())
+						($group->GroupId == $resource->GetAdminGroupId()) ||
+						($group->GroupId == $resource->GetScheduleAdminGroupId())
 				)
 				{
 					return true;
 				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param IResource[] $resources
+	 * @return bool
+	 */
+	public function IsResourceAdminForOneOf($resources)
+	{
+		foreach ($resources as $resource)
+		{
+			if ($this->IsResourceAdminFor($resource))
+			{
+				return true;
 			}
 		}
 
@@ -725,6 +776,11 @@ class User
 	 * @var array|AttributeValue[]
 	 */
 	private $_removedAttributeValues = array();
+
+	/**
+	 * @var int
+	 */
+	private $credits;
 
 	/**
 	 * @param $attributes AttributeValue[]|array
@@ -843,10 +899,71 @@ class User
 		return $this->preferences->Get($preferenceName);
 	}
 
+	public function ChangeGroups($groups)
+	{
+		$diff = new ArrayDiff($this->groups, $groups);
+
+		$added = $diff->GetAddedToArray1();
+		$removed = $diff->GetRemovedFromArray1();
+
+		/** @var $group UserGroup */
+		foreach ($added as $group)
+		{
+			$this->_addedGroups[] = $group;
+		}
+
+		/** @var $group UserGroup */
+		foreach ($removed as $group)
+		{
+			$this->_removedGroups[] = $group;
+		}
+
+		$this->WithGroups($groups);
+	}
+
+	/**
+	 * @param $attribute AttributeValue
+	 */
+	public function ChangeCustomAttribute($attribute)
+	{
+		$this->_removedAttributeValues[] = $attribute;
+		$this->_addedAttributeValues[] = $attribute;
+		$this->AddAttributeValue($attribute);
+	}
+
+	public function GetCurrentCredits()
+	{
+		return empty($this->credits) ? 0 : $this->credits;
+	}
+
+	public function WithCredits($credits)
+	{
+		$this->credits = $credits;
+	}
+
+	public function ChangeCurrentCredits($credits)
+	{
+		$this->credits = $credits;
+	}
 }
 
 class NullUser extends User
 {
+    public function Id()
+    {
+        return null;
+    }
+}
+
+class GuestUser extends User
+{
+	public function __construct($email)
+	{
+		parent::__construct();
+		$this->emailAddress = $email;
+		$this->language = Configuration::Instance()->GetKey(ConfigKeys::LANGUAGE);
+		$this->timezone = Configuration::Instance()->GetDefaultTimezone();
+	}
 }
 
 class UserAttribute
@@ -952,5 +1069,10 @@ class UserGroup
 		{
 			$this->IsScheduleAdmin = true;
 		}
+	}
+
+	public function __toString()
+	{
+		return $this->GroupId . '';
 	}
 }

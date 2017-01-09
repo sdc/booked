@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -574,7 +574,7 @@ class ReminderAddedEvent extends SeriesEvent
 	/**
 	 * @param ExistingReservationSeries $series
 	 * @param int $minutesPrior
-	 * @param ReservationReminderType $reminderType
+	 * @param ReservationReminderType|int $reminderType
 	 */
 	public function __construct(ExistingReservationSeries $series, $minutesPrior, $reminderType)
 	{
@@ -637,5 +637,3 @@ class ReminderRemovedEvent extends SeriesEvent
 					   $this->series->SeriesId());
 	}
 }
-
-?>

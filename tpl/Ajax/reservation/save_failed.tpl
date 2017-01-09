@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -16,21 +16,51 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 *}
-<div>
-	{html_image src="dialog-warning.png"}<br/>
+<div id="reservation-failed" class="reservationResponseMessage">
+	<div id="reservation-response-image">
+		<span class="fa fa-warning fa-5x error"></span>
+	</div>
 
-	<h2 style="text-align: center;">{translate key=ReservationFailed}</h2>
+	<div id="failed-message" class="reservation-message">{translate key=ReservationFailed}</div>
 
 	<div class="error">
-		<ul>
 		{foreach from=$Errors item=each}
-			<li>{$each|nl2br}</li>
+			<div>{$each|nl2br}</div>
 		{/foreach}
-		</ul>
 	</div>
 
-	<div style="margin: auto;text-align: center;">
-		<button id="btnSaveFailed"
-				class="button">{html_image src="arrow_large_left.png"} {translate key='ReservationErrors'}</button>
+	<div>
+		<button id="btnSaveFailed" class="btn btn-warning"><span
+					class="fa fa-arrow-circle-left"></span> {translate key='ReservationErrors'}</button>
+
+        {if $CanJoinWaitList}
+            <button id="btnWaitList" class="btn btn-info"><span
+					class="fa fa-bell-o"></span> {translate key='NotifyWhenAvailable'}</button>
+        {/if}
+
+		{if $CanBeRetried}
+			<div id="retryParams" class="no-show">
+				{foreach from=$RetryParameters item=retryParam}
+					<input type="hidden" id="{$retryParam->Name()}"
+						   name="{FormKeys::RESERVATION_RETRY_PREFIX}[{$retryParam->Name()}]"
+						   value="{$retryParam->Value()|escape}"/>
+				{/foreach}
+			</div>
+			<div id="retryMessages" class="no-show">
+				{foreach from=$RetryMessages item=each}
+					<div>{$each|nl2br}</div>
+				{/foreach}
+			</div>
+			<button id="btnRetry" class="btn btn-success"><span class="fa fa-refresh"></span> {translate key='Retry'}
+			</button>
+			<div id="retryToolTip" class="inline"><i class="fa fa-info-circle"></i></div>
+		{/if}
 	</div>
 </div>
+
+
+<script type="text/javascript">
+	$(document).ready(function () {
+		$('#reservation-failed').trigger('loaded');
+	});
+</script>

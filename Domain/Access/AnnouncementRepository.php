@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -30,7 +30,7 @@ class AnnouncementRepository implements IAnnouncementRepository
 
         while ($row = $reader->GetRow())
         {
-            $announcements[] = $row[ColumnNames::ANNOUNCEMENT_TEXT];
+            $announcements[] = Announcement::FromRow($row);
         }
 
         $reader->Free();
@@ -38,11 +38,18 @@ class AnnouncementRepository implements IAnnouncementRepository
         return $announcements;
     }
 
-    public function GetAll()
+    public function GetAll($sortField = null, $sortDirection = null)
     {
         $announcements = array();
 
-        $reader = ServiceLocator::GetDatabase()->Query(new GetAllAnnouncementsCommand());
+        $command = new GetAllAnnouncementsCommand();
+
+        if (!empty($sortField))
+        {
+            $command = new SortCommand($command, $sortField, $sortDirection);
+        }
+
+        $reader = ServiceLocator::GetDatabase()->Query($command);
 
         while ($row = $reader->GetRow())
         {
@@ -59,7 +66,18 @@ class AnnouncementRepository implements IAnnouncementRepository
      */
     public function Add(Announcement $announcement)
     {
-        ServiceLocator::GetDatabase()->ExecuteInsert(new AddAnnouncementCommand($announcement->Text(), $announcement->Start(), $announcement->End(), $announcement->Priority()));
+        $db = ServiceLocator::GetDatabase();
+        $announcementId = $db->ExecuteInsert(new AddAnnouncementCommand($announcement->Text(), $announcement->Start(), $announcement->End(), $announcement->Priority()));
+
+        foreach ($announcement->GroupIds() as $groupId)
+        {
+            $db->ExecuteInsert(new AddAnnouncementGroupCommand($announcementId, $groupId));
+        }
+
+        foreach ($announcement->ResourceIds() as $resourceId)
+        {
+            $db->ExecuteInsert(new AddAnnouncementResourceCommand($announcementId, $resourceId));
+        }
     }
 
     /**
@@ -89,7 +107,8 @@ class AnnouncementRepository implements IAnnouncementRepository
 
     public function Update(Announcement $announcement)
     {
-        ServiceLocator::GetDatabase()->Execute(new UpdateAnnouncementCommand($announcement->Id(), $announcement->Text(), $announcement->Start(), $announcement->End(), $announcement->Priority()));
+        $this->Delete($announcement->Id());
+        $this->Add($announcement);
     }
 }
 
@@ -97,40 +116,35 @@ interface IAnnouncementRepository
 {
     /**
      * Gets all announcements to be displayed for the user
-     * @return string[]|array list of announcement text values
+     * @return Announcement[]
      */
     public function GetFuture();
 
     /**
-     * @abstract
+     * @param null|string $sortField
+     * @param null|string $sortDirection
      * @return Announcement[]|array
      */
-    public function GetAll();
+    public function GetAll($sortField = null, $sortDirection = null);
 
     /**
-     * @abstract
      * @param Announcement $announcement
      */
     public function Add(Announcement $announcement);
 
     /**
-     * @abstract
      * @param Announcement $announcement
      */
     public function Update(Announcement $announcement);
 
     /**
-     * @abstract
      * @param int $announcementId
      */
     public function Delete($announcementId);
 
     /**
-     * @abstract
      * @param int $announcementId
      * @return Announcement
      */
     public function LoadById($announcementId);
 }
-
-?>

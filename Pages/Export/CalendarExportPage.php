@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -19,36 +19,32 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 require_once(ROOT_DIR . 'Pages/SecurePage.php');
+require_once(ROOT_DIR . 'Pages/Export/CalendarExportDisplay.php');
 require_once(ROOT_DIR . 'Presenters/CalendarExportPresenter.php');
 
 interface ICalendarExportPage
 {
 	/**
-	 * @abstract
 	 * @return string
 	 */
 	public function GetReferenceNumber();
 
 	/**
-	 * @abstract
 	 * @param array|iCalendarReservationView[] $reservations
 	 */
 	public function SetReservations($reservations);
 
 	/**
-	 * @abstract
 	 * @return int
 	 */
 	public function GetScheduleId();
 
 	/**
-	 * @abstract
 	 * @return int
 	 */
 	public function GetResourceId();
 
 	/**
-	 * @abstract
 	 * @return int
 	 */
 	public function GetAccessoryName();
@@ -60,6 +56,11 @@ class CalendarExportPage extends Page implements ICalendarExportPage
 	 * @var \CalendarExportPresenter
 	 */
 	private $presenter;
+
+	/**
+	 * @var array|iCalendarReservationView[]
+	 */
+	private $reservations = array();
 
 	public function __construct()
 	{
@@ -78,20 +79,8 @@ class CalendarExportPage extends Page implements ICalendarExportPage
 		header("Content-Type: text/Calendar");
 		header("Content-Disposition: inline; filename=calendar.ics");
 
-		$config = Configuration::Instance();
-
-		$this->Set('bookedVersion', $config->GetKey(ConfigKeys::VERSION));
-		$this->Set('DateStamp', Date::Now());
-
-		/**
-		 * ScriptUrl is used to generate iCal UID's. As a workaround to this bug
-		 * https://bugzilla.mozilla.org/show_bug.cgi?id=465853
-		 * we need to avoid using any slashes "/"
-		 */
-		$url = $config->GetScriptUrl();
-		$this->Set('ScriptUrl', parse_url($url, PHP_URL_HOST));
-
-		$this->Display('Export/ical.tpl');
+		$display = new CalendarExportDisplay();
+		echo $display->Render($this->reservations);
 	}
 
 	public function GetReferenceNumber()
@@ -101,7 +90,7 @@ class CalendarExportPage extends Page implements ICalendarExportPage
 
 	public function SetReservations($reservations)
 	{
-		$this->Set('Reservations', $reservations);
+		$this->reservations = $reservations;
 	}
 
 	public function GetScheduleId()
@@ -127,5 +116,3 @@ class NullCalendarExportValidator implements ICalendarExportValidator
 		return true;
 	}
 }
-
-?>

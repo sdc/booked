@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -54,6 +54,8 @@ class WebServiceUserSession extends UserSession
 		$webSession->LanguageCode = $session->LanguageCode;
 		$webSession->PublicId = $session->PublicId;
 		$webSession->ScheduleId = $session->ScheduleId;
+		$webSession->Groups = $session->Groups;
+		$webSession->AdminGroups = $session->AdminGroups;
 
 		return $webSession;
 	}

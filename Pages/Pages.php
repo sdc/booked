@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -28,7 +28,11 @@ class Pages
 	const CALENDAR_SUBSCRIBE = 'ical-subscribe.php';
 	const CALENDAR_SUBSCRIBE_ATOM = 'atom-subscribe.php';
 	const DASHBOARD = 'dashboard.php';
+	const DISPLAY_RESOURCE = 'resource-display.php';
 	const DEFAULT_LOGIN = 'dashboard.php';
+	const GUEST_INVITATION_RESPONSES = 'guest-participation.php';
+	const FORGOT_PASSWORD = 'forgot.php';
+	const GUEST_RESERVATION = 'guest-reservation.php';
 	const INVITATION_RESPONSES = 'participation.php';
 	const LOGIN = 'index.php';
 	const MANAGE_RESERVATIONS = 'manage_reservations.php';
@@ -36,7 +40,7 @@ class Pages
 	const MANAGE_GROUPS_ADMIN = 'manage_admin_groups.php';
 	const MANAGE_GROUP_RESERVATIONS = 'manage_group_reservations.php';
 	const MY_CALENDAR = 'my-calendar.php';
-	const OPENINGS = 'openings.php';
+	const OPENINGS = 'search-availability.php';
 	const NOTIFICATION_PREFERENCES = 'notification-preferences.php';
 	const PARTICIPATION = 'participation.php';
 	const PASSWORD = 'password.php';
@@ -70,5 +74,3 @@ class Pages
 		return self::$_pages;
 	}
 }
-
-?>

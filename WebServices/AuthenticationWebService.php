@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -58,9 +58,17 @@ class AuthenticationWebService
 		{
 			Log::Debug('WebService Authenticate, user %s was authenticated', $username);
 
+			$version = 0;
+			$reader = ServiceLocator::GetDatabase()->Query(new GetVersionCommand());
+			if ($row = $reader->GetRow())
+			{
+				$version = $row[ColumnNames::VERSION_NUMBER];
+			}
+			$reader->Free();
+			
 			$session = $this->authentication->Login($username);
 			Log::Debug('SessionToken=%s', $session->SessionToken);
-			$this->server->WriteResponse(AuthenticationResponse::Success($this->server, $session));
+			$this->server->WriteResponse(AuthenticationResponse::Success($this->server, $session, $version));
 		}
 		else
 		{
@@ -88,4 +96,3 @@ class AuthenticationWebService
 	}
 }
 
-?>

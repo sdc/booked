@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -52,6 +52,8 @@ interface ISavedReportsPage extends IDisplayableReportPage, IActionPage
 
 class SavedReportsPage extends ActionPage implements ISavedReportsPage
 {
+	private $presenter;
+
 	public function __construct()
 	{
 		parent::__construct('MySavedReports', 1);
@@ -167,4 +169,3 @@ class SavedReportsPage extends ActionPage implements ISavedReportsPage
 	}
 }
 
-?>

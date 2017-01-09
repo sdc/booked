@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -23,7 +23,7 @@ require_once(ROOT_DIR . 'lib/WebService/namespace.php');
 class UserItemResponse extends RestResponse
 {
 	public $id;
-	public $username;
+	public $userName;
 	public $firstName;
 	public $lastName;
 	public $emailAddress;
@@ -37,8 +37,15 @@ class UserItemResponse extends RestResponse
 	public $language;
 	/** @var array|CustomAttributeResponse[] */
 	public $customAttributes = array();
+	public $currentCredits;
+	public $reservationColor;
 
-	public function __construct(IRestServer $server, UserItemView $user, IEntityAttributeList $attributes)
+	/**
+	 * @param IRestServer $server
+	 * @param UserItemView $user
+	 * @param array|string[] $attributeLabels
+	 */
+	public function __construct(IRestServer $server, UserItemView $user, $attributeLabels)
 	{
 		$userId = $user->Id;
 		$this->id = $userId;
@@ -53,15 +60,15 @@ class UserItemResponse extends RestResponse
 		$this->position = $user->Position;
 		$this->statusId = $user->StatusId;
 		$this->timezone = $user->Timezone;
-		$this->username = $user->Username;
+		$this->userName = $user->Username;
+		$this->currentCredits = $user->CurrentCreditCount;
+		$this->reservationColor = $user->ReservationColor;
 
-		$attributeValues = $attributes->GetAttributes($userId);
-
-		if (!empty($attributeValues))
+		if (!empty($attributeLabels))
 		{
-			foreach($attributeValues as $av)
+			foreach($attributeLabels as $id => $label)
 			{
-				$this->customAttributes[] = new CustomAttributeResponse($server, $av->Id(), $av->Label(), $av->Value());
+				$this->customAttributes[] = new CustomAttributeResponse($server, $id, $label, $user->GetAttributeValue($id));
 			}
 		}
 
@@ -90,10 +97,10 @@ class ExampleUserItemResponse extends UserItemResponse
 		$this->phoneNumber = 'phone';
 		$this->statusId = 'statusId';
 		$this->timezone = 'timezone';
-		$this->username = 'username';
+		$this->userName = 'username';
 		$this->position = 'position';
 		$this->customAttributes = array(CustomAttributeResponse::Example());
+		$this->currentCredits = '2.50';
+		$this->reservationColor = '#000000';
 	}
 }
-
-?>

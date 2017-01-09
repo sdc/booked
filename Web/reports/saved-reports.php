@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -30,4 +30,3 @@ if (Configuration::Instance()->GetSectionKey(ConfigSection::REPORTS, ConfigKeys:
 $page = new RoleRestrictedPageDecorator(new SavedReportsPage(), $roles);
 $page->PageLoad();
 
-?>

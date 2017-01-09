@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -34,7 +34,7 @@ ORGANIZER;CN={$reservation->Organizer}:MAILTO:{$reservation->OrganizerEmail}
 RRULE:{$reservation->RecurRule}
 {/if}
 SUMMARY:{$reservation->Summary}
-UID:{$reservation->ReferenceNumber}&{$ScriptUrl}
+UID:{$reservation->ReferenceNumber}&{$UID}
 SEQUENCE:0
 URL:{$reservation->ReservationUrl}
 X-MICROSOFT-CDO-BUSYSTATUS:BUSY

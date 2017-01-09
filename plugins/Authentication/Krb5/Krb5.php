@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 Copyright 2012-2014 Alois Schloegl
 
 This file is part of Booked Scheduler.
@@ -21,7 +21,7 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 
 require_once(ROOT_DIR . 'lib/Application/Authentication/namespace.php');
 
-class Krb5 implements IAuthentication
+class Krb5 extends Authentication implements IAuthentication
 {
 	private $authToDecorate;
 	private $_registration;

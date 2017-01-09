@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 File ini adalah bagian dari phpShceduleIt.
 
@@ -663,5 +663,3 @@ class id_id extends en_us
         return 'id';
     }
 }
-
-?>

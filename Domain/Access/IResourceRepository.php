@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -40,6 +40,12 @@ interface IResourceRepository
 	 */
 	public function LoadByPublicId($publicId);
 
+    /**
+     * @param string $resourceName
+     * @return BookableResource
+     */
+    public function LoadByName($resourceName);
+
 	/**
 	 * @param BookableResource $resource
 	 * @return int ID of created resource
@@ -71,11 +77,12 @@ interface IResourceRepository
 	 */
 	public function GetList($pageNumber, $pageSize, $sortField = null, $sortDirection = null, $filter = null);
 
-	/**
-	 * @abstract
-	 * @return array|AccessoryDto[] all accessories
-	 */
-	public function GetAccessoryList();
+    /**
+     * @param null|string $sortField
+     * @param null|string $sortDirection
+     * @return AccessoryDto[]|array all accessories
+     */
+	public function GetAccessoryList($sortField = null, $sortDirection = null);
 
 	/**
 	 * @param int|null $scheduleId
@@ -107,6 +114,12 @@ interface IResourceRepository
 	 * @return ResourceGroup
 	 */
 	public function LoadResourceGroup($groupId);
+
+	/**
+	 * @param string $publicResourceGroupId
+	 * @return ResourceGroup
+	 */
+	public function LoadResourceGroupByPublicId($publicResourceGroupId);
 
 	/**
 	 * @param ResourceGroup $group
@@ -167,4 +180,58 @@ interface IResourceRepository
 	 * @param int $reasonId
 	 */
 	public function RemoveStatusReason($reasonId);
+
+	/**
+	 * @param int $resourceId
+	 * @param int|null $pageNumber
+	 * @param int|null $pageSize
+	 * @param ISqlFilter|null $filter
+	 * @param int $accountStatus
+	 * @return PageableData|UserItemView[]
+	 */
+	public function GetUsersWithPermission($resourceId, $pageNumber = null, $pageSize = null, $filter = null, $accountStatus = AccountStatus::ACTIVE);
+
+	/**
+	 * @param int $resourceId
+	 * @param int|null $pageNumber
+	 * @param int|null $pageSize
+	 * @param ISqlFilter|null $filter
+	 * @param int $accountStatus
+	 * @return PageableData|UserItemView[]
+	 */
+	public function GetUsersWithPermissionsIncludingGroups($resourceId, $pageNumber = null, $pageSize = null, $filter = null, $accountStatus = AccountStatus::ACTIVE);
+
+	/**
+	 * @param int $resourceId
+	 * @param int|null $pageNumber
+	 * @param int|null $pageSize
+	 * @param ISqlFilter|null $filter
+	 * @return PageableData|GroupItemView[]
+	 */
+	public function GetGroupsWithPermission($resourceId, $pageNumber = null, $pageSize = null, $filter = null);
+
+	/**
+	 * @param int $resourceId
+	 * @param int $userId
+	 */
+	public function AddResourceUserPermission($resourceId, $userId);
+
+	/**
+	 * @param int $resourceId
+	 * @param int $userId
+	 */
+	public function RemoveResourceUserPermission($resourceId, $userId);
+
+	/**
+	 * @param $resourceId
+	 * @param $groupId
+	 */
+	public function AddResourceGroupPermission($resourceId, $groupId);
+
+	/**
+	 * @param $resourceId
+	 * @param $groupId
+	 */
+	public function RemoveResourceGroupPermission($resourceId, $groupId);
+
 }

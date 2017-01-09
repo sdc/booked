@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2013-2014 Nick Korbel
+Copyright 2013-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -19,7 +19,7 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 require_once(ROOT_DIR . 'lib/WebService/JsonRequest.php');
-require_once(ROOT_DIR . 'WebServices/Requests/AttributeValueRequest.php');
+require_once(ROOT_DIR . 'WebServices/Requests/CustomAttributes/AttributeValueRequest.php');
 
 abstract class UserRequestBase extends JsonRequest
 {
@@ -33,6 +33,8 @@ abstract class UserRequestBase extends JsonRequest
 	public $position;
 	/** @var array|AttributeValueRequest[] */
 	public $customAttributes = array();
+	/** @var array|int[] */
+	public $groups = array();
 
 	/**
 	 * @return array|AttributeValueRequest[]
@@ -46,6 +48,3 @@ abstract class UserRequestBase extends JsonRequest
 		return array();
 	}
 }
-
-
-?>

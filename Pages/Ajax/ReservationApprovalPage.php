@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -25,7 +25,6 @@ require_once(ROOT_DIR . 'Presenters/Reservation/ReservationApprovalPresenter.php
 interface IReservationApprovalPage extends IReservationSaveResultsView
 {
 	/**
-	 * @abstract
 	 * @return string
 	 */
 	public function GetReferenceNumber();
@@ -37,6 +36,7 @@ class ReservationApprovalPage extends SecurePage implements IReservationApproval
 	{
 		try
 		{
+			$this->EnforceCSRFCheck();
 			$reservationAction = ReservationAction::Approve;
 			$factory = new ReservationPersistenceFactory();
 			$persistenceService = $factory->Create($reservationAction);
@@ -68,7 +68,7 @@ class ReservationApprovalPage extends SecurePage implements IReservationApproval
 	{
 		if ($succeeded)
 		{
-			$this->SetJson(array('approved' => (string)$succeeded));
+			$this->SetJson(array('approved' => "$succeeded"));
 		}
 	}
 
@@ -76,12 +76,52 @@ class ReservationApprovalPage extends SecurePage implements IReservationApproval
 	{
 		if (!empty($errors))
 		{
-			$this->SetJson(array('approved' => (string)false), $errors);
+			$this->SetJson(array('approved' => "false"), $errors);
 		}
 	}
 
 	public function SetWarnings($warnings)
 	{
-		// nothing to do
+		// no-op
 	}
+
+	/**
+	 * @param array|string[] $messages
+	 */
+	public function SetRetryMessages($messages)
+	{
+		// no-op
+	}
+
+	/**
+	 * @param bool $canBeRetried
+	 */
+	public function SetCanBeRetried($canBeRetried)
+	{
+		// no-op
+	}
+
+	/**
+	 * @param ReservationRetryParameter[] $retryParameters
+	 */
+	public function SetRetryParameters($retryParameters)
+	{
+		// no-op
+	}
+
+	/**
+	 * @return ReservationRetryParameter[]
+	 */
+	public function GetRetryParameters()
+	{
+		// no-op
+	}
+
+    /**
+     * @param bool $canJoinWaitlist
+     */
+    public function SetCanJoinWaitList($canJoinWaitlist)
+    {
+        // no-op
+    }
 }

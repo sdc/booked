@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -51,6 +51,11 @@ interface IUserSessionRepository
 	 * @return void
 	 */
 	public function Delete(WebServiceUserSession $session);
+    
+	/**
+	 * @return void
+	 */
+	public function CleanUp();
 }
 
 class UserSessionRepository implements IUserSessionRepository
@@ -91,6 +96,9 @@ class UserSessionRepository implements IUserSessionRepository
 	{
 		ServiceLocator::GetDatabase()->Execute(new DeleteUserSessionCommand($session->SessionToken));
 	}
-}
 
-?>
+	public function CleanUp()
+	{
+		ServiceLocator::GetDatabase()->Execute(new CleanUpUserSessionsCommand());
+	}
+}

@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -16,8 +16,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 *}
-{include file='..\..\tpl\Email\emailheader.tpl'}
-
 	Резервационна информация:
 	<br/>
 	<br/>
@@ -31,6 +29,10 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 		{/foreach}
 		{else}
 		ресурс: {$ResourceName}<br/>
+	{/if}
+
+	{if $ResourceImage}
+		<div class="resource-image"><img src="{$ScriptUrl}/{$ResourceImage}"/></div>
 	{/if}
 
 	Заглавие: {$Title}<br/>
@@ -62,5 +64,3 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 	<a href="{$ScriptUrl}/{$ReservationUrl}">Разгледай тази резервация</a> |
 	<a href="{$ScriptUrl}/{$ICalUrl}">Добави в Outlook</a> |
 	<a href="{$ScriptUrl}">Влизане в Booked Scheduler</a>
-
-{include file='..\..\tpl\Email\emailfooter.tpl'}

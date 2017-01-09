@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -100,7 +100,7 @@ class NotificationPreferencesPage extends SecurePage implements INotificationPre
 	public function PageLoad()
 	{
 		$this->presenter->PageLoad();
-		$this->Display('notification-preferences.tpl');
+		$this->Display('MyAccount/notification-preferences.tpl');
 	}
 
     /**
@@ -185,4 +185,3 @@ class NotificationPreferencesPage extends SecurePage implements INotificationPre
 
 }
 
-?>

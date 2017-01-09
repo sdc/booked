@@ -1,25 +1,25 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
-This file is part of Booked SchedulerBooked SchedulereIt is free software: you can redistribute it and/or modify
+This file is part of Booked Scheduler is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
-(at your option) any later versBooked SchedulerduleIt is distributed in the hope that it will be useful,
+(at your option) any later version is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
+along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
 class CalendarTypes
 {
 	const Month = 'month';
-	const Week = 'week';
-	const Day = 'day';
+	const Week = 'agendaWeek';
+	const Day = 'agendaDay';
 }
 
 interface ICalendarFactory
@@ -31,15 +31,14 @@ interface ICalendarFactory
 	 * @param $month
 	 * @param $day
 	 * @param $timezone
-	 * @param $firstDayOfWeek
 	 * @return ICalendarSegment
 	 */
-	public function Create($type, $year, $month, $day, $timezone, $firstDayOfWeek = 0);
+	public function Create($type, $year, $month, $day, $timezone);
 }
 
 class CalendarFactory implements ICalendarFactory
 {
-	public function Create($type, $year, $month, $day, $timezone, $firstDayOfWeek = 0)
+	public function Create($type, $year, $month, $day, $timezone)
 	{
 		if ($type == CalendarTypes::Day)
 		{
@@ -48,7 +47,7 @@ class CalendarFactory implements ICalendarFactory
 
 		if ($type == CalendarTypes::Week)
 		{
-			return CalendarWeek::FromDate($year, $month, $day, $timezone, $firstDayOfWeek);
+			return CalendarWeek::FromDate($year, $month, $day, $timezone);
 		}
 
 		return new CalendarMonth($month, $year, $timezone);

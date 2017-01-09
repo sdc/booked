@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -22,6 +22,5 @@ define('ROOT_DIR', '../../');
 
 require_once(ROOT_DIR . 'Pages/Admin/ManageAnnouncementsPage.php');
 
-$page = new AdminPageDecorator(new ManageAnnouncementsPage());
+$page = new RoleRestrictedPageDecorator(new ManageAnnouncementsPage());
 $page->PageLoad();
-?>

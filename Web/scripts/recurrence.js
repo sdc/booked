@@ -1,5 +1,5 @@
 /**
- Copyright 2012-2014 Nick Korbel
+ Copyright 2012-2016 Nick Korbel
 
  This file is part of Booked Scheduler.
 
@@ -16,6 +16,7 @@
  You should have received a copy of the GNU General Public License
  along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 function Recurrence(recurOptions, recurElements, prefix) {
 	prefix = prefix || '';
 	var e = {
@@ -27,7 +28,8 @@ function Recurrence(recurOptions, recurElements, prefix) {
 		beginDate: $('#' + prefix + 'formattedBeginDate'),
 		endDate: $('#' + prefix + 'formattedEndDate'),
 		beginTime: $('#' + prefix + 'BeginPeriod'),
-		endTime: $('#' + prefix + 'EndPeriod')
+		endTime: $('#' + prefix + 'EndPeriod'),
+        repeatOnWeeklyDiv: $('#' + prefix + 'repeatOnWeeklyDiv')
 	};
 
 	var options = recurOptions;
@@ -41,47 +43,56 @@ function Recurrence(recurOptions, recurElements, prefix) {
 		InitializeDateElements();
 		InitializeRepeatElements();
 		InitializeRepeatOptions();
+        ToggleRepeatOptions();
+	};
+
+	var show = function(element) {
+		element.removeClass('no-show').addClass('inline');
+	};
+
+	var hide = function(element) {
+		element.removeClass('inline').addClass('no-show');
 	};
 
 	var ChangeRepeatOptions = function () {
 		var repeatDropDown = elements.repeatOptions;
 		if (repeatDropDown.val() != 'none') {
-			$('#' + prefix + 'repeatUntilDiv').show();
+			show($('#' + prefix + 'repeatUntilDiv'));
 		}
 		else {
-			$('div[id!=' + prefix + 'repeatOptions]', elements.repeatDiv).hide();
+			hide($('.recur-toggle', elements.repeatDiv));
 		}
 
 		if (repeatDropDown.val() == 'daily') {
-			$('.weeks', elements.repeatDiv).hide();
-			$('.months', elements.repeatDiv).hide();
-			$('.years', elements.repeatDiv).hide();
+			hide($('.weeks', elements.repeatDiv));
+			hide($('.months', elements.repeatDiv));
+			hide($('.years', elements.repeatDiv));
 
-			$('.days', elements.repeatDiv).show();
+			show($('.days', elements.repeatDiv));
 		}
 
 		if (repeatDropDown.val() == 'weekly') {
-			$('.days', elements.repeatDiv).hide();
-			$('.months', elements.repeatDiv).hide();
-			$('.years', elements.repeatDiv).hide();
+			hide($('.days', elements.repeatDiv));
+			hide($('.months', elements.repeatDiv));
+			hide($('.years', elements.repeatDiv));
 
-			$('.weeks', elements.repeatDiv).show();
+			show($('.weeks', elements.repeatDiv));
 		}
 
 		if (repeatDropDown.val() == 'monthly') {
-			$('.days', elements.repeatDiv).hide();
-			$('.weeks', elements.repeatDiv).hide();
-			$('.years', elements.repeatDiv).hide();
+			hide($('.days', elements.repeatDiv));
+			hide($('.weeks', elements.repeatDiv));
+			hide($('.years', elements.repeatDiv));
 
-			$('.months', elements.repeatDiv).show();
+			show($('.months', elements.repeatDiv));
 		}
 
 		if (repeatDropDown.val() == 'yearly') {
-			$('.days', elements.repeatDiv).hide();
-			$('.weeks', elements.repeatDiv).hide();
-			$('.months', elements.repeatDiv).hide();
+			hide($('.days', elements.repeatDiv));
+			hide($('.weeks', elements.repeatDiv));
+			hide($('.months', elements.repeatDiv));
 
-			$('.years', elements.repeatDiv).show();
+			show($('.years', elements.repeatDiv));
 		}
 	};
 
@@ -125,13 +136,13 @@ function Recurrence(recurOptions, recurElements, prefix) {
 	function InitializeRepeatOptions() {
 		if (options.repeatType) {
 			elements.repeatOptions.val(options.repeatType);
-			elements.repeatInterval.val(options.repeatInterval);
+			elements.repeatInterval.val(options.repeatInterval == '' ? 1 : options.repeatInterval);
 			for (var i = 0; i < options.repeatWeekdays.length; i++) {
 				var id = '#' + prefix + 'repeatDay' + options.repeatWeekdays[i];
-				$(id).attr('checked', true);
+				$(id).closest('label').button('toggle');
 			}
 
-			$("#" + prefix + "repeatOnMonthlyDiv :radio[value='" + options.repeatMonthlyType + "']").attr('checked', true);
+			$("#" + prefix + "repeatOnMonthlyDiv :radio[value='" + options.repeatMonthlyType + "']").prop('checked', true);
 
 			ChangeRepeatOptions();
 		}
@@ -142,7 +153,7 @@ function Recurrence(recurOptions, recurElements, prefix) {
 			elements.repeatOptions.val(value);
 			elements.repeatOptions.trigger('change');
 			if (disabled) {
-				$('select, input', elements.repeatDiv).attr("disabled", 'disabled');
+				$('select, input', elements.repeatDiv).prop("disabled", 'disabled');
 			}
 			else {
 				$('select, input', elements.repeatDiv).removeAttr("disabled");
@@ -152,14 +163,22 @@ function Recurrence(recurOptions, recurElements, prefix) {
 		if (dateHelper.MoreThanOneDayBetweenBeginAndEnd(elements.beginDate, elements.beginTime, elements.endDate, elements.endTime)) {
 			elements.repeatOptions.data["current"] = elements.repeatOptions.val();
 			repeatToggled = true;
-			SetValue('none', true);
-		}
+            if (elements.repeatOptions.val() == 'daily')
+            {
+                elements.repeatOptions.val('none');
+                elements.repeatOptions.trigger('change');
+            }
+            elements.repeatOptions.find("option[value='daily']").prop("disabled","disabled");
+            elements.repeatOnWeeklyDiv.addClass('no-show');
+        }
 		else {
 			if (repeatToggled) {
 				SetValue(elements.repeatOptions.data["current"], false);
 				repeatToggled = false;
 			}
-		}
+            elements.repeatOptions.find("option[value='daily']").removeAttr("disabled");
+
+        }
 	};
 
 	var AdjustTerminationDate = function () {
@@ -167,7 +186,7 @@ function Recurrence(recurOptions, recurElements, prefix) {
 			return;
 		}
 
-		var newEndDate = new Date(elements.beginDate.val());
+		var newEndDate = new Date(elements.endDate.val());
 		var interval = parseInt(elements.repeatInterval.val());
 		var currentEnd = new Date(elements.repeatTermination.val());
 
@@ -177,7 +196,7 @@ function Recurrence(recurOptions, recurElements, prefix) {
 			newEndDate.setDate(newEndDate.getDate() + interval);
 		}
 		else if (repeatOption == 'weekly') {
-			newEndDate.setDate(newEndDate.getDate() + (7 * interval));
+			newEndDate.setDate(newEndDate.getDate() + (8 * interval));
 		}
 		else if (repeatOption == 'monthly') {
 			newEndDate.setMonth(newEndDate.getMonth() + interval);

@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -23,14 +23,16 @@ require_once(ROOT_DIR . 'lib/Application/Reservation/Persistence/namespace.php')
 
 interface IManageReservationsService
 {
-	/**
-	 * @param $pageNumber int
-	 * @param $pageSize int
-	 * @param $filter ReservationFilter
-	 * @param $user UserSession
-	 * @return PageableData|ReservationItemView[]
-	 */
-	public function LoadFiltered($pageNumber, $pageSize, $filter, $user);
+    /**
+     * @param $pageNumber int
+     * @param $pageSize int
+     * @param $sortField string|null
+     * @param $sortDirection string|null
+     * @param $filter ReservationFilter
+     * @param $user UserSession
+     * @return PageableData|ReservationItemView[]
+     */
+	public function LoadFiltered($pageNumber, $pageSize, $sortField, $sortDirection, $filter, $user);
 
 	/**
 	 * @param  $referenceNumber string
@@ -73,14 +75,14 @@ class ManageReservationsService implements IManageReservationsService
 
 	/**
 	 * @param IReservationViewRepository $reservationViewRepository
-	 * @param IReservationAuthorization $authorization
-	 * @param IReservationHandler $reservationHandler
-	 * @param IUpdateReservationPersistenceService $persistenceService
+	 * @param IReservationAuthorization|null $authorization
+	 * @param IReservationHandler|null $reservationHandler
+	 * @param IUpdateReservationPersistenceService|null $persistenceService
 	 */
 	public function __construct(IReservationViewRepository $reservationViewRepository,
 								$authorization = null,
-								$reservationHandler = null,
-								$persistenceService = null)
+								$reservationHandler= null,
+								$persistenceService= null)
 	{
 		$this->reservationViewRepository = $reservationViewRepository;
 		$this->reservationAuthorization = $authorization == null ?  new ReservationAuthorization(PluginManager::Instance()->LoadAuthorization()) : $authorization;
@@ -89,9 +91,9 @@ class ManageReservationsService implements IManageReservationsService
 
 	}
 
-	public function LoadFiltered($pageNumber, $pageSize, $filter, $user)
+	public function LoadFiltered($pageNumber, $pageSize, $sortField, $sortDirection, $filter, $user)
 	{
-		return $this->reservationViewRepository->GetList($pageNumber, $pageSize, null, null, $filter->GetFilter());
+		return $this->reservationViewRepository->GetList($pageNumber, $pageSize, $sortField, $sortDirection, $filter->GetFilter());
 	}
 
 	public function LoadByReferenceNumber($referenceNumber, $user)
@@ -168,4 +170,44 @@ class ManageReservationsUpdateAttributeResultCollector implements IReservationSa
 	{
 		$this->warnings = $warnings;
 	}
+
+	/**
+	 * @param array|string[] $messages
+	 */
+	public function SetRetryMessages($messages)
+	{
+		// no-op
+	}
+
+	/**
+	 * @param bool $canBeRetried
+	 */
+	public function SetCanBeRetried($canBeRetried)
+	{
+		// no-op
+	}
+
+	/**
+	 * @param ReservationRetryParameter[] $retryParameters
+	 */
+	public function SetRetryParameters($retryParameters)
+	{
+		// no-op
+	}
+
+	/**
+	 * @return ReservationRetryParameter[]
+	 */
+	public function GetRetryParameters()
+	{
+		// no-op
+	}
+
+    /**
+     * @param bool $canJoinWaitlist
+     */
+    public function SetCanJoinWaitList($canJoinWaitlist)
+    {
+        // no-op
+    }
 }

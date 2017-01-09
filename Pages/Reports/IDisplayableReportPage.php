@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -31,4 +31,3 @@ interface IDisplayableReportPage
 	public function ShowCsv();
 }
 
-?>

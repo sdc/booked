@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -22,4 +22,3 @@ require_once(ROOT_DIR . 'lib/Database/namespace.php');
 require_once(ROOT_DIR . 'lib/Database/MDB2/Mdb2CommandAdapter.php');
 require_once(ROOT_DIR . 'lib/Database/MDB2/Mdb2Reader.php');
 require_once(ROOT_DIR . 'lib/Database/MDB2/Mdb2Connection.php');
-?>

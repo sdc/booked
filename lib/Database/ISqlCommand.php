@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -34,5 +34,9 @@ interface ISqlCommand
 	 * @return string the underlying query to be executed
 	 */
 	public function GetQuery();
+
+	/**
+	 * @return bool
+	 */
+	public function ContainsGroupConcat();
 }
-?>

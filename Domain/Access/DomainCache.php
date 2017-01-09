@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -48,11 +48,17 @@ class DomainCache
 	/**
 	 * @param mixed $key
 	 * @param mixed $object
-	 * @return void
 	 */
 	public function Add($key, $object)
 	{
 		$this->_cache[$key] = $object;
 	}
+
+	/**
+	 * @param mixed $key
+	 */
+	public function Remove($key)
+	{
+		unset($this->_cache[$key]);
+	}
 }
-?>

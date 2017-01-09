@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2013-2014 Nick Korbel
+Copyright 2013-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -34,8 +34,7 @@ class UpdateUserRequest extends UserRequestBase
 		$request->organization = 'organization';
 		$request->position = 'position';
 		$request->customAttributes = array(new AttributeValueRequest(99, 'attribute value'));
+		$request->groups = array(1,2,4);
 		return $request;
 	}
 }
-
-?>

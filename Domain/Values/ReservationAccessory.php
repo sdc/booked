@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -52,5 +52,3 @@ class ReservationAccessory
         return sprintf("ReservationAccessory id:%d quantity reserved:%d", $this->AccessoryId, $this->QuantityReserved);
     }
 }
-
-?>

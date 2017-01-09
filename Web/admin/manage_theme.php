@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -23,4 +23,3 @@ require_once(ROOT_DIR . 'Pages/Admin/ManageThemePage.php');
 
 $page = new AdminPageDecorator(new ManageThemePage());
 $page->PageLoad();
-?>

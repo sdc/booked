@@ -1,5 +1,5 @@
 {*
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -24,7 +24,7 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 
 <div id="chartdiv" style="margin:auto;height:400px;width:80%"></div>
 
-<!--[if lt IE 9]>{jsfile src="js/jqplot/excanvas.min.js"}<![endif]-->
+<!--[if lt IE 9]>{jsfile src="js/jqplot/excanvas.js"}<![endif]-->
 {jsfile src="js/jqplot/jquery.jqplot.min.js"}
 {jsfile src="js/jqplot/plugins/jqplot.barRenderer.min.js"}
 {jsfile src="js/jqplot/plugins/jqplot.categoryAxisRenderer.min.js"}

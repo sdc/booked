@@ -1,43 +1,41 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
-Copyright 2012-2014 Alois Schloegl
-
-This file is part of Booked Scheduler.
-
-Booked Scheduler is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Booked Scheduler is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright 2011-2016 Nick Korbel
+ * Copyright 2012-2014 Alois Schloegl
+ *
+ * This file is part of Booked Scheduler.
+ *
+ * Booked Scheduler is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Booked Scheduler is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 require_once(ROOT_DIR . 'Pages/Page.php');
+require_once(ROOT_DIR . 'Pages/Authentication/ILoginBasePage.php');
 require_once(ROOT_DIR . 'lib/Application/Authentication/namespace.php');
 
-interface ILoginPage extends IPage
+interface ILoginPage extends IPage, ILoginBasePage
 {
 	/**
-	 * @abstract
 	 * @return string
 	 */
 	public function GetEmailAddress();
 
 	/**
-	 * @abstract
 	 * @return string
 	 */
 	public function GetPassword();
 
 	/**
-	 * @abstract
 	 * @return bool
 	 */
 	public function GetPersistLogin();
@@ -49,13 +47,11 @@ interface ILoginPage extends IPage
 	public function SetShowScheduleLink($value);
 
 	/**
-	 * @abstract
 	 * @return string
 	 */
 	public function GetSelectedLanguage();
 
 	/**
-	 * @abstract
 	 * @return string
 	 */
 	public function GetRequestedLanguage();
@@ -64,43 +60,42 @@ interface ILoginPage extends IPage
 
 	public function SetResumeUrl($value);
 
-	/**
-	 * @abstract
-	 * @return string
-	 */
-	public function GetResumeUrl();
-
 	public function SetShowLoginError();
 
 	/**
-	 * @abstract
 	 * @param $languageCode string
 	 */
 	public function SetSelectedLanguage($languageCode);
 
 	/**
-	 * @abstract
 	 * @param $shouldShow bool
 	 */
 	public function ShowUsernamePrompt($shouldShow);
 
 	/**
-	 * @abstract
 	 * @param $shouldShow bool
 	 */
 	public function ShowPasswordPrompt($shouldShow);
 
 	/**
-	 * @abstract
 	 * @param $shouldShow bool
 	 */
 	public function ShowPersistLoginPrompt($shouldShow);
 
 	/**
-	 * @abstract
 	 * @param $shouldShow bool
 	 */
 	public function ShowForgotPasswordPrompt($shouldShow);
+
+	/**
+	 * @param $url string
+	 */
+	public function SetRegistrationUrl($url);
+
+	/**
+	 * @param $url string
+	 */
+	public function SetPasswordResetUrl($url);
 }
 
 class LoginPage extends Page implements ILoginPage
@@ -117,6 +112,13 @@ class LoginPage extends Page implements ILoginPage
 		$this->Set('ResumeUrl', $resumeUrl);
 		$this->Set('ShowLoginError', false);
 		$this->Set('Languages', Resources::GetInstance()->AvailableLanguages);
+
+		$this->Set('AllowSocialLogin', Configuration::Instance()->GetSectionKey(ConfigSection::AUTHENTICATION, ConfigKeys::AUTHENTICATION_ALLOW_SOCIAL, new BooleanConverter()));
+		$scriptUrl = Configuration::Instance()->GetScriptUrl();
+		$parts = explode('://', $scriptUrl);
+		$this->Set('Protocol', $parts[0]);
+		$this->Set('ScriptUrlNoProtocol', $parts[1]);
+		$this->Set('GoogleState', strtr(base64_encode("resume=$scriptUrl/external-auth.php%3Ftype%3Dgoogle"), '+/=', '-_,'));
 	}
 
 	public function PageLoad()
@@ -137,7 +139,7 @@ class LoginPage extends Page implements ILoginPage
 
 	public function GetPersistLogin()
 	{
-		return $this->GetForm(FormKeys::PERSIST_LOGIN);
+		return $this->GetForm(FormKeys::PERSIST_LOGIN) == 'true';
 	}
 
 	public function GetShowRegisterLink()
@@ -247,6 +249,22 @@ class LoginPage extends Page implements ILoginPage
 	{
 		$this->Set('ShowScheduleLink', $shouldShow);
 	}
-}
 
-?>
+	public function SetPasswordResetUrl($url)
+	{
+		$this->Set('ForgotPasswordUrl', empty($url) ? Pages::FORGOT_PASSWORD : $url);
+		if (BookedStringHelper::StartsWith($url, 'http'))
+		{
+			$this->Set('ForgotPasswordUrlNew', "target='_new'");
+		}
+	}
+
+	public function SetRegistrationUrl($url)
+	{
+		$this->Set('RegisterUrl', empty($url) ? Pages::REGISTRATION : $url);
+		if (BookedStringHelper::StartsWith($url, 'http'))
+		{
+			$this->Set('RegisterUrlNew', "target='_new'");
+		}
+	}
+}

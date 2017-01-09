@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -16,21 +16,26 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 *}
-{include file='..\..\tpl\Email\emailheader.tpl'}
 
-	Reservation Details:
+
+	Detalhes da Reserva:
 	<br/>
 	<br/>
 
-	Starting: {formatdate date=$StartDate key=reservation_email}<br/>
-	Ending: {formatdate date=$EndDate key=reservation_email}<br/>
-	Resource: {$ResourceName}<br/>
-	Title: {$Title}<br/>
-	Description: {$Description|nl2br}<br/>
+	Inicio: {formatdate date=$StartDate key=reservation_email}<br/>
+	Fim: {formatdate date=$EndDate key=reservation_email}<br/>
+	Recurso: {$ResourceName}<br/>
+
+	{if $ResourceImage}
+		<div class="resource-image"><img src="{$ScriptUrl}/{$ResourceImage}"/></div>
+	{/if}
+
+	Título: {$Title}<br/>
+	Descrição: {$Description|nl2br}<br/>
 
 	{if count($RepeatDates) gt 0}
 		<br/>
-		The following dates have been removed:
+		As seguintes datas foram removidas:
 		<br/>
 	{/if}
 
@@ -38,6 +43,4 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 		{formatdate date=$date}<br/>
 	{/foreach}
 
-	<a href="{$ScriptUrl}">Log in to Booked Scheduler</a>
-
-{include file='..\..\tpl\Email\emailfooter.tpl'}
+	<a href="{$ScriptUrl}">Acessar o Booked Scheduler</a>

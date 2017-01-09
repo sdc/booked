@@ -1,17 +1,17 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
-This file is part of Booked SchedulerBooked SchedulereIt is free software: you can redistribute it and/or modify
+This file is part of Booked Scheduler is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
-(at your option) any later versBooked SchedulerduleIt is distributed in the hope that it will be useful,
+(at your option) any later version is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
+along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 require_once(ROOT_DIR . 'Domain/namespace.php');
@@ -23,33 +23,57 @@ class Registration implements IRegistration
 	/**
 	 * @var PasswordEncryption
 	 */
-	private $_passwordEncryption;
+	private $passwordEncryption;
 
 	/**
 	 * @var IUserRepository
 	 */
-	private $_userRepository;
+	private $userRepository;
 
-	public function __construct($passwordEncryption = null, $userRepository = null)
+	/**
+	 * @var IRegistrationNotificationStrategy
+	 */
+	private $notificationStrategy;
+
+	/**
+	 * @var IRegistrationPermissionStrategy
+	 */
+	private $permissionAssignmentStrategy;
+
+	public function __construct($passwordEncryption = null, $userRepository = null, $notificationStrategy = null, $permissionAssignmentStrategy = null)
 	{
-		$this->_passwordEncryption = $passwordEncryption;
-		$this->_userRepository = $userRepository;
+		$this->passwordEncryption = $passwordEncryption;
+		$this->userRepository = $userRepository;
+		$this->notificationStrategy = $notificationStrategy;
+		$this->permissionAssignmentStrategy = $permissionAssignmentStrategy;
 
 		if ($passwordEncryption == null)
 		{
-			$this->_passwordEncryption = new PasswordEncryption();
+			$this->passwordEncryption = new PasswordEncryption();
 		}
 
 		if ($userRepository == null)
 		{
-			$this->_userRepository = new UserRepository();
+			$this->userRepository = new UserRepository();
+		}
+
+		if ($notificationStrategy == null)
+		{
+			$this->notificationStrategy = new RegistrationNotificationStrategy();
+		}
+
+		if ($permissionAssignmentStrategy == null)
+		{
+			$this->permissionAssignmentStrategy = new RegistrationPermissionStrategy();
 		}
 	}
 
 	public function Register($username, $email, $firstName, $lastName, $password, $timezone, $language,
-							 $homepageId, $additionalFields = array(), $attributeValues = array())
+							 $homepageId, $additionalFields = array(), $attributeValues = array(), $groups = null)
 	{
-		$encryptedPassword = $this->_passwordEncryption->EncryptPassword($password);
+		$homepageId = empty($homepageId) ? Pages::DEFAULT_HOMEPAGE_ID : $homepageId;
+		$encryptedPassword = $this->passwordEncryption->EncryptPassword($password);
+		$timezone = empty($timezone) ? Configuration::Instance()->GetKey(ConfigKeys::DEFAULT_TIMEZONE) : $timezone;
 
 		$attributes = new UserAttribute($additionalFields);
 
@@ -64,6 +88,11 @@ class Registration implements IRegistration
 		$user->ChangeAttributes($attributes->Get(UserAttribute::Phone), $attributes->Get(UserAttribute::Organization), $attributes->Get(UserAttribute::Position));
 		$user->ChangeCustomAttributes($attributeValues);
 
+		if ($groups != null)
+		{
+			$user->WithGroups($groups);
+		}
+
 		if (Configuration::Instance()->GetKey(ConfigKeys::REGISTRATION_AUTO_SUBSCRIBE_EMAIL, new BooleanConverter()))
 		{
 			foreach (ReservationEvent::AllEvents() as $event)
@@ -72,8 +101,13 @@ class Registration implements IRegistration
 			}
 		}
 
-		$userId = $this->_userRepository->Add($user);
-		$this->AutoAssignPermissions($userId);
+		$userId = $this->userRepository->Add($user);
+		if ($user->Id() != $userId)
+		{
+			$user->WithId($userId);
+		}
+		$this->permissionAssignmentStrategy->AddAccount($user);
+		$this->notificationStrategy->NotifyAccountCreated($user, $password);
 
 		return $user;
 	}
@@ -88,7 +122,7 @@ class Registration implements IRegistration
 
 	public function UserExists($loginName, $emailAddress)
 	{
-		$userId = $this->_userRepository->UserExists($emailAddress, $loginName);
+		$userId = $this->userRepository->UserExists($emailAddress, $loginName);
 
 		return !empty($userId);
 	}
@@ -102,30 +136,41 @@ class Registration implements IRegistration
 				return;
 			}
 
-			$encryptedPassword = $this->_passwordEncryption->EncryptPassword($user->Password());
+			$encryptedPassword = $this->passwordEncryption->EncryptPassword($user->Password());
 			$command = new UpdateUserFromLdapCommand($user->UserName(), $user->Email(), $user->FirstName(), $user->LastName(), $encryptedPassword->EncryptedPassword(), $encryptedPassword->Salt(), $user->Phone(), $user->Organization(), $user->Title());
-
 			ServiceLocator::GetDatabase()->Execute($command);
+
+			if ($user->GetGroups() != null)
+			{
+				$updatedUser = $this->userRepository->LoadByUsername($user->Username());
+				$updatedUser->ChangeGroups($user->GetGroups());
+				$this->userRepository->Update($updatedUser);
+			}
 		}
 		else
 		{
+			$defaultHomePageId = Configuration::Instance()->GetKey(ConfigKeys::DEFAULT_HOMEPAGE, new IntConverter());
 			$additionalFields = array('phone' => $user->Phone(), 'organization' => $user->Organization(), 'position' => $user->Title());
 			$this->Register($user->UserName(), $user->Email(), $user->FirstName(), $user->LastName(), $user->Password(),
 							$user->TimezoneName(),
 							$user->LanguageCode(),
-							Pages::DEFAULT_HOMEPAGE_ID,
-							$additionalFields);
+							empty($defaultHomePageId) ? Pages::DEFAULT_HOMEPAGE_ID : $defaultHomePageId,
+							$additionalFields,
+							array(),
+							$user->GetGroups());
 		}
-	}
-
-	private function AutoAssignPermissions($userId)
-	{
-		$autoAssignCommand = new AutoAssignPermissionsCommand($userId);
-		ServiceLocator::GetDatabase()->Execute($autoAssignCommand);
 	}
 }
 
 class AdminRegistration extends Registration
+{
+	protected function CreatePending()
+	{
+		return false;
+	}
+}
+
+class GuestRegistration extends Registration
 {
 	protected function CreatePending()
 	{

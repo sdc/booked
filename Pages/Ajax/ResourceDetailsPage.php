@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -58,6 +58,10 @@ class ResourceDetailsPage extends Page implements IResourceDetailsPage
         $this->Set('minimumNotice', $resource->GetMinNotice());
         $this->Set('requiresApproval', $resource->GetRequiresApproval());
         $this->Set('autoAssign', $resource->GetAutoAssign());
+        $this->Set('color', $resource->GetColor());
+        $this->Set('textColor', $resource->GetTextColor());
+        $this->Set('autoReleaseMinutes', $resource->GetAutoReleaseMinutes());
+        $this->Set('isCheckInEnabled', $resource->IsCheckInEnabled());
 
         if ($resource->HasImage())
         {
@@ -158,4 +162,3 @@ class ResourceDetailsPresenter
     }
 }
 
-?>

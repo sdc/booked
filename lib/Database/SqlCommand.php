@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -79,13 +79,26 @@ class SqlCommand implements ISqlCommand
 	{
 		return $this->ToString();
 	}
+
+	public function ContainsGroupConcat()
+	{
+		return false;
+	}
 }
 
 class AdHocCommand extends SqlCommand
 {
-	public function __construct($rawSql)
+	private $containsGroupConcat = false;
+
+	public function __construct($rawSql, $containsGroupConcat = false)
 	{
 		parent::__construct($rawSql);
+		$this->containsGroupConcat = $containsGroupConcat;
+	}
+
+	public function ContainsGroupConcat()
+	{
+		return $this->containsGroupConcat;
 	}
 }
 
@@ -107,8 +120,33 @@ class CountCommand extends SqlCommand
 	public function GetQuery()
 	{
 		return 'SELECT COUNT(*) as total FROM (' . $this->baseCommand->GetQuery() . ') results';
-//		return preg_replace('/SELECT.+FROM/imsU', 'SELECT COUNT(*) as total FROM', $this->baseCommand->GetQuery(), 1);
 	}
+}
+
+class SortCommand extends SqlCommand
+{
+    private $query;
+
+    public function __construct(SqlCommand $baseCommand, $sortField, $sortDirection)
+    {
+        parent::__construct();
+
+        if ($sortDirection != 'desc')
+        {
+            $sortDirection = 'asc';
+        }
+
+        $this->Parameters = $baseCommand->Parameters;
+        $this->AddParameter(new ParameterRaw('@sort_params', "$sortField $sortDirection"));
+
+        $query = $baseCommand->GetQuery();
+        $this->query = preg_replace('/ORDER BY\\s+[a-zA-Z0-9_,\\s\\-\\.]+$/', 'ORDER BY @sort_params', $query, 1);
+    }
+
+    public function GetQuery()
+    {
+       return $this->query;
+    }
 }
 
 class FilterCommand extends SqlCommand

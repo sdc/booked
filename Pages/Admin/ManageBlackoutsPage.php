@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2011-2014 Nick Korbel
+ * Copyright 2011-2016 Nick Korbel
  *
  * This file is part of Booked Scheduler.
  *
@@ -285,6 +285,7 @@ class ManageBlackoutsPage extends ActionPage implements IManageBlackoutsPage
 		$this->Set('Timezone', $userTimezone);
 		$this->Set('AddStartDate', Date::Now()->ToTimezone($userTimezone));
 		$this->Set('AddEndDate', Date::Now()->ToTimezone($userTimezone));
+		$this->Set('TimeFormat', Resources::GetInstance()->GetDateFormat('general_time_js'));
 		$this->presenter->PageLoad($userTimezone);
 	}
 
@@ -700,4 +701,3 @@ class ManageBlackoutsPage extends ActionPage implements IManageBlackoutsPage
 	}
 }
 
-?>

@@ -1,5 +1,4 @@
-function AttributeManagement(opts)
-{
+function AttributeManagement(opts) {
 	var options = opts;
 
 	var elements = {
@@ -9,9 +8,11 @@ function AttributeManagement(opts)
 		attributeCategory: $('#attributeCategory'),
 		addCategory: $('#addCategory'),
 		attributeType: $('#attributeType'),
-		appliesTo: $('.appliesTo'),
+		appliesTo: $('#appliesTo'),
+		editAppliesTo: $('#editAppliesTo'),
 		appliesToId: $('.appliesToId'),
 		entityChoices: $('#entityChoices'),
+		editEntityChoices: $('#editEntityChoices'),
 
 		editName: $('#editName'),
 		editUnlimited: $('#chkUnlimitedEdit'),
@@ -23,100 +24,119 @@ function AttributeManagement(opts)
 
 		addForm: $('#addAttributeForm'),
 		form: $('#editAttributeForm'),
-		deleteForm: $('#deleteForm')
+		deleteForm: $('#deleteForm'),
+
+		limitScope: $('.limitScope'),
+		attributeSecondary: $('.attributeSecondary'),
+		secondaryPrompt: $('.secondaryPrompt'),
+		secondaryAttributeCategory: $('.secondaryAttributeCategory ')
 	};
 
-	function RefreshAttributeList()
-	{
+	function RefreshAttributeList() {
 		var categoryId = elements.attributeCategory.val();
 
 		$.ajax({
-			url: opts.changeCategoryUrl + categoryId,
-			cache: false,
-			beforeSend: function ()
-			{
-				$('#indicator').show().insertBefore(elements.attributeList);
+			url: opts.changeCategoryUrl + categoryId, cache: false, beforeSend: function () {
+				$('#indicator').removeClass('no-show').insertBefore(elements.attributeList);
 				$(elements.attributeList).html('');
 			}
-		}).done(function (data)
-				{
-					$('#indicator').hide();
-					$(elements.attributeList).html(data)
-				});
+		}).done(function (data) {
+			$('#indicator').addClass('no-show');
+			$(elements.attributeList).html(data);
+		});
 	}
 
-	AttributeManagement.prototype.init = function ()
-	{
-		ConfigureAdminDialog(elements.addDialog);
-		ConfigureAdminDialog(elements.editDialog);
-		ConfigureAdminDialog(elements.deleteDialog);
+	var currentAttributeEntities = {entityIds: [], secondaryEntityIds: []};
+	var selectedEntityChoices = $('#entityChoices, #editEntityChoices');
+	var activeAppliesTo;
+	var updateEntityCallback = function () {
+	};
 
-		$(".save").click(function ()
-		{
+	AttributeManagement.prototype.init = function () {
+
+		$(".save").click(function () {
 			$(this).closest('form').submit();
 		});
 
-		$(".cancel").click(function ()
-		{
+		$(".cancel").click(function () {
 			$(this).closest('.dialog').dialog("close");
 		});
 
 		RefreshAttributeList();
 
-		elements.attributeCategory.change(function ()
-		{
+		elements.attributeCategory.change(function () {
 			RefreshAttributeList();
 		});
 
-		elements.attributeList.delegate('a.update', 'click', function (e)
-		{
+		elements.attributeList.delegate('a.update', 'click', function (e) {
 			e.preventDefault();
 			e.stopPropagation();
 		});
 
-		$('#addAttributeButton').click(function (e)
-		{
+		elements.attributeList.delegate('.delete', 'click', function (e) {
 			e.preventDefault();
-			$('span.error', elements.addDialog).remove();
-			elements.addCategory.val(elements.attributeCategory.val());
-			toggleAppliesTo();
-			elements.appliesTo.text(options.allText);
-			elements.appliesToId.val('');
-			elements.addDialog.dialog('open');
-		});
-
-		elements.attributeType.change(function ()
-		{
-			showRelevantAttributeOptions($(this).val(), elements.addDialog);
-		});
-
-		elements.attributeList.delegate('.editable', 'click', function (e)
-		{
-			e.preventDefault();
-			var attributeId = $(this).attr('attributeId');
-			var dataList = elements.attributeList.data('list');
-			var selectedAttribute = dataList[attributeId];
-
-			showEditDialog(selectedAttribute);
-		});
-
-		elements.attributeList.delegate('.delete', 'click', function (e)
-		{
-			e.preventDefault();
-			var attributeId = $(this).attr('attributeId');
+			var attributeId = $(this).closest('tr').attr('attributeId');
 
 			showDeleteDialog(attributeId);
 		});
 
-		elements.appliesTo.click(function (e)
-		{
+		$('#addAttributeButton').click(function (e) {
 			e.preventDefault();
-			showEntities($(this));
+			selectedEntityChoices = elements.entityChoices;
+			currentAttributeEntities.entityIds = [];
+			currentAttributeEntities.secondaryEntityIds = [];
+			$('span.error', elements.addDialog).remove();
+			elements.addCategory.val(elements.attributeCategory.val());
+			elements.limitScope.prop('checked', false);
+			showRelevantCategoryOptions();
+			elements.appliesTo.text(options.allText);
+			elements.secondaryPrompt.text(options.allText);
+			elements.appliesToId.val('');
+			elements.addDialog.modal('show');
 		});
 
-		$(document).mouseup(function (e)
-		{
-			var container = elements.entityChoices;
+		elements.attributeType.change(function () {
+			showRelevantAttributeOptions($(this).val(), elements.addDialog);
+		});
+
+		elements.attributeList.delegate('.edit', 'click', function (e) {
+			e.preventDefault();
+			e.stopPropagation();
+			selectedEntityChoices = elements.editEntityChoices;
+			var attributeId = $(this).closest('tr').attr('attributeId');
+			var dataList = elements.attributeList.data('list');
+			var selectedAttribute = dataList[attributeId];
+
+			currentAttributeEntities.entityIds = selectedAttribute.entityIds;
+			currentAttributeEntities.secondaryEntityIds = selectedAttribute.secondaryEntityIds;
+
+			showEditDialog(selectedAttribute);
+		});
+
+		$('#appliesTo, #editAppliesTo').click(function (e) {
+			e.preventDefault();
+			activeAppliesTo = $(this);
+
+			showEntities($(this), elements.attributeCategory.val(), currentAttributeEntities.entityIds, 'ATTRIBUTE_ENTITY');
+
+			updateEntityCallback = function (selectedIds) {
+				currentAttributeEntities.entityIds = selectedIds;
+			};
+		});
+
+		elements.secondaryPrompt.click(function (e) {
+			e.preventDefault();
+			activeAppliesTo = $(this);
+
+			showEntities($(this), $(this).closest('.textBoxOptions').find('.secondaryAttributeCategory').val(), currentAttributeEntities.secondaryEntityIds, 'ATTRIBUTE_SECONDARY_ENTITY_IDS');
+
+			updateEntityCallback = function (selectedIds) {
+				currentAttributeEntities.secondaryEntityIds = selectedIds;
+			};
+		});
+
+		$(document).mouseup(function (e) {
+			var container = selectedEntityChoices;
 
 			if (!container.is(e.target) && container.has(e.target).length === 0)
 			{
@@ -124,143 +144,212 @@ function AttributeManagement(opts)
 			}
 		});
 
-		elements.entityChoices.delegate('a', 'click', function (e)
-		{
-			e.preventDefault();
-			elements.entityChoices.hide();
-			elements.appliesToId.val($(this).attr('entity-id'));
-			elements.appliesTo.text($(this).text());
+		selectedEntityChoices.delegate('a.all', 'click', function (e) {
+			onEntityChoiceClick(e);
 		});
 
-		ConfigureAdminForm(elements.addForm, defaultSubmitCallback, addAttributeHandler);
-		ConfigureAdminForm(elements.form, defaultSubmitCallback, editAttributeHandler);
-		ConfigureAdminForm(elements.deleteForm, defaultSubmitCallback, deleteAttributeHandler);
+		selectedEntityChoices.delegate('a.ok', 'click', function (e) {
+			e.preventDefault();
+			selectedEntityChoices.hide();
+			handleEntitiesSelected(activeAppliesTo);
+		});
 
+		elements.limitScope.change(function (e) {
+			elements.attributeSecondary.addClass('no-show');
+			if (elements.limitScope.is(':checked'))
+			{
+				elements.attributeSecondary.removeClass('no-show');
+			}
+		});
+
+		elements.secondaryAttributeCategory.change(function (e) {
+			currentAttributeEntities.entityIds = [];
+			currentAttributeEntities.secondaryEntityIds = [];
+			elements.secondaryPrompt.text(opts.allText);
+		});
+
+		ConfigureAsyncForm(elements.addForm, defaultSubmitCallback, addAttributeHandler);
+		ConfigureAsyncForm(elements.form, defaultSubmitCallback, editAttributeHandler);
+		ConfigureAsyncForm(elements.deleteForm, defaultSubmitCallback, deleteAttributeHandler);
 	};
 
-	var showRelevantAttributeOptions = function (selectedType, optionsDiv)
-	{
-		$('.textBoxOptions', optionsDiv).find('div').show();
+	function handleEntitiesSelected(element) {
+		element.empty();
+		var entities = selectedEntityChoices.find(':checked');
+		// element.append(entities);
+		if (entities.length > 0)
+		{
+			var text = _.map(entities, function (e) {
+				return $(e).attr('data-text');
+			}).join(', ');
+
+			element.text(text);
+			// elements.secondaryPrompt.text(text);
+
+			updateEntityCallback(_.map(entities, function (e) {
+				return $(e).val();
+			}));
+		}
+		else
+		{
+			element.text(opts.allText);
+		}
+	}
+
+	var onEntityChoiceClick = function (e) {
+		e.preventDefault();
+		selectedEntityChoices.hide();
+		elements.appliesToId.empty();
+		selectedEntityChoices.find('input:checkbox').removeAttr('checked');
+		elements.appliesTo.text(opts.allText);
+	};
+
+	var showRelevantAttributeOptions = function (selectedType, optionsDiv) {
+		$('.textBoxOptions', optionsDiv).find('div').not('.attributeUnique, .attributeSecondary').show();
 
 		if (selectedType != opts.selectList)
 		{
 			$('.attributePossibleValues').hide();
 		}
 
-		if (selectedType == opts.selectList)
+		if (selectedType == opts.selectList || selectedType == opts.date)
 		{
 			$('.attributeValidationExpression').hide();
 		}
 
 		if (selectedType == opts.checkbox)
 		{
-			$('div', ".textBoxOptions").hide();
-			$('.attributeLabel').show();
-			$('.attributeSortOrder').show();
+			$('.attributePossibleValues, .attributeValidationExpression').hide();
 		}
+
+		showRelevantCategoryOptions();
 	};
 
-	var addAttributeHandler = function ()
-	{
+	var addAttributeHandler = function () {
 		elements.addForm.resetForm();
-		elements.addDialog.dialog('close');
+		elements.addDialog.modal('hide');
 		RefreshAttributeList();
 	};
 
-	var editAttributeHandler = function ()
-	{
+	var editAttributeHandler = function () {
 		elements.form.resetForm();
-		elements.editDialog.dialog('close');
+		elements.editDialog.modal('hide');
 		RefreshAttributeList();
 	};
 
-	var deleteAttributeHandler = function ()
-	{
-		elements.deleteDialog.dialog('close');
+	var deleteAttributeHandler = function () {
+		elements.deleteDialog.modal('hide');
 		RefreshAttributeList();
 	};
 
-	var showEditDialog = function (selectedAttribute)
-	{
-		toggleAppliesTo();
+	var showEditDialog = function (selectedAttribute) {
 		showRelevantAttributeOptions(selectedAttribute.type, elements.editDialog);
+		showRelevantCategoryOptions();
 
 		$('.editAttributeType', elements.editDialog).hide();
 		$('#editType' + selectedAttribute.type).show();
 
-		$('#editAttributeLabel').val(selectedAttribute.label);
-		$('#editAttributeRequired').removeAttr('checked');
-		if (selectedAttribute.required)
-		{
-			$('#editAttributeRequired').attr('checked', 'checked');
-		}
-		$('#editAttributeUnique').removeAttr('checked');
-		if (selectedAttribute.unique)
-		{
-			$('#editAttributeUnique').attr('checked', 'checked');
-		}
+		$('#editAttributeLabel').val(HtmlDecode(selectedAttribute.label));
+		$('#editAttributeRequired').prop('checked', selectedAttribute.required);
+		$('#editAttributeUnique').prop('checked', selectedAttribute.unique);
+		$('#editAttributeAdminOnly').prop('checked', selectedAttribute.adminOnly);
+
 		$('#editAttributeRegex').val(selectedAttribute.regex);
 		$('#editAttributePossibleValues').val(selectedAttribute.possibleValues);
 		$('#editAttributeSortOrder').val(selectedAttribute.sortOrder);
 		$('#editAttributeEntityId').val(selectedAttribute.entityId);
 
-		if (selectedAttribute.entityDescription == '')
+		selectedEntityChoices.empty();
+		if (selectedAttribute.entityDescriptions.length == 0)
 		{
 			elements.appliesTo.text(options.allText);
 			elements.appliesToId.val('');
 		}
 		else
 		{
-			elements.appliesTo.text(selectedAttribute.entityDescription);
-			elements.appliesToId.val(selectedAttribute.entityId);
+			if (elements.attributeCategory.val() == options.categories.reservation)
+			{
+				$.each(selectedAttribute.secondaryEntityIds, function (i, id) {
+					var name = selectedAttribute.secondaryEntityDescriptions[i].replace(/"/g, '&quot;')
+					selectedEntityChoices.append($('<input type="checkbox" name="ATTRIBUTE_SECONDARY_ENTITY_IDS[]" value="' + id + '" checked="checked" data-text="' + name + '"/>'));
+				});
+			}
+			else
+			{
+				$.each(selectedAttribute.entityIds, function (i, id) {
+					var name = selectedAttribute.entityDescriptions[i].replace(/"/g, '&quot;')
+					selectedEntityChoices.append($('<input type="checkbox" name="ATTRIBUTE_ENTITY[]" value="' + id + '" checked="checked" data-text="' + name + '"/>'));
+				});
+			}
+			handleEntitiesSelected(elements.editAppliesTo);
+			elements.appliesToId.hide();
 		}
+
+		var limitScope = $('#editAttributeLimitScope');
+		limitScope.prop('checked', false);
+
+		$('#editAttributeSecondaryEntityId').val('');
+		elements.secondaryPrompt.text(options.allText);
+		if (selectedAttribute.secondaryEntityIds.length > 0)
+		{
+			limitScope.prop('checked', true);
+			limitScope.trigger('change');
+			$('#editAttributeSecondaryCategory').val(selectedAttribute.secondaryCategory);
+			$('#editAttributeSecondaryEntityId').val(selectedAttribute.secondaryEntityIds.join());
+			elements.secondaryPrompt.text(selectedAttribute.secondaryEntityDescriptions.join(', '));
+		}
+
+		$('#editAttributePrivate').prop('checked', selectedAttribute.isPrivate);
 
 		setActiveId(selectedAttribute.id);
 
-		elements.editDialog.dialog('open');
+		elements.editDialog.modal('show');
 	};
 
-	var showDeleteDialog = function (selectedAttributeId)
-	{
+	var showDeleteDialog = function (selectedAttributeId) {
 		setActiveId(selectedAttributeId);
-		elements.deleteDialog.dialog('open');
+		elements.deleteDialog.modal('show');
 	};
 
-	var defaultSubmitCallback = function (form)
-	{
+	var defaultSubmitCallback = function (form) {
 		return options.submitUrl + "?aid=" + getActiveId() + "&action=" + form.attr('ajaxAction');
 	};
 
-	function setActiveId(id)
-	{
+	function setActiveId(id) {
 		elements.activeId.val(id);
 	}
 
-	function getActiveId()
-	{
+	function getActiveId() {
 		return elements.activeId.val();
 	}
 
-	var toggleAppliesTo = function ()
-	{
+	var showRelevantCategoryOptions = function () {
 		if (elements.attributeCategory.val() == options.categories.reservation)
 		{
 			$('.attributeUnique').hide();
+			$('.attributeAdminOnly').show();
+			$('.secondaryEntities, .attributeSecondary').addClass('no-show');
+			$('.secondaryEntities').removeClass('no-show');
+			$('.attributeIsPrivate').show();
 		}
 		else
 		{
 			$('.attributeUnique').show();
+			//$('.attributeAdminOnly').hide();
+			$('.secondaryEntities, .attributeSecondary').addClass('no-show');
+			$('.attributeIsPrivate').hide();
 		}
 	};
 
-	var showEntities = function (element)
-	{
-		elements.entityChoices.empty();
-		elements.entityChoices.css({left: element.offset().left, top: element.offset().top + element.height()});
-		elements.entityChoices.show();
+	var showEntities = function (element, categoryId, selectedIds, formName) {
+		//var selectedIds = [];
+		elements.appliesToId.find('input:checkbox').removeAttr('checked');
 
-		$('<div class="ajax-indicator">&nbsp;</div>"').appendTo(elements.entityChoices).show();
-		var categoryId = elements.attributeCategory.val();
+		selectedEntityChoices.empty();
+		selectedEntityChoices.css({left: element.position().left, top: element.position().top + element.height()});
+		selectedEntityChoices.show();
+
+		$('<div class="ajax-indicator">&nbsp;</div>').appendTo(selectedEntityChoices).show();
 
 		var data = [];
 
@@ -279,62 +368,54 @@ function AttributeManagement(opts)
 			data = getResourceTypes();
 		}
 
-		var items = ['<li><a href="#" entity-id="">' + options.allText + '</a></li>'];
-		$.each(data, function (index, item)
-		{
-			items.push('<li><a href="#" entity-id="' + item.Id + '">' + item.Name + '</a></li>');
+		var items = ['<li><a href="#" class="all">' + options.allText + '</a> <a href="#" class="ok">OK</a></li>'];
+		$.each(data, function (index, item) {
+			var checked = '';
+			if (selectedIds.indexOf(item.Id) !== -1)
+			{
+				checked = ' checked="checked" ';
+			}
+			items.push('<li><label><input type="checkbox" name="' + formName + '[]" value="' + item.Id + '"' + checked + ' data-text="' + item.Name.replace(/"/g, '&quot;') + '"/>' + item.Name + '</label></li>');
 		});
 
-		elements.entityChoices.empty();
+		selectedEntityChoices.empty();
 
-		$('<ul/>', {'class': '', html: items.join('')}).appendTo(elements.entityChoices);
+		$('<div/>', {'class': '', html: items.join('')}).appendTo(selectedEntityChoices);
 	};
 
-	var getResources = function ()
-	{
+	var getResources = function () {
 		var items = [];
 		$.ajax({
-					url: options.resourcesUrl,
-					async: false
-				}
-		).done(function (data)
-				{
-					items = data;
-				});
+			url: options.resourcesUrl, async: false
+		}).done(function (data) {
+			items = data;
+		});
 
 		return items;
 	};
 
-	var getUsers = function ()
-	{
+	var getUsers = function () {
 		var items = [];
 		$.ajax({
-					url: options.usersUrl,
-					async: false
-				}
-		).done(function (data)
-				{
-					items = $.map(data, function(item, index) {
-						return {Id : item.UserId, Name : item.FullName};
-					});
-				});
+			url: options.usersUrl, async: false
+		}).done(function (data) {
+			items = $.map(data, function (item, index) {
+				return {Id: item.UserId, Name: item.FullName};
+			});
+		});
 
 		return items;
 	};
 
-	var getResourceTypes = function ()
-	{
+	var getResourceTypes = function () {
 		var items = [];
 		$.ajax({
-					url: options.resourceTypesUrl,
-					async: false
-				}
-		).done(function (data)
-				{
-					items = $.map(data, function(item, index) {
-						return {Id : item.Id, Name : item.Name};
-					});
-				});
+			url: options.resourceTypesUrl, async: false
+		}).done(function (data) {
+			items = $.map(data, function (item, index) {
+				return {Id: item.Id, Name: item.Name};
+			});
+		});
 
 		return items;
 	}

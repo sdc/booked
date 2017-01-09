@@ -1,17 +1,17 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
-This file is part of Booked SchedulerBooked SchedulereIt is free software: you can redistribute it and/or modify
+This file is part of Booked Scheduler is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
-(at your option) any later versBooked SchedulerduleIt is distributed in the hope that it will be useful,
+(at your option) any later version is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
+along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 require_once(ROOT_DIR . 'Domain/Access/namespace.php');
@@ -20,15 +20,17 @@ require_once(ROOT_DIR . 'lib/Application/Reservation/BlackoutFilter.php');
 
 interface IManageBlackoutsService
 {
-	/**
-	 * @abstract
-	 * @param $pageNumber int
-	 * @param $pageSize int
-	 * @param $filter BlackoutFilter
-	 * @param $user UserSession
-	 * @return PageableData
-	 */
-	public function LoadFiltered($pageNumber, $pageSize, $filter, $user);
+    /**
+     * @abstract
+     * @param $pageNumber int
+     * @param $pageSize int
+     * @param $sortField string
+     * @param $sortDirection string
+     * @param $filter BlackoutFilter
+     * @param $user UserSession
+     * @return PageableData
+     */
+	public function LoadFiltered($pageNumber, $pageSize, $sortField, $sortDirection, $filter, $user);
 
 	/**
 	 * @param DateRange $blackoutDate
@@ -90,14 +92,7 @@ class ManageBlackoutsService implements IManageBlackoutsService
 		$this->userRepository = $userRepository;
 	}
 
-	/**
-	 * @param int $pageNumber
-	 * @param int $pageSize
-	 * @param BlackoutFilter $filter
-	 * @param UserSession $user
-	 * @return BlackoutItemView[]|PageableData
-	 */
-	public function LoadFiltered($pageNumber, $pageSize, $filter, $user)
+	public function LoadFiltered($pageNumber, $pageSize, $sortField, $sortDirection, $filter, $user)
 	{
 		$blackoutFilter = $filter->GetFilter();
 		if (!$user->IsAdmin)
@@ -113,7 +108,7 @@ class ManageBlackoutsService implements IManageBlackoutsService
 			$blackoutFilter->_And($adminFilter);
 		}
 
-		return $this->reservationViewRepository->GetBlackoutList($pageNumber, $pageSize, null, null, $blackoutFilter);
+		return $this->reservationViewRepository->GetBlackoutList($pageNumber, $pageSize, $sortField, $sortDirection, $blackoutFilter);
 	}
 
 	public function Add(DateRange $blackoutDate, $resourceIds, $title, IReservationConflictResolution $reservationConflictResolution, IRepeatOptions $repeatOptions)
@@ -160,16 +155,15 @@ class ManageBlackoutsService implements IManageBlackoutsService
 	{
 		$conflictingReservations = array();
 
-		$blackouts = $blackoutSeries->AllBlackouts();
-		foreach ($blackouts as $blackout)
+		while ($blackout = $blackoutSeries->NextBlackout())
 		{
-			$existingReservations = $this->reservationViewRepository->GetReservationList($blackout->StartDate(), $blackout->EndDate());
+			$existingReservations = $this->reservationViewRepository->GetReservations($blackout->StartDate(), $blackout->EndDate());
 
 			foreach ($existingReservations as $existingReservation)
 			{
 				if ($blackoutSeries->ContainsResource($existingReservation->ResourceId) && $blackout->Date()->Overlaps($existingReservation->Date))
 				{
-					if (!$reservationConflictResolution->Handle($existingReservation))
+					if (!$reservationConflictResolution->Handle($existingReservation, $blackout))
 					{
 						$conflictingReservations[] = $existingReservation;
 					}

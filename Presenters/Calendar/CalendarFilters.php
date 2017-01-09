@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2014 Nick Korbel
+Copyright 2014-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -29,13 +29,21 @@ class CalendarFilters
 	private $filters = array();
 
 	/**
+	 * @var ResourceGroupTree
+	 */
+	private $resourceGroupTree;
+
+	/**
 	 * @param array|Schedule[] $schedules
 	 * @param array|ResourceDto[] $resources
 	 * @param int $selectedScheduleId
 	 * @param int $selectedResourceId
+	 * @param ResourceGroupTree $resourceGroupTree
 	 */
-	public function __construct($schedules, $resources, $selectedScheduleId, $selectedResourceId)
+	public function __construct($schedules, $resources, $selectedScheduleId, $selectedResourceId, ResourceGroupTree $resourceGroupTree)
 	{
+		$this->resourceGroupTree = $resourceGroupTree;
+        
 		if (!empty($resources))
 		{
 			$this->filters[] = new CalendarFilter(self::FilterSchedule, null, Resources::GetInstance()->GetString("AllReservations"), (empty($selectedResourceId) && empty($selectedScheduleId)));
@@ -75,6 +83,14 @@ class CalendarFilters
 	public function GetFilters()
 	{
 		return $this->filters;
+	}
+
+	/**
+	 * @return ResourceGroupTree
+	 */
+	public function GetResourceGroupTree()
+	{
+		return $this->resourceGroupTree;
 	}
 
 	/**

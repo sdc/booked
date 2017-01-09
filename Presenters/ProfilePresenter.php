@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -81,11 +81,12 @@ class ProfilePresenter extends ActionPresenter
 		$this->page->SetPosition($user->GetAttribute(UserAttribute::Position));
 
 		$userId = $userSession->UserId;
-		$attributes = $this->attributeService->GetAttributes(CustomAttributeCategory::USER, $userId);
-		$this->page->SetAttributes($attributes->GetAttributes($userId));
+
+		$this->page->SetAttributes($this->GetAttributes($userId));
 
 		$this->PopulateTimezones();
 		$this->PopulateHomepages();
+		$this->page->SetAllowedActions(PluginManager::Instance()->LoadAuthentication());
 	}
 
 	public function UpdateProfile()
@@ -189,6 +190,23 @@ class ProfilePresenter extends ActionPresenter
 
 		$this->page->SetHomepages($homepageValues, $homepageOutput);
 	}
+
+    private function GetAttributes($userId)
+    {
+        $allAttributes = array();
+
+        $attributes = $this->attributeService->GetAttributes(CustomAttributeCategory::USER, $userId);
+        $asList = $attributes->GetAttributes($userId);
+
+        foreach ($asList as $a)
+        {
+            if (!$a->AdminOnly())
+            {
+                $allAttributes[] = $a;
+            }
+        }
+
+        return $allAttributes;
+    }
 }
 
-?>

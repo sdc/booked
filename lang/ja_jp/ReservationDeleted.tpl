@@ -1,5 +1,5 @@
 {* -*-coding:utf-8-*-
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 *}
-{include file='..\..\tpl\Email\emailheader.tpl'}
+
 
 	予約の詳細:
 	<br/>
@@ -33,6 +33,11 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 		{else}
 		リソース: {$ResourceName}<br/>
 	{/if}
+
+	{if $ResourceImage}
+		<div class="resource-image"><img src="{$ScriptUrl}/{$ResourceImage}"/></div>
+	{/if}
+
 	件名: {$Title}<br/>
 	説明: {$Description|nl2br}<br/>
 
@@ -57,4 +62,3 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
         <br/>
 	<a href="{$ScriptUrl}">Booked Scheduler へログイン</a>
 
-{include file='..\..\tpl\Email\emailfooter.tpl'}

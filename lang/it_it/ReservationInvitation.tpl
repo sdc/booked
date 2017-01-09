@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 Translation: 2014 Nicola Ruggero <nicola@nxnt.org>
 
@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 *}
-{include file='..\..\tpl\Email\emailheader.tpl'}
+
 	Dettagli prenotazione:
 	<br/>
 	<br/>
@@ -33,6 +33,11 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 		{else}
 		Risorsa: {$ResourceName}<br/>
 	{/if}
+
+	{if $ResourceImage}
+		<div class="resource-image"><img src="{$ScriptUrl}/{$ResourceImage}"/></div>
+	{/if}
+
 	Note: {$Title}<br/>
 	Descrizione: {$Description|nl2br}<br/>
 
@@ -67,4 +72,3 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 	<a href="{$ScriptUrl}/{$ICalUrl}">Aggiungi al calendario</a> |
 	<a href="{$ScriptUrl}">Accedi a Booked Scheduler</a>
 
-{include file='..\..\tpl\Email\emailfooter.tpl'}

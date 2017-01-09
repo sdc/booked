@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -92,7 +92,7 @@ class ParticipationPage extends SecurePage implements IParticipationPage
 
 	public function DisplayParticipation()
 	{
-		$this->Display('participation.tpl');
+		$this->Display('MyAccount/participation.tpl');
 	}
 
 	public function DisplayResult($results)
@@ -138,4 +138,3 @@ class ParticipationPage extends SecurePage implements IParticipationPage
 		$this->Set('ActionResult', $result);
 	}
 }
-?>

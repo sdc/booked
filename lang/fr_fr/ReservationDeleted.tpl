@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 Ce fichier fait parti de Booked Scheduler.
 
@@ -16,13 +16,13 @@ Voir la Licence Publique Générale GNU pour plus de détails.
 Vous devez avoir reçu une copie de la GNU General Public License
 avec Booked Scheduler. si ce n'est pas le cas consultez <http://www.gnu.org/licenses/>.
 *}
-{include file='..\..\tpl\Email\emailheader.tpl'}
 
-	Details de Reservation :
+
+	Détails de la réservation :
 	<br/>
 	<br/>
 
-	Debut: {formatdate date=$StartDate key=reservation_email}<br/>
+	Début: {formatdate date=$StartDate key=reservation_email}<br/>
 	Fin: {formatdate date=$EndDate key=reservation_email}<br/>
 	{if $ResourceNames|count > 1}
 		Ressources:<br/>
@@ -37,7 +37,7 @@ avec Booked Scheduler. si ce n'est pas le cas consultez <http://www.gnu.org/lice
 
 	{if count($RepeatDates) gt 0}
 		<br/>
-		Les dates suivantes on été effacées:
+		Les dates suivantes ont été effacées:
 		<br/>
 	{/if}
 
@@ -54,4 +54,4 @@ avec Booked Scheduler. si ce n'est pas le cas consultez <http://www.gnu.org/lice
 
 	<a href="{$ScriptUrl}">Connexion à Booked Scheduler</a>
 
-{include file='..\..\tpl\Email\emailfooter.tpl'}
+

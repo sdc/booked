@@ -1,19 +1,19 @@
 <?php
+
 /**
-Copyright 2012-2014 Nick Korbel
-
-This file is part of Booked SchedulerBooked SchedulereIt is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later versBooked SchedulerduleIt is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright 2012-2016 Nick Korbel
+ *
+ * This file is part of Booked Scheduler is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 class iCalendarReservationView
 {
 	public $DateCreated;
@@ -28,14 +28,25 @@ class iCalendarReservationView
 	public $Location;
 	public $StartReminder;
 	public $EndReminder;
+	/**
+	 * @var ReservationItemView
+	 */
+	public $ReservationItemView;
 
 	/**
-	 * @param ReservationItemView|ReservationView $res
+	 * @param ReservationItemView $res
 	 * @param UserSession $currentUser
 	 * @param IPrivacyFilter $privacyFilter
+	 * @param string|null $summaryFormat
 	 */
-	public function __construct($res, UserSession $currentUser, IPrivacyFilter $privacyFilter)
+	public function __construct($res, UserSession $currentUser, IPrivacyFilter $privacyFilter, $summaryFormat = null)
 	{
+		if ($summaryFormat == null)
+		{
+			$summaryFormat = Configuration::Instance()->GetSectionKey(ConfigSection::RESERVATION_LABELS, ConfigKeys::RESERVATION_LABELS_ICS_SUMMARY);
+		}
+		$factory = new SlotLabelFactory($currentUser);
+		$this->ReservationItemView = $res;
 		$canViewUser = $privacyFilter->CanViewUser($currentUser, $res, $res->OwnerId);
 		$canViewDetails = $privacyFilter->CanViewDetails($currentUser, $res, $res->OwnerId);
 
@@ -50,9 +61,11 @@ class iCalendarReservationView
 		$this->OrganizerEmail = $canViewUser ? $res->OwnerEmailAddress : $privateNotice;
 		$this->RecurRule = $this->CreateRecurRule($res);
 		$this->ReferenceNumber = $res->ReferenceNumber;
-		$this->Summary = $canViewDetails ? $res->Title : $privateNotice;
-		$this->ReservationUrl = sprintf("%s/%s?%s=%s", Configuration::Instance()->GetScriptUrl(), Pages::RESERVATION, QueryStringKeys::REFERENCE_NUMBER, $res->ReferenceNumber);
+		$this->Summary = $canViewDetails ? $factory->Format($res, $summaryFormat) : $privateNotice;
+		$this->ReservationUrl = sprintf("%s/%s?%s=%s", Configuration::Instance()->GetScriptUrl(), Pages::RESERVATION, QueryStringKeys::REFERENCE_NUMBER,
+										$res->ReferenceNumber);
 		$this->Location = $res->ResourceName;
+
 		$this->StartReminder = $res->StartReminder;
 		$this->EndReminder = $res->EndReminder;
 
@@ -63,7 +76,7 @@ class iCalendarReservationView
 	}
 
 	/**
-	 * @param ReservationItemView|ReservationView $res
+	 * @param ReservationItemView $res
 	 * @return null|string
 	 */
 	private function CreateRecurRule($res)
@@ -111,5 +124,3 @@ class iCalendarReservationView
 		return $rrule;
 	}
 }
-
-?>

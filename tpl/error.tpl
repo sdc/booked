@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -19,7 +19,7 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 {include file='globalheader.tpl'}
 <div class="error">
     <h3>{translate key=$ErrorMessage}</h3>
-    <h5><a href="{$ReturnUrl}">{translate key='ReturnToPreviousPage'}</a></h5>
+    <h5><a href="//{$smarty.server.HTTP_HOST}{$smarty.server.REQUEST_URI}">{translate key='ReturnToPreviousPage'}</a></h5>
 </div>
 
 

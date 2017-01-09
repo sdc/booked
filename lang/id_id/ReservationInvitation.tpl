@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 File ini adalah bagian dari phpShceduleIt.
 
@@ -21,7 +21,7 @@ bersamaan dengan Booked Scheduler. Jika tidak, lihat
 <http://www.gnu.org/licenses/>.
 
 *}
-{include file='..\..\tpl\Email\emailheader.tpl'}
+
 	Rincian Reservasi:
 	<br/>
 	<br/>
@@ -36,6 +36,11 @@ bersamaan dengan Booked Scheduler. Jika tidak, lihat
 		{else}
 		Resource: {$ResourceName}<br/>
 	{/if}
+
+	{if $ResourceImage}
+		<div class="resource-image"><img src="{$ScriptUrl}/{$ResourceImage}"/></div>
+	{/if}
+
 	Judul: {$Title}<br/>
 	Penjelasan: {$Description|nl2br}<br/>
 
@@ -69,4 +74,3 @@ bersamaan dengan Booked Scheduler. Jika tidak, lihat
 	<a href="{$ScriptUrl}/{$ICalUrl}">Tambah ke kalender</a> |
 	<a href="{$ScriptUrl}">Masuk Booked Scheduler</a>
 
-{include file='..\..\tpl\Email\emailfooter.tpl'}

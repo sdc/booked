@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -19,8 +19,9 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 require_once('Language.php');
+require_once('en_us.php');
 
-class bg_bg extends Language
+class bg_bg extends en_us
 {
     public function __construct()
     {
@@ -32,7 +33,7 @@ class bg_bg extends Language
      */
     protected function _LoadDates()
     {
-        $dates = array();
+        $dates = parent::_LoadDates();
 
         $dates['general_date'] = 'd/m/Y';
         $dates['general_datetime'] = 'd/m/Y H:i:s';
@@ -55,7 +56,7 @@ class bg_bg extends Language
      */
     protected function _LoadStrings()
     {
-        $strings = array();
+        $strings = parent::_LoadStrings();
 
         $strings['FirstName'] = 'Име';
         $strings['LastName'] = 'Фамилия';
@@ -543,7 +544,7 @@ class bg_bg extends Language
      */
     protected function _LoadDays()
     {
-        $days = array();
+        $days = parent::_LoadDays();
 
         /***
         DAY NAMES
@@ -569,7 +570,7 @@ class bg_bg extends Language
      */
     protected function _LoadMonths()
     {
-        $months = array();
+        $months = parent::_LoadMonths();
 
         /***
         MONTH NAMES
@@ -601,5 +602,3 @@ class bg_bg extends Language
         return 'bg';
     }
 }
-
-?>

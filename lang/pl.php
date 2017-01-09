@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 Translated to Polish by Dariusz Kliszewski
 
 This file is part of Booked Scheduler.
@@ -601,5 +601,3 @@ class pl extends en_us
         return 'pl';
     }
 }
-
-?>

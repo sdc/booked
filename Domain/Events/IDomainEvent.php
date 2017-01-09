@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -32,4 +32,3 @@ interface IDomainEvent
      */
     function EventCategory();
 }
-?>

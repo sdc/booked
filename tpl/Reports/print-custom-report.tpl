@@ -1,5 +1,5 @@
 {*
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -26,9 +26,12 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 {translate key=Created}: {format_date date=Date::Now() key=general_datetime}
 <table width="100%" border="1">
 	<tr>
-	{foreach from=$Definition->GetColumnHeaders() item=column}
-		<th>{translate key=$column->TitleKey()}</th>
-	{/foreach}
+		{foreach from=$Definition->GetColumnHeaders() item=column}
+			{capture name="columnTitle"}{if $column->HasTitle()}{$column->Title()}{else}{translate key=$column->TitleKey()}{/if}{/capture}
+			<th data-columnTitle="{$smarty.capture.columnTitle}">
+				{$smarty.capture.columnTitle}
+			</th>
+		{/foreach}
 	</tr>
 	{foreach from=$Report->GetData()->Rows() item=row}
 		<tr>
@@ -43,7 +46,15 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 	| {$Definition->GetTotal()} {translate key=Total}
 {/if}
 
-<script type="text/javascript" >
+{jsfile src="reports/common.js"}
+
+<script type="text/javascript">
+	var common = new ReportsCommon(
+			{
+				scriptUrl: '{$ScriptUrl}'
+			}
+	);
+	common.init();
 	window.print();
 </script>
 

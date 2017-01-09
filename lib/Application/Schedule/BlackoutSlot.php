@@ -1,18 +1,19 @@
 <?php
+
 /**
-Copyright 2011-2014 Nick Korbel
-
-This file is part of Booked SchedulerBooked SchedulereIt is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later versBooked SchedulerduleIt is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ * Copyright 2011-2016 Nick Korbel
+ *
+ * This file is part of Booked Scheduler is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 class BlackoutSlot implements IReservationSlot
 {
@@ -68,7 +69,8 @@ class BlackoutSlot implements IReservationSlot
 	 * @param int $periodSpan
 	 * @param BlackoutItemView $blackout
 	 */
-	public function __construct(SchedulePeriod $begin, SchedulePeriod $end, Date $displayDate, $periodSpan, BlackoutItemView $blackout)
+	public function __construct(SchedulePeriod $begin, SchedulePeriod $end, Date $displayDate, $periodSpan,
+								BlackoutItemView $blackout)
 	{
 		$this->blackout = $blackout;
 		$this->begin = $begin->BeginDate();
@@ -160,7 +162,8 @@ class BlackoutSlot implements IReservationSlot
 
 	public function ToTimezone($timezone)
 	{
-		return new BlackoutSlot($this->_beginPeriod->ToTimezone($timezone), $this->_endPeriod->ToTimezone($timezone), $this->Date(), $this->PeriodSpan(), $this->blackout);
+		return new BlackoutSlot($this->_beginPeriod->ToTimezone($timezone), $this->_endPeriod->ToTimezone($timezone),
+								$this->Date(), $this->PeriodSpan(), $this->blackout);
 	}
 
 	public function IsOwnedBy(UserSession $session)
@@ -188,19 +191,38 @@ class BlackoutSlot implements IReservationSlot
 		return null;
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function HasCustomColor()
 	{
 		return false;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function TextColor()
 	{
 		return null;
+	}
+
+	public function CollidesWith(Date $date)
+	{
+		return $this->blackout->CollidesWith($date);
+	}
+
+    public function RequiresCheckin()
+    {
+        return false;
+    }
+
+    public function AutoReleaseMinutes()
+    {
+       return null;
+    }
+
+    public function AutoReleaseMinutesRemaining()
+    {
+        return null;
+    }
+	
+	public function Id()
+	{
+		return '';
 	}
 }

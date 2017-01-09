@@ -1,5 +1,5 @@
 {*
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -17,46 +17,143 @@ You should have received a copy of the GNU General Public License
 along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 *}
 <div id="reservationParticipation">
-	<ul class="no-style">
-		<li>
+	<div class="row">
+		<div>
 			<label>{translate key="ParticipantList"}<br/>
-				{translate key=Add} <input type="text" id="participantAutocomplete" class="input" style="width:250px;"/>
-				or
-				<button id="promptForParticipants" type="button" class="button" style="display:inline">
-					<img src="img/user-plus.png"/>
-				{translate key='SelectUser'}
+				{translate key=Add} <input type="text" id="participantAutocomplete" class="form-control inline-block user-search"/>
+				|
+				<button id="promptForParticipants" type="button" class="btn inline">
+					<i class="fa fa-user"></i>
+					{translate key='Users'}
 				</button>
-				<button id="promptForGroupParticipants" type="button" class="button" style="display:inline">
-					<img src="img/users.png"/>
-				{translate key='Groups'}
+				<button id="promptForGroupParticipants" type="button" class="btn inline">
+					<i class="fa fa-users"></i>
+					{translate key='Groups'}
 				</button>
 			</label>
+		</div>
+		<div id="participantList">
+		</div>
 
-			<div id="participantList">
-				<ul></ul>
+		<div class="modal fade" id="participantDialog" tabindex="-1" role="dialog" aria-labelledby="participantModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="participantModalLabel">{translate key=AddParticipants}</h4>
+					</div>
+					<div class="modal-body">
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary" data-dismiss="modal">{translate key='Done'}</button>
+					</div>
+				</div>
 			</div>
-			<div id="participantDialog" title="{translate key=AddParticipants}" class="dialog"></div>
-			<div id="participantGroupDialog" title="{translate key=AddParticipants}" class="dialog"></div>
-		</li>
-		<li>
+		</div>
+
+		<div class="modal fade" id="participantGroupDialog" tabindex="-1" role="dialog" aria-labelledby="participantGroupModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="participantGroupModalLabel">{translate key=AddParticipants}</h4>
+					</div>
+					<div class="modal-body">
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary" data-dismiss="modal">{translate key='Done'}</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div>
 			<label>{translate key="InvitationList"}<br/>
-				{translate key=Add} <input type="text" id="inviteeAutocomplete" class="input" style="width:250px;"/>
-				or
-				<button id="promptForInvitees" type="button" class="button" style="display:inline">
-					{html_image src="user-plus.png"}
-				{translate key='SelectUser'}
+				{translate key=Add} <input type="text" id="inviteeAutocomplete" class="form-control inline-block user-search"/>
+				|
+				<button id="promptForInvitees" type="button" class="btn inline">
+					<i class="fa fa-user"></i>
+					{translate key='Users'}
 				</button>
-				<button id="promptForGroupInvitees" type="button" class="button" style="display:inline">
-					<img src="img/users.png"/>
-				{translate key='Groups'}
+				<button id="promptForGroupInvitees" type="button" class="btn inline">
+					<i class="fa fa-users"></i>
+					{translate key='Groups'}
 				</button>
+				{if $AllowGuestParticipation}
+					<button id="promptForGuests" type="button" class="btn inline">
+						<i class="fa fa-user-plus"></i>
+						{translate key='Guest'}
+					</button>
+				{/if}
 			</label>
+		</div>
+		<div id="inviteeList">
+		</div>
 
-			<div id="inviteeList">
-				<ul></ul>
+		<div id="allowParticipation">
+			<div class="checkbox">
+				<input type="checkbox" {if $AllowParticipantsToJoin}checked="checked"{/if} {formname key=ALLOW_PARTICIPATION} id="allowParticipationCheckbox">
+				<label for="allowParticipationCheckbox">{translate key=AllowParticipantsToJoin}</label>
 			</div>
-			<div id="inviteeDialog" title="{translate key=InviteOthers}" class="dialog"></div>
-			<div id="inviteeGroupDialog" title="{translate key=InviteOthers}" class="dialog"></div>
-		</li>
-	</ul>
+		</div>
+
+		<div class="modal fade" id="inviteeDialog" tabindex="-1" role="dialog" aria-labelledby="inviteeModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="inviteeModalLabel">{translate key=InviteOthers}</h4>
+					</div>
+					<div class="modal-body">
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary" data-dismiss="modal">{translate key='Done'}</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="inviteeGuestDialog" tabindex="-1" role="dialog" aria-labelledby="inviteeGuestModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+							<h4 class="modal-title" id="inviteeGuestModalLabel">{translate key=InviteOthers}</h4>
+						</div>
+						<div class="modal-body">
+							<div class="form-group row">
+								<label for="txtGuestEmail" class="col-xs-2 form-control-label">{translate key=Email}</label>
+								<div class="col-xs-8">
+									<input id="txtGuestEmail" type="email" class="form-control"/>
+								</div>
+								<div class="col-xs-2">
+									<button id="btnAddGuest" class="btn btn-link" type="button"><i class="fa fa-user-plus icon add"></i></button>
+								</div>
+							</div>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-primary" data-dismiss="modal">{translate key='Done'}</button>
+						</div>
+					</div>
+			</div>
+		</div>
+
+		<div class="modal fade" id="inviteeGroupDialog" tabindex="-1" role="dialog" aria-labelledby="inviteeGroupModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="inviteeGroupModalLabel">{translate key=InviteOthers}</h4>
+					</div>
+					<div class="modal-body">
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-primary" data-dismiss="modal">{translate key='Done'}</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
 </div>

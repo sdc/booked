@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 File ini adalah bagian dari phpShceduleIt.
 
@@ -21,9 +21,9 @@ bersamaan dengan Booked Scheduler. Jika tidak, lihat
 <http://www.gnu.org/licenses/>.
 
 *}
-{include file='..\..\tpl\Email\emailheader.tpl'}
+
 
 {$FirstName},<br/>
 Terima kasih telah mendaftar dngan Booked Scheduler. Silahkan <a href="{$ActivationUrl}">aktivasi akun Anda</a>.
 
-{include file='..\..\tpl\Email\emailfooter.tpl'}
+

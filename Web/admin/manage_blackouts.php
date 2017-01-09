@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -25,4 +25,3 @@ require_once(ROOT_DIR . 'Presenters/Admin/ManageBlackoutsPresenter.php');
 
 $page = new RoleRestrictedPageDecorator(new ManageBlackoutsPage(), array(RoleLevel::APPLICATION_ADMIN, RoleLevel::RESOURCE_ADMIN, RoleLevel::SCHEDULE_ADMIN));
 $page->PageLoad();
-?>

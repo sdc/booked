@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -24,5 +24,6 @@ class InvitationAction
 	const CancelAll = 'cancelAll';
 	const CancelInstance = 'cancelInstance';
 	const Decline = 'decline';
+	const Join = 'join';
+	const JoinAll = 'joinAll';
 }
-?>

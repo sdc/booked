@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -60,21 +60,19 @@ class SchedulePresenter extends ActionPresenter implements ISchedulePresenter {
      */
     private $_reservationService;
 
-    /**
+	/**
      * @param ISchedulePage $page
      * @param IScheduleService $scheduleService
      * @param IResourceService $resourceService
      * @param ISchedulePageBuilder $schedulePageBuilder
      * @param IReservationService $reservationService
-     * @param IDailyLayoutFactory $dailyLayoutFactory
      */
     public function __construct(
         ISchedulePage $page,
         IScheduleService $scheduleService,
         IResourceService $resourceService,
         ISchedulePageBuilder $schedulePageBuilder,
-        IReservationService $reservationService,
-        IDailyLayoutFactory $dailyLayoutFactory
+        IReservationService $reservationService
     )
     {
 		parent::__construct($page);
@@ -83,12 +81,10 @@ class SchedulePresenter extends ActionPresenter implements ISchedulePresenter {
         $this->_resourceService = $resourceService;
         $this->_builder = $schedulePageBuilder;
         $this->_reservationService = $reservationService;
-        $this->_dailyLayoutFactory = $dailyLayoutFactory;
     }
 
     public function PageLoad(UserSession $user)
     {
-
         $showInaccessibleResources = $this->_page->ShowInaccessibleResources();
 
         $schedules = $this->_scheduleService->GetAll($showInaccessibleResources, $user);
@@ -108,7 +104,8 @@ class SchedulePresenter extends ActionPresenter implements ISchedulePresenter {
         $this->_builder->BindSchedules($this->_page, $schedules, $currentSchedule);
 
         $scheduleDates = $this->_builder->GetScheduleDates($user, $currentSchedule, $this->_page);
-        $this->_builder->BindDisplayDates($this->_page, $scheduleDates, $user, $currentSchedule);
+        $this->_builder->BindDisplayDates($this->_page, $scheduleDates, $currentSchedule);
+		$this->_builder->BindSpecificDates($user, $this->_page, $this->_page->GetSelectedDates(), $currentSchedule);
 
 		$resourceGroups = $this->_resourceService->GetResourceGroups($activeScheduleId, $user);
 		$this->_builder->BindResourceGroups($this->_page, $resourceGroups);
@@ -119,15 +116,19 @@ class SchedulePresenter extends ActionPresenter implements ISchedulePresenter {
 		$resourceAttributes = $this->_resourceService->GetResourceAttributes();
 		$resourceTypeAttributes = $this->_resourceService->GetResourceTypeAttributes();
 
-        $layout = $this->_scheduleService->GetLayout($activeScheduleId, new ScheduleLayoutFactory($targetTimezone));
-
-        $reservationListing = $this->_reservationService->GetReservations($scheduleDates, $activeScheduleId, $targetTimezone);
-        $dailyLayout = $this->_dailyLayoutFactory->Create($reservationListing, $layout);
-
 		$filter = $this->_builder->GetResourceFilter($activeScheduleId, $this->_page);
-		$this->_builder->BindResourceFilter($this->_page, $filter,  $resourceAttributes, $resourceTypeAttributes);
+		$this->_builder->BindResourceFilter($this->_page, $filter, $resourceAttributes, $resourceTypeAttributes);
 
         $resources = $this->_resourceService->GetScheduleResources($activeScheduleId, $showInaccessibleResources, $user, $filter);
+
+		$rids = array();
+		foreach ($resources as $resource)
+		{
+			$rids[] = $resource->Id;
+		}
+		
+        $reservationListing = $this->_reservationService->GetReservations($scheduleDates, $activeScheduleId, $targetTimezone, $rids);
+        $dailyLayout = $this->_scheduleService->GetDailyLayout($activeScheduleId, new ScheduleLayoutFactory($targetTimezone), $reservationListing);
 
         $this->_builder->BindReservations($this->_page, $resources, $dailyLayout);
     }
@@ -146,5 +147,3 @@ class SchedulePresenter extends ActionPresenter implements ISchedulePresenter {
 		$this->_page->SetLayoutResponse(new ScheduleLayoutSerializable($periods));
 	}
 }
-
-?>

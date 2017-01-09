@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -223,7 +223,7 @@ class RepeatDaily extends RepeatOptionsAbstract
 
 		while ($startDate->DateCompare($this->_terminationDate) <= 0)
 		{
-			$dates[] = new DateRange($startDate->ToUtc(), $endDate->ToUtc());
+			$dates[] = new DateRange($startDate, $endDate);
 			$startDate = $startDate->AddDays($this->_interval);
 			$endDate = $endDate->AddDays($this->_interval);
 		}
@@ -284,7 +284,7 @@ class RepeatWeekly extends RepeatOptionsAbstract
 				$start = $startDate->AddDays($weekday - $startWeekday);
 				$end = $endDate->AddDays($weekday - $startWeekday);
 
-				$dates[] = new DateRange($start->ToUtc(), $end->ToUtc());
+				$dates[] = new DateRange($start, $end);
 			}
 		}
 
@@ -305,7 +305,7 @@ class RepeatWeekly extends RepeatOptionsAbstract
 
 				if ($startDate->DateCompare($this->_terminationDate) <= 0)
 				{
-					$dates[] = new DateRange($startDate->ToUtc(), $endDate->ToUtc());
+					$dates[] = new DateRange($startDate, $endDate);
 				}
 			}
 
@@ -363,7 +363,7 @@ class RepeatDayOfMonth extends RepeatOptionsAbstract
 				$endDate = $this->GetNextMonth($rawEnd, $monthAdjustment);
 				if ($startDate->DateCompare($this->_terminationDate) <= 0)
 				{
-					$dates[] = new DateRange($startDate->ToUtc(), $endDate->ToUtc());
+					$dates[] = new DateRange($startDate, $endDate);
 				}
 			}
 			$monthsFromStart++;
@@ -464,7 +464,7 @@ class RepeatWeekDayOfMonth extends RepeatOptionsAbstract
 					$endDateString = $calculatedDate . " {$endDate->Hour()}:{$endDate->Minute()}:{$endDate->Second()}";
 					$endDate = Date::Parse($endDateString, $endDate->Timezone());
 
-					$dates[] = new DateRange($startDate->ToUtc(), $endDate->ToUtc());
+					$dates[] = new DateRange($startDate, $endDate);
 				}
 			}
 
@@ -527,7 +527,7 @@ class RepeatYearly extends RepeatOptionsAbstract
 
 			if ($startDate->DateCompare($this->_terminationDate) <= 0)
 			{
-				$dates[] = new DateRange($startDate->ToUtc(), $endDate->ToUtc());
+				$dates[] = new DateRange($startDate, $endDate);
 			}
 		}
 
@@ -672,11 +672,9 @@ class RepeatConfiguration
 
 	private function SetWeekdays($weekdays)
 	{
-		if (!empty($weekdays))
+		if ($weekdays != null && $weekdays != '')
 		{
 			$this->Weekdays = explode(',', $weekdays);
 		}
 	}
 }
-
-?>

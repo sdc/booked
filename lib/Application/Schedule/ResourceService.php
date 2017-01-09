@@ -1,17 +1,17 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
-This file is part of Booked SchedulerBooked SchedulereIt is free software: you can redistribute it and/or modify
+This file is part of Booked Scheduler is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
-(at your option) any later versBooked SchedulerduleIt is distributed in the hope that it will be useful,
+(at your option) any later version is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
+along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 require_once(ROOT_DIR . 'lib/Application/Attributes/namespace.php');
@@ -33,13 +33,13 @@ interface IResourceService
 	 * Gets resource list
 	 * @param bool $includeInaccessibleResources
 	 * @param UserSession $user
+     * @param ScheduleResourceFilter|null $filter
 	 * @return array|ResourceDto[]
 	 */
-	public function GetAllResources($includeInaccessibleResources, UserSession $user);
+	public function GetAllResources($includeInaccessibleResources, UserSession $user, $filter = null);
 
 	/**
-	 * @abstract
-	 * @return array|AccessoryDto[]
+	 * @return Accessory[]
 	 */
 	public function GetAccessories();
 
@@ -88,18 +88,36 @@ class ResourceService implements IResourceService
 	 */
 	private $_userRepository;
 
+	/**
+	 * @var IAccessoryRepository
+	 */
+	private $_accessoryRepository;
+
 	public function __construct(IResourceRepository $resourceRepository,
 								IPermissionService $permissionService,
 								IAttributeService $attributeService,
-								IUserRepository $userRepository)
+								IUserRepository $userRepository,
+								IAccessoryRepository $accessoryRepository)
 	{
 		$this->_resourceRepository = $resourceRepository;
 		$this->_permissionService = $permissionService;
 		$this->_attributeService = $attributeService;
 		$this->_userRepository = $userRepository;
+		$this->_accessoryRepository = $accessoryRepository;
 	}
 
-	public function GetScheduleResources($scheduleId, $includeInaccessibleResources, UserSession $user, $filter = null)
+    /**
+     * @return ResourceService
+     */
+    public static function Create()
+    {
+        return new ResourceService(new ResourceRepository(),
+            PluginManager::Instance()->LoadPermission(),
+            new AttributeService(new AttributeRepository()),
+            new UserRepository(), new AccessoryRepository());
+    }
+
+    public function GetScheduleResources($scheduleId, $includeInaccessibleResources, UserSession $user, $filter = null)
 	{
 		if ($filter == null)
 		{
@@ -112,11 +130,18 @@ class ResourceService implements IResourceService
 		return $this->Filter($resources, $user, $includeInaccessibleResources, $resourceIds);
 	}
 
-	public function GetAllResources($includeInaccessibleResources, UserSession $user)
+	public function GetAllResources($includeInaccessibleResources, UserSession $user, $filter = null)
 	{
+        if ($filter == null)
+        {
+            $filter = new ScheduleResourceFilter();
+        }
+
 		$resources = $this->_resourceRepository->GetResourceList();
 
-		return $this->Filter($resources, $user, $includeInaccessibleResources);
+        $resourceIds = $filter->FilterResources($resources, $this->_resourceRepository, $this->_attributeService);
+
+        return $this->Filter($resources, $user, $includeInaccessibleResources, $resourceIds);
 	}
 
 	/**
@@ -148,10 +173,28 @@ class ResourceService implements IResourceService
 
 			if ($canAccess)
 			{
+
 				$canAccess = $statusFilter->ShouldInclude($resource);
+				if (!$includeInaccessibleResources && !$canAccess)
+				{
+					continue;
+				}
 			}
 
-			$resourceDtos[] = new ResourceDto($resource->GetResourceId(), $resource->GetName(), $canAccess, $resource->GetScheduleId(), $resource->GetMinLength());
+			$resourceDtos[] = new ResourceDto($resource->GetResourceId(),
+											  $resource->GetName(),
+											  $canAccess,
+											  $resource->GetScheduleId(),
+											  $resource->GetMinLength(),
+											  $resource->GetResourceTypeId(),
+											  $resource->GetAdminGroupId(),
+											  $resource->GetScheduleAdminGroupId(),
+											  $resource->GetStatusId(),
+											  $resource->GetRequiresApproval(),
+											  $resource->IsCheckInEnabled(),
+											  $resource->IsAutoReleased(),
+											  $resource->GetAutoReleaseMinutes(),
+											  $resource->GetColor());
 		}
 
 		return $resourceDtos;
@@ -159,7 +202,7 @@ class ResourceService implements IResourceService
 
 	public function GetAccessories()
 	{
-		return $this->_resourceRepository->GetAccessoryList();
+		return $this->_accessoryRepository->LoadAll();
 	}
 
 	public function GetResourceGroups($scheduleId, UserSession $user)

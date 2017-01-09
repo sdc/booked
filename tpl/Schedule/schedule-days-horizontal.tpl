@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -20,28 +20,27 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 {extends file="Schedule/schedule.tpl"}
 
 {block name="reservations"}
-	<style type="text/css">
-		td.resdate-custom { background-color:#4279A5; }
-		td.today-custom { background-color:#5199d1; }
-	</style>
-
 	{assign var=TodaysDate value=Date::Now()}
-	<div id="reservations">
 		<table class="reservations" border="1" cellpadding="0" style="width:auto;">
 			<tr>
 				<td rowspan="2">&nbsp;</td>
 				{foreach from=$BoundDates item=date}
 					{assign var=class value=""}
-					{if $TodaysDate->DateEquals($date) eq true}
-						{assign var=class value="today-custom"}
+					{assign var=ts value=$date->Timestamp()}
+					{$periods.$ts = $DailyLayout->GetPeriods($date)}
+					{if $periods[$ts]|count == 0}{continue}{*dont show if there are no slots*}{/if}
+					{if $date->DateEquals($TodaysDate)}
+						{assign var=class value="today"}
 					{/if}
-					<td class="resdate-custom resdate {$class}"
-						colspan="{$DailyLayout->GetPeriods($date)|count}">{formatdate date=$date key="schedule_daily"}</td>
+					<td class="resdate {$class}"
+						colspan="{$periods[$ts]|count}">{formatdate date=$date key="schedule_daily"}</td>
 				{/foreach}
 			</tr>
 			<tr>
 				{foreach from=$BoundDates item=date}
-					{foreach from=$DailyLayout->GetPeriods($date) item=period}
+					{assign var=ts value=$date->Timestamp()}
+					{assign var=datePeriods value=$periods[$ts]}
+					{foreach from=$datePeriods item=period}
 						<td class="reslabel" colspan="{$period->Span()}">{$period->Label($date)}</td>
 					{/foreach}
 				{/foreach}
@@ -51,12 +50,12 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 				{assign var=resourceId value=$resource->Id}
 				{assign var=href value="{Pages::RESERVATION}?rid={$resource->Id}&sid={$ScheduleId}"}
 				<tr class="slots">
-					<td class="resourcename">
+					<td class="resourcename" {if $resource->HasColor()}style="background-color:{$resource->GetColor()}"{/if}>
 						{if $resource->CanAccess}
 							<a href="{$href}" resourceId="{$resource->Id}"
-							   class="resourceNameSelector">{$resource->Name}</a>
+							   class="resourceNameSelector" {if $resource->HasColor()}style="color:{$resource->GetTextColor()}"{/if}>{$resource->Name}</a>
 						{else}
-							{$resource->Name}
+							<span resourceId="{$resource->Id}" resourceId="{$resource->Id}" class="resourceNameSelector" {if $resource->HasColor()}style="color:{$resource->GetTextColor()}"{/if}>{$resource->Name}</span>
 						{/if}
 					</td>
 					{foreach from=$BoundDates item=date}
@@ -70,9 +69,8 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 				</tr>
 			{/foreach}
 		</table>
-	</div>
 {/block}
 
-{block name="scripts"}
+{block name="scripts-before"}
 
 {/block}

@@ -1,17 +1,17 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
-This file is part of Booked SchedulerBooked SchedulereIt is free software: you can redistribute it and/or modify
+This file is part of Booked Scheduler is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
-(at your option) any later versBooked SchedulerduleIt is distributed in the hope that it will be useful,
+(at your option) any later version is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
+along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 require_once(ROOT_DIR . 'lib/Application/Reporting/namespace.php');
@@ -90,9 +90,27 @@ class ReportingService implements IReportingService
 	 */
 	private $repository;
 
-	public function __construct(IReportingRepository $repository)
+	/**
+	 * @var IAttributeRepository
+	 */
+	private $attributeRepository;
+
+	/**
+	 * @param IReportingRepository $repository
+	 * @param IAttributeRepository|null $attributeRepository
+	 */
+	public function __construct(IReportingRepository $repository, $attributeRepository = null)
 	{
 		$this->repository = $repository;
+
+		if ($attributeRepository == null)
+		{
+			$this->attributeRepository = new AttributeRepository();
+		}
+		else
+		{
+			$this->attributeRepository = $attributeRepository;
+		}
 	}
 
 	public function GenerateCustomReport(Report_Usage $usage, Report_ResultSelection $selection, Report_GroupBy $groupBy, Report_Range $range, Report_Filter $filter)
@@ -109,7 +127,7 @@ class ReportingService implements IReportingService
 		$filter->Add($builder);
 
 		$data = $this->repository->GetCustomReport($builder);
-		return new CustomReport($data);
+		return new CustomReport($data, $this->attributeRepository);
 	}
 
 	public function Save($reportName, $userId, Report_Usage $usage, Report_ResultSelection $selection, Report_GroupBy $groupBy, Report_Range $range, Report_Filter $filter)
@@ -151,10 +169,6 @@ class ReportingService implements IReportingService
 	public function GenerateCommonReport(ICannedReport $cannedReport)
 	{
 		$data = $this->repository->GetCustomReport($cannedReport->GetBuilder());
-		return new CustomReport($data);
+		return new CustomReport($data, $this->attributeRepository);
 	}
 }
-
-
-
-?>

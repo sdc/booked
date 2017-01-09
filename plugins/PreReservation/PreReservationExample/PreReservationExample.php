@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -55,4 +55,12 @@ class PreReservationExample implements IPreReservationFactory
         return $this->factoryToDecorate->CreatePreDeleteService($userSession);
     }
 
+    /**
+     * @param UserSession $userSession
+     * @return IReservationValidationService
+     */
+    public function CreatePreApprovalService(UserSession $userSession)
+    {
+        return $this->factoryToDecorate->CreatePreApprovalService($userSession);
+    }
 }

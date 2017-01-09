@@ -1,21 +1,21 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
-
-This file is part of Booked Scheduler.
-
-Booked Scheduler is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Booked Scheduler is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright 2011-2016 Nick Korbel
+ *
+ * This file is part of Booked Scheduler.
+ *
+ * Booked Scheduler is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Booked Scheduler is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 require_once(ROOT_DIR . 'Pages/SecurePage.php');
@@ -133,6 +133,21 @@ interface IReservationSavePage extends IReservationSaveResultsView, IRepeatOptio
 	 * @return string
 	 */
 	public function GetEndReminderInterval();
+
+	/**
+	 * @return bool
+	 */
+	public function GetAllowParticipation();
+
+	/**
+	 * @return string[]
+	 */
+	public function GetParticipatingGuests();
+
+	/**
+	 * @return string[]
+	 */
+	public function GetInvitedGuests();
 }
 
 class ReservationSavePage extends SecurePage implements IReservationSavePage
@@ -159,11 +174,15 @@ class ReservationSavePage extends SecurePage implements IReservationSavePage
 	{
 		try
 		{
+			$this->EnforceCSRFCheck();
 			$reservation = $this->_presenter->BuildReservation();
 			$this->_presenter->HandleReservation($reservation);
 
 			if ($this->_reservationSavedSuccessfully)
 			{
+				$this->Set('Resources', $reservation->AllResources());
+				$this->Set('Instances', $reservation->Instances());
+				$this->Set('Timezone', ServiceLocator::GetServer()->GetUserSession()->Timezone);
 				$this->Display('Ajax/reservation/save_successful.tpl');
 			}
 			else
@@ -375,6 +394,28 @@ class ReservationSavePage extends SecurePage implements IReservationSavePage
 		return array();
 	}
 
+	public function GetInvitedGuests()
+	{
+		$invitees = $this->GetForm(FormKeys::GUEST_INVITATION_LIST);
+		if (is_array($invitees))
+		{
+			return $invitees;
+		}
+
+		return array();
+	}
+
+	public function GetParticipatingGuests()
+	{
+		$participants = $this->GetForm(FormKeys::GUEST_PARTICIPATION_LIST);
+		if (is_array($participants))
+		{
+			return $participants;
+		}
+
+		return array();
+	}
+
 	/**
 	 * @return AccessoryFormElement[]
 	 */
@@ -421,56 +462,69 @@ class ReservationSavePage extends SecurePage implements IReservationSavePage
 														ConfigKeys::UPLOAD_ENABLE_RESERVATION_ATTACHMENTS,
 														new BooleanConverter());
 	}
-
-	/**
-	 * @return bool
-	 */
+    
 	public function HasStartReminder()
 	{
 		$val = $this->server->GetForm(FormKeys::START_REMINDER_ENABLED);
 		return !empty($val);
 	}
 
-	/**
-	 * @return string
-	 */
 	public function GetStartReminderValue()
 	{
 		return $this->server->GetForm(FormKeys::START_REMINDER_TIME);
 	}
 
-	/**
-	 * @return string
-	 */
 	public function GetStartReminderInterval()
 	{
 		return $this->server->GetForm(FormKeys::START_REMINDER_INTERVAL);
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function HasEndReminder()
 	{
 		$val = $this->server->GetForm(FormKeys::END_REMINDER_ENABLED);
 		return !empty($val);
 	}
 
-	/**
-	 * @return string
-	 */
 	public function GetEndReminderValue()
 	{
 		return $this->server->GetForm(FormKeys::END_REMINDER_TIME);
 	}
 
-	/**
-	 * @return string
-	 */
 	public function GetEndReminderInterval()
 	{
 		return $this->server->GetForm(FormKeys::END_REMINDER_INTERVAL);
 	}
+
+	public function GetAllowParticipation()
+	{
+		$val = $this->server->GetForm(FormKeys::ALLOW_PARTICIPATION);
+		return !empty($val);
+	}
+
+	public function SetCanBeRetried($canBeRetried)
+	{
+		$this->Set('CanBeRetried', $canBeRetried);
+	}
+
+	public function SetRetryParameters($retryParameters)
+	{
+		$this->Set('RetryParameters', $retryParameters);
+	}
+
+	public function GetRetryParameters()
+	{
+		return ReservationRetryParameter::GetParamsFromForm($this->GetForm(FormKeys::RESERVATION_RETRY_PREFIX));
+	}
+
+	public function SetRetryMessages($messages)
+	{
+		$this->Set('RetryMessages', $messages);
+	}
+
+    public function SetCanJoinWaitList($canJoinWaitlist)
+    {
+        $this->Set('CanJoinWaitList', $canJoinWaitlist);
+    }
 }
 
 class AccessoryFormElement

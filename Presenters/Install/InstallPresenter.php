@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -159,9 +159,11 @@ class InstallPresenter
 		else
 		{
 			$this->page->ShowUpToDate(true);
-			$this->page->ShowInstallOptions(true);
-		}
+			$this->page->ShowInstallOptions(false);
+			$this->page->ShowUpgradeOptions(false);
+            $this->page->SetShowDatabasePrompt(false);
+            $this->page->SetShowPasswordPrompt(false);
+            $this->page->SetInstallPasswordMissing(false);
+        }
 	}
 }
-
-?>

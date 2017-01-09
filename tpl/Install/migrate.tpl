@@ -1,5 +1,5 @@
 {*
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -78,7 +78,7 @@ Done!
 							migrated.find('.legacyCount').text(data.LegacyCount);
 							migrated.find('.percentComplete').text(data.PercentComplete);
 							migrated.show();
-							console.log('Migrating data ' + elementType);
+							//console.log('Migrating data ' + elementType);
 							if (data.RemainingCount > 0)
 							{
 								migrateParams.current();

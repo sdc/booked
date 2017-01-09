@@ -1,21 +1,21 @@
 function Registration()
 {
 	var elements = {
-		form:$('#frmRegister')
+		form:$('#form-register')
 	};
 
 	Registration.prototype.init = function ()
 	{
-
-		$("#btnUpdate").click(function (e)
-		{
-			e.preventDefault();
-			$('#frmRegister').submit();
-		});
+		// $("#btnUpdate").click(function (e)
+		// {
+		// 	e.preventDefault();
+		// 	e.stopPropagation();
+		// 	elements.form.submit();
+		// });
 
 		elements.form.bind('onValidationFailed', onValidationFailed);
 
-		ConfigureAdminForm(elements.form, defaultSubmitCallback, successHandler, null, {onBeforeSubmit:onBeforeAddSubmit});
+		ConfigureAsyncForm(elements.form, defaultSubmitCallback, successHandler, null, {onBeforeSubmit:onBeforeSubmit});
 	};
 
 	var defaultSubmitCallback = function (form)
@@ -25,6 +25,7 @@ function Registration()
 
 	function onValidationFailed(event, data)
 	{
+		elements.form.find('button').removeAttr('disabled');
 		refreshCaptcha();
 		hideModal();
 	}
@@ -38,25 +39,29 @@ function Registration()
 		else
 		{
 			onValidationFailed();
-			$('#registrationError').show();
+			$('#registrationError').removeClass('hidden');
 		}
 	}
 
-	function onBeforeAddSubmit(formData, jqForm, opts)
+	function onBeforeSubmit(formData, jqForm, opts)
 	{
-		$('#profileUpdatedMessage').hide();
-		$('#registrationError').hide();
+		var bv = jqForm.data('bootstrapValidator');
 
-		$.colorbox({inline:true, href:"#modalDiv", transition:"none", width:"75%", height:"75%", overlayClose:false});
-		$('#modalDiv').show();
+		if (!bv.isValid())
+		{
+			return false;
+		}
+
+		$('#profileUpdatedMessage').hide();
+
+		$.blockUI({ message: $('#modalDiv') });
 
 		return true;
 	}
 
 	function hideModal()
 	{
-		$('#modalDiv').hide();
-		$.colorbox.close();
+		$.unblockUI();
 
 		var top = $("#registrationbox").scrollTop();
 		$('html, body').animate({scrollTop:top}, 'slow');

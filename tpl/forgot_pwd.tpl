@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -30,7 +30,7 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 <div id="forgotbox">
 	<form class="forgot" method="post" action="{$smarty.server.SCRIPT_NAME}">
 		<div class="forgot_pwdHeader">
-			<h3>{translate key='ForgotPassword'}</h3>
+			<h1>{translate key='ForgotPassword'}</h1>
 		</div>
 		<div>
 			<p class="forgot">{translate key='YouWillBeEmailedANewPassword'}</p>
@@ -39,7 +39,7 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 					{textbox name="EMAIL" class="input" size="20" tabindex="10"}</label>
 			</p>
 			<p class="resetpassword">
-				<button type="submit" class="button" name="{Actions::RESET}" value="{Actions::RESET}">{html_image src="tick-circle.png"} {translate key='ChangePassword'}</button>
+				<button type="submit" class="btn btn-default" name="{Actions::RESET}" value="{Actions::RESET}">{translate key='ChangePassword'}</button>
 			</p>
 		</div>
 	</form>

@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -59,6 +59,7 @@ class ReservationDeletePage extends SecurePage implements IReservationDeletePage
 	{
 		try
 		{
+			$this->EnforceCSRFCheck();
 			$reservation = $this->presenter->BuildReservation();
 			$this->presenter->HandleReservation($reservation);
 
@@ -101,6 +102,46 @@ class ReservationDeletePage extends SecurePage implements IReservationDeletePage
 	{
 		return $this->GetForm(FormKeys::SERIES_UPDATE_SCOPE);
 	}
+
+	/**
+	 * @param array|string[] $messages
+	 */
+	public function SetRetryMessages($messages)
+	{
+		// no-op
+	}
+
+	/**
+	 * @param bool $canBeRetried
+	 */
+	public function SetCanBeRetried($canBeRetried)
+	{
+		// no-op
+	}
+
+	/**
+	 * @param ReservationRetryParameter[] $retryParameters
+	 */
+	public function SetRetryParameters($retryParameters)
+	{
+		// no-op
+	}
+
+	/**
+	 * @return ReservationRetryParameter[]
+	 */
+	public function GetRetryParameters()
+	{
+		// no-op
+	}
+
+    /**
+     * @param bool $canJoinWaitlist
+     */
+    public function SetCanJoinWaitList($canJoinWaitlist)
+    {
+        // no-op
+    }
 }
 
 class ReservationDeleteJsonPage extends ReservationDeletePage implements IReservationDeletePage
@@ -137,6 +178,38 @@ class ReservationDeleteJsonPage extends ReservationDeletePage implements IReserv
 
 	public function SetWarnings($warnings)
 	{
-		// nothing to do
+		// no-op
+	}
+
+	/**
+	 * @param array|string[] $messages
+	 */
+	public function SetRetryMessages($messages)
+	{
+		// no-op
+	}
+
+	/**
+	 * @param bool $canBeRetried
+	 */
+	public function SetCanBeRetried($canBeRetried)
+	{
+		// no-op
+	}
+
+	/**
+	 * @param ReservationRetryParameter[] $retryParameters
+	 */
+	public function SetRetryParameters($retryParameters)
+	{
+		// no-op
+	}
+
+	/**
+	 * @return ReservationRetryParameter[]
+	 */
+	public function GetRetryParameters()
+	{
+		// no-op
 	}
 }

@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -22,21 +22,20 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 {block name="reservations"}
 
 {assign var=TodaysDate value=Date::Now()}
-<div id="reservations">
     <table class="reservations" border="1" cellpadding="0" width="100%">
 		{capture name="resources"}
             <tr>
-                <td>&nbsp;</td>
+                <td class="resourcename">&nbsp;</td>
 				{foreach from=$Resources item=resource name=resource_loop}
 					{assign var=resourceId value=$resource->Id}
 					{assign var=href value="{Pages::RESERVATION}?rid={$resource->Id}&sid={$ScheduleId}"}
 
-                    <td class="resourcename" resourceId="{$resource->Id}">
+                    <td class="resourcename" resourceId="{$resource->Id}" {if $resource->HasColor()}style="background-color:{$resource->GetColor()}"{/if}>
 						{if $resource->CanAccess}
                             <a href="{$href}" resourceId="{$resource->Id}"
-                               class="resourceNameSelector">{$resource->Name}</a>
-							{else}
-							{$resource->Name}
+                               class="resourceNameSelector" {if $resource->HasColor()}style="color:{$resource->GetTextColor()}"{/if}>{$resource->Name}</a>
+						{else}
+							<span resourceId="{$resource->Id}" resourceId="{$resource->Id}" class="resourceNameSelector" {if $resource->HasColor()}style="color:{$resource->GetTextColor()}"{/if}>{$resource->Name}</span>
 						{/if}
                     </td>
 				{/foreach}
@@ -44,25 +43,28 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 		{/capture}
 
 		{foreach from=$BoundDates item=date}
-			{$smarty.capture.resources}
-			{if $TodaysDate->DateEquals($date)}
+			{assign var=ts value=$date->Timestamp()}
+			{$periods.$ts = $DailyLayout->GetPeriods($date)}
+			{if $periods[$ts]|count == 0}{continue}{*dont show if there are no slots*}{/if}
+			{if $date->DateEquals($TodaysDate)}
                 <tr class="today">
 			{else}
             	<tr>
 			{/if}
 			<td class="resdate" colspan="{$Resources|@count+1}">{formatdate date=$date key="schedule_daily"}</td></tr>
-			{foreach from=$DailyLayout->GetPeriods($date) item=period name=period_loop}
-                <tr class="slots" id="{$period->Id()}">
+			{$smarty.capture.resources}
+
+			{foreach from=$periods.$ts item=period name=period_loop}
+				<tr class="slots" id="{$period->Id()}">
                     <td class="reslabel">{$period->Label($date)}</td>
                 </tr>
 			{/foreach}
+			{$smarty.capture.resources}
 		{/foreach}
     </table>
-</div>
-
 {/block}
 
-{block name="scripts"}
+{block name="scripts-before"}
 
 <script type="text/javascript">
 

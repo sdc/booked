@@ -1,5 +1,5 @@
 {*
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -16,18 +16,26 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 *}
-<label class="customAttribute" for="{$attributeName}">{$attribute->Label()|escape}:</label>
-{if $align=='vertical'}
-<br/>
-{/if}
-{if $readonly}
-	<span class="attributeValue {$class}">{if $attribute->Value() == "1"}{translate key='True'}{else}{translate key='False'}{/if}</span>
-{elseif $searchmode}
-	<select id="{$attributeName}" name="{$attributeName}" class="customAttribute textbox {$class}">
-		<option value="">--</option>
-		<option value="0" {if $attribute->Value() == "0"}selected="selected"{/if}>{translate key=No}</option>
-		<option value="1" {if $attribute->Value() == "1"}selected="selected"{/if}>{translate key=Yes}</option>
-	</select>
-{else}
-	<input type="checkbox" value="1" id="{$attributeName}" name="{$attributeName}" {if $attribute->Value() == "1"}checked="checked"{/if} class="{$class}" />
-{/if}
+<div class="form-group {$class}">
+    {if $readonly}
+        <label class="customAttribute" for="{$attributeId}">{$attribute->Label()}</label>
+        <span class="attributeValue {$class}">{if $attribute->Value() == "1"}{translate key='True'}{else}{translate key='False'}{/if}</span>
+    {elseif $searchmode}
+        <label class="customAttribute" for="{$attributeId}">{$attribute->Label()}</label>
+        <select id="{$attributeId}" name="{$attributeName}" class="customAttribute form-control {$inputClass}">
+            <option value="">--</option>
+            <option value="0" {if $attribute->Value() == "0"}selected="selected"{/if}>{translate key=No}</option>
+            <option value="1" {if $attribute->Value() == "1"}selected="selected"{/if}>{translate key=Yes}</option>
+        </select>
+    {else}
+        <div class="checkbox">
+            <input type="checkbox" value="1" id="{$attributeId}" name="{$attributeName}"
+                   {if $attribute->Value() == "1"}checked="checked"{/if} class="{$inputClass}"/>
+            <label class="customAttribute" for="{$attributeId}">{$attribute->Label()}
+                {if $attribute->Required() && !$searchmode}
+                    <i class="glyphicon glyphicon-asterisk"></i>
+                {/if}
+            </label>
+        </div>
+    {/if}
+</div>

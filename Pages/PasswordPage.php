@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -31,7 +31,13 @@ interface IPasswordPage extends IPage
 	public function ResettingPassword();
 
 	public function ShowResetPasswordSuccess($resetPasswordSuccess);
+
+	/**
+	 * @param IAuthenticationActionOptions $authenticationOptions
+	 */
+	public function SetAllowedActions($authenticationOptions);
 }
+
 class PasswordPage extends SecurePage implements IPasswordPage
 {
 	/**
@@ -48,7 +54,7 @@ class PasswordPage extends SecurePage implements IPasswordPage
 	public function PageLoad()
 	{
 		$this->presenter->PageLoad();
-		$this->Display('password.tpl');
+		$this->Display('MyAccount/password.tpl');
 	}
 
 	public function GetCurrentPassword()
@@ -71,6 +77,12 @@ class PasswordPage extends SecurePage implements IPasswordPage
 		$x = $this->GetForm(Actions::CHANGE_PASSWORD);
 
 		return !empty($x);
+	}
+
+	public function SetAllowedActions($authenticationOptions)
+	{
+        $allowPasswordChange = !Configuration::Instance()->GetKey(ConfigKeys::DISABLE_PASSWORD_RESET, new BooleanConverter());
+		$this->Set('AllowPasswordChange', $authenticationOptions->AllowPasswordChange() && $allowPasswordChange);
 	}
 
 	public function ShowResetPasswordSuccess($resetPasswordSuccess)

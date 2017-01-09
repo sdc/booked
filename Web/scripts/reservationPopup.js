@@ -1,5 +1,4 @@
-$.fn.attachReservationPopup = function (refNum, detailsUrl)
-{
+$.fn.attachReservationPopup = function (refNum, detailsUrl) {
 	var me = $(this);
 	if (detailsUrl == null)
 	{
@@ -7,27 +6,36 @@ $.fn.attachReservationPopup = function (refNum, detailsUrl)
 	}
 
 	me.qtip({
-		position:{
-			my:'bottom left',
-			at:'top left',
-			target:false,
-			viewport: $(window),
-			effect:false
-		},
-
-		content:{
-			text:'Loading...',
-			ajax:{
-				url:detailsUrl,
-				type:'GET',
-				data:{ id:refNum },
-				dataType:'html'
+		position: {
+			my: 'bottom left', at: 'top left', effect: false, viewport: $(window), adjust: {
+				mouse: 'flip'
 			}
 		},
 
-		show:{
-			delay:700,
-			effect:false
+		content: {
+			text: function (event, api) {
+				$.ajax({url: detailsUrl, data: {id: refNum}})
+						.done(function (html) {
+							api.set('content.text', html)
+						})
+						.fail(function (xhr, status, error) {
+							api.set('content.text', status + ': ' + error)
+						});
+
+				return 'Loading...';
+			}
+		},
+
+		show: {
+			delay: 700, effect: false
+		},
+
+		hide: {
+			fixed: true, delay: 500
+		},
+
+		style: {
+			classes: 'qtip-light qtip-bootstrap'
 		}
 	});
-}
+};

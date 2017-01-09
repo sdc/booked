@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -16,28 +16,32 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 *}
-{include file='globalheader.tpl' cssFiles='css/dashboard.css,css/jquery.qtip.min.css'}
+{include file='globalheader.tpl' cssFiles='css/dashboard.css' Qtip=true}
 
-<ul id="dashboardList">
-{foreach from=$items item=dashboardItem}
-    <li>{$dashboardItem->PageLoad()}</li>
-{/foreach}
-</ul>
+<div id="page-dashboard">
+	<div id="dashboardList">
+		{foreach from=$items item=dashboardItem}
+			<div>{$dashboardItem->PageLoad()}</div>
+		{/foreach}
+	</div>
 
-<script type="text/javascript" src="scripts/js/jquery.qtip.min.js"></script>
-<script type="text/javascript" src="{$Path}scripts/dashboard.js"></script>
+	{jsfile src="dashboard.js"}
+	{jsfile src="resourcePopup.js"}
+	{jsfile src="ajax-helpers.js"}
 
-<script type="text/javascript">
-$(document).ready(function() {
+	<script type="text/javascript">
+		$(document).ready(function () {
 
-	var dashboardOpts = {
-		reservationUrl: "{Pages::RESERVATION}?{QueryStringKeys::REFERENCE_NUMBER}=",
-		summaryPopupUrl: "ajax/respopup.php"
-	};
+			var dashboardOpts = {
+				reservationUrl: "{Pages::RESERVATION}?{QueryStringKeys::REFERENCE_NUMBER}=",
+				summaryPopupUrl: "ajax/respopup.php",
+				scriptUrl: '{$ScriptUrl}'
+			};
 
-	var dashboard = new Dashboard(dashboardOpts);
-	dashboard.init();
-});
-</script>
+			var dashboard = new Dashboard(dashboardOpts);
+			dashboard.init();
+		});
+	</script>
+</div>
 
 {include file='globalfooter.tpl'}

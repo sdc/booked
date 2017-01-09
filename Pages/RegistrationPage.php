@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -72,6 +72,8 @@ interface IRegistrationPage extends IPage, IActionPage
 
 class RegistrationPage extends ActionPage implements IRegistrationPage
 {
+	private $_presenter;
+
 	public function __construct()
 	{
 		parent::__construct('Registration');
@@ -253,5 +255,9 @@ class RegistrationPage extends ActionPage implements IRegistrationPage
 	{
 		return AttributeFormParser::GetAttributes($this->GetForm(FormKeys::ATTRIBUTE_PREFIX));
 	}
+
+	public function EnforceCSRFCheck()
+	{
+		return false;
+	}
 }
-?>

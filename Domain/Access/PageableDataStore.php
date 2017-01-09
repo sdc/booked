@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -40,6 +40,11 @@ class PageableDataStore
 		$db = ServiceLocator::GetDatabase();
 		$pageNumber = intval($pageNumber);
 		$pageSize = intval($pageSize);
+
+        if (!empty($sortField))
+        {
+            $command = new SortCommand($command, $sortField, $sortDirection);
+        }
 
 		if ((empty($pageNumber) && empty($pageSize)) || $pageSize == PageInfo::All)
 		{
@@ -117,7 +122,7 @@ class PageInfo
 		$this->Total = $totalResults;
 		$this->CurrentPage = $pageNumber;
 		$this->PageSize = $pageSize;
-		$this->TotalPages = ceil($totalResults/$pageSize);
+		$this->TotalPages = ceil($totalResults/max($pageSize, 1));
         $this->ResultsStart = ($pageNumber-1) * $pageSize + 1;
         $this->ResultsEnd = min(($pageNumber * $pageSize), $totalResults);
 	}
@@ -144,6 +149,3 @@ class PageInfoAll extends PageInfo
 		$this->ResultsEnd = $totalResults;
 	}
 }
-
-
-?>

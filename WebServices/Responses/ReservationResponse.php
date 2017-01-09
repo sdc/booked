@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -22,7 +22,7 @@ require_once(ROOT_DIR . 'lib/WebService/namespace.php');
 require_once(ROOT_DIR . 'WebServices/Responses/RecurrenceRequestResponse.php');
 require_once(ROOT_DIR . 'WebServices/Responses/ResourceItemResponse.php');
 require_once(ROOT_DIR . 'WebServices/Responses/ReservationAccessoryResponse.php');
-require_once(ROOT_DIR . 'WebServices/Responses/CustomAttributeResponse.php');
+require_once(ROOT_DIR . 'WebServices/Responses/CustomAttributes/CustomAttributeResponse.php');
 require_once(ROOT_DIR . 'WebServices/Responses/AttachmentResponse.php');
 require_once(ROOT_DIR . 'WebServices/Responses/ReservationUserResponse.php');
 require_once(ROOT_DIR . 'WebServices/Responses/ReminderRequestResponse.php');
@@ -30,8 +30,8 @@ require_once(ROOT_DIR . 'WebServices/Responses/ReminderRequestResponse.php');
 class ReservationResponse extends RestResponse
 {
 	public $referenceNumber;
-	public $startDateTime;
-	public $endDateTime;
+	public $startDate;
+	public $endDate;
 	public $title;
 	public $description;
 	public $requiresApproval;
@@ -78,6 +78,17 @@ class ReservationResponse extends RestResponse
 	 * @var ReminderRequestResponse
 	 */
 	public $endReminder;
+	/**
+	 * @var bool
+	 */
+	public $allowParticipation;
+
+    public $checkInDate;
+    public $checkOutDate;
+    public $originalEndDate;
+    public $isCheckInAvailable;
+    public $isCheckoutAvailable;
+    public $autoReleaseMinutes;
 
 	/**
 	 * @param IRestServer $server
@@ -96,20 +107,19 @@ class ReservationResponse extends RestResponse
 		$canViewDetails = $privacyFilter->CanViewDetails($server->GetSession(), $reservation);
 
 		$this->referenceNumber = $reservation->ReferenceNumber;
-		$this->startDateTime = $reservation->StartDate->ToTimezone($server->GetSession()->Timezone)->ToIso();
-		$this->endDateTime = $reservation->EndDate->ToTimezone($server->GetSession()->Timezone)->ToIso();
+		$this->startDate = $reservation->StartDate->ToTimezone($server->GetSession()->Timezone)->ToIso();
+		$this->endDate = $reservation->EndDate->ToTimezone($server->GetSession()->Timezone)->ToIso();
 		$this->requiresApproval = $reservation->RequiresApproval();
 		$this->isRecurring = $reservation->IsRecurring();
 		$repeatTerminationDate = $reservation->RepeatTerminationDate != null ? $reservation->RepeatTerminationDate->ToIso() : null;
 		$this->recurrenceRule = new RecurrenceRequestResponse($reservation->RepeatType, $reservation->RepeatInterval, $reservation->RepeatMonthlyType, $reservation->RepeatWeekdays, $repeatTerminationDate);
 		$this->resourceId = $reservation->ResourceId;
 		$this->scheduleId = $reservation->ScheduleId;
-		$this->AddService($server, WebServices::GetSchedule,
-						  array(WebServiceParams::ScheduleId => $reservation->ScheduleId));
+		$this->AddService($server, WebServices::GetSchedule, array(WebServiceParams::ScheduleId => $reservation->ScheduleId));
 
 		foreach ($reservation->Resources as $resource)
 		{
-			$this->resources[] = new ResourceItemResponse($server, $resource->Id(), $resource->GetName());
+			$this->resources[$resource->Id()] = new ResourceItemResponse($server, $resource->Id(), $resource->GetName() );
 		}
 
 		foreach ($reservation->Accessories as $accessory)
@@ -165,6 +175,16 @@ class ReservationResponse extends RestResponse
 		{
 			$this->AddService($server, WebServices::ApproveReservation, array(WebServiceParams::ReferenceNumber => $reservation->ReferenceNumber));
 		}
+
+		$this->allowParticipation = $reservation->AllowParticipation;
+
+
+        $this->checkInDate = $reservation->CheckinDate->ToIso();
+        $this->checkOutDate = $reservation->CheckoutDate->ToIso();
+        $this->originalEndDate = $reservation->OriginalEndDate->ToIso();
+        $this->isCheckInAvailable = $reservation->IsCheckinAvailable();
+        $this->isCheckoutAvailable = $reservation->IsCheckoutAvailable();
+        $this->autoReleaseMinutes = $reservation->AutoReleaseMinutes();
 	}
 
 
@@ -185,7 +205,7 @@ class ExampleReservationResponse extends ReservationResponse
 		$this->attachments = array(AttachmentResponse::Example());
 		$this->customAttributes = array(CustomAttributeResponse::Example());
 		$this->description = 'reservation description';
-		$this->endDateTime = Date::Now()->ToIso();
+		$this->endDate = Date::Now()->ToIso();
 		$this->invitees = array(ReservationUserResponse::Example());
 		$this->isRecurring = true;
 		$this->owner = ReservationUserResponse::Example();
@@ -196,7 +216,7 @@ class ExampleReservationResponse extends ReservationResponse
 		$this->resourceId = 123;
 		$this->resources = array(ResourceItemResponse::Example());
 		$this->scheduleId = 123;
-		$this->startDateTime = Date::Now()->ToIso();
+		$this->startDate = Date::Now()->ToIso();
 		$this->title = 'reservation title';
 		$this->startReminder = ReminderRequestResponse::Example();
 		$this->endReminder = ReminderRequestResponse::Example();

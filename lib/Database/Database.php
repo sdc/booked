@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -85,8 +85,8 @@ class Database
 	/**
 	 * Executes an insert query against the database and returns the auto-increment id
 	 *
-	 * @param SqlCommand $command
-	 * @return long last id inserted for this connection
+	 * @param ISqlCommand $command
+	 * @return int last id inserted for this connection
 	 */
 	public function ExecuteInsert(ISqlCommand $command)
 	{

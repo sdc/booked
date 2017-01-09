@@ -1,20 +1,20 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+ * Copyright 2011-2016 Nick Korbel
+ *
+ * This file is part of Booked Scheduler is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-This file is part of Booked SchedulerBooked SchedulereIt is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later versBooked SchedulerduleIt is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-require_once(ROOT_DIR . 'Pages/NewReservationPage.php');
+require_once(ROOT_DIR . 'Pages/Reservation/NewReservationPage.php');
 require_once(ROOT_DIR . 'lib/Application/Reservation/ReservationInitializerBase.php');
 
 class NewReservationInitializer extends ReservationInitializerBase
@@ -22,26 +22,38 @@ class NewReservationInitializer extends ReservationInitializerBase
 	/**
 	 * @var INewReservationPage
 	 */
-	private $_page;
+	private $page;
+
+	/**
+	 * @var int
+	 */
+	private $scheduleId;
+
+	/**
+	 * @var IScheduleRepository
+	 */
+	private $scheduleRepository;
 
 	public function __construct(
 		INewReservationPage $page,
 		IReservationComponentBinder $userBinder,
 		IReservationComponentBinder $dateBinder,
 		IReservationComponentBinder $resourceBinder,
-		IReservationComponentBinder $attributeBinder,
-		UserSession $userSession
+		UserSession $userSession,
+		IScheduleRepository $scheduleRepository,
+		IResourceRepository $resourceRepository
 		)
 	{
-		$this->_page = $page;
+		$this->page = $page;
+		$this->scheduleRepository = $scheduleRepository;
+		$this->resourceRepository = $resourceRepository;
 
 		parent::__construct(
-						$page,
-						$userBinder,
-						$dateBinder,
-						$resourceBinder,
-						$attributeBinder,
-						$userSession);
+				$page,
+				$userBinder,
+				$dateBinder,
+				$resourceBinder,
+				$userSession);
 	}
 
 	public function Initialize()
@@ -62,27 +74,57 @@ class NewReservationInitializer extends ReservationInitializerBase
 
 	public function GetResourceId()
 	{
-		return $this->_page->GetRequestedResourceId();
+		return $this->page->GetRequestedResourceId();
 	}
 
 	public function GetScheduleId()
 	{
-		return $this->_page->GetRequestedScheduleId();
+		if (!empty($this->scheduleId))
+		{
+			return $this->scheduleId;
+		}
+
+		$this->scheduleId = $this->page->GetRequestedScheduleId();
+
+		if (empty($this->scheduleId))
+		{
+			$requestedResourceId = $this->page->GetRequestedResourceId();
+			if (!empty($requestedResourceId))
+			{
+				$resource = $this->resourceRepository->LoadById($requestedResourceId);
+				$this->scheduleId = $resource->GetScheduleId();
+			}
+			else
+			{
+				$schedules = $this->scheduleRepository->GetAll();
+
+				foreach ($schedules as $s)
+				{
+					if ($s->GetIsDefault())
+					{
+						$this->scheduleId = $s->GetId();
+						break;
+					}
+				}
+			}
+		}
+
+		return $this->scheduleId;
 	}
 
 	public function GetReservationDate()
 	{
-		return $this->_page->GetReservationDate();
+		return $this->page->GetReservationDate();
 	}
 
 	public function GetStartDate()
 	{
-		return $this->_page->GetStartDate();
+		return $this->page->GetStartDate();
 	}
 
 	public function GetEndDate()
 	{
-		return $this->_page->GetEndDate();
+		return $this->page->GetEndDate();
 	}
 
 	public function GetTimezone()
@@ -134,12 +176,7 @@ class BindableResourceData
 	 */
 	public function AddAvailableResource($resource)
 	{
-		if ($resource->CanAccess)
-		{
-			$this->NumberAccessible++;
-		}
+		$this->NumberAccessible++;
 		$this->AvailableResources[] = $resource;
 	}
 }
-
-?>

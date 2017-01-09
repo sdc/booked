@@ -1,17 +1,17 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
-This file is part of Booked SchedulerBooked SchedulereIt is free software: you can redistribute it and/or modify
+This file is part of Booked Scheduler is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
-(at your option) any later versBooked SchedulerduleIt is distributed in the hope that it will be useful,
+(at your option) any later version is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
+along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 require_once(ROOT_DIR . 'lib/Application/Schedule/SlotLabelFactory.php');
@@ -68,10 +68,10 @@ class ReservationSlot implements IReservationSlot
 	 * @param SchedulePeriod $end
 	 * @param Date $displayDate
 	 * @param int $periodSpan
-	 * @param ReservationItemView $reservation
+	 * @param IReservedItemView $reservation
 	 */
 	public function __construct(SchedulePeriod $begin, SchedulePeriod $end, Date $displayDate, $periodSpan,
-								ReservationItemView $reservation)
+								IReservedItemView $reservation)
 	{
 		$this->_reservation = $reservation;
 		$this->_begin = $begin->BeginDate();
@@ -134,6 +134,10 @@ class ReservationSlot implements IReservationSlot
 		return $this->_periodSpan;
 	}
 
+	/**
+	 * @param SlotLabelFactory|null $factory
+	 * @return string
+	 */
 	public function Label($factory = null)
 	{
 		if (empty($factory))
@@ -163,7 +167,29 @@ class ReservationSlot implements IReservationSlot
 		return $this->_displayDate->SetTime($this->Begin())->LessThan($date);
 	}
 
-	public function ToTimezone($timezone)
+	public function RequiresCheckin()
+    {
+    	return $this->_reservation->RequiresCheckin();
+    }
+
+    public function AutoReleaseMinutes()
+    {
+        return empty($this->_reservation->AutoReleaseMinutes) ? 0 : $this->_reservation->AutoReleaseMinutes;
+    }
+
+    public function AutoReleaseMinutesRemaining()
+    {
+        $min = $this->AutoReleaseMinutes();
+        if (empty($min))
+        {
+            return 0;
+        }
+        $maxCheckinTime = $this->BeginDate()->AddMinutes($min);
+        $d = DateDiff::BetweenDates(Date::Now(), $maxCheckinTime);
+        return $d->Minutes();
+    }
+
+    public function ToTimezone($timezone)
 	{
 		return new ReservationSlot($this->_beginPeriod->ToTimezone($timezone), $this->_endPeriod->ToTimezone($timezone), $this->Date(), $this->PeriodSpan(), $this->_reservation);
 	}
@@ -207,23 +233,24 @@ class ReservationSlot implements IReservationSlot
 
 	public function Color()
 	{
-		$color = $this->_reservation->UserPreferences->Get(UserPreferences::RESERVATION_COLOR);
-		if (!empty($color))
-		{
-			return "#$color";
-		}
-
-		return null;
+		return $this->_reservation->GetColor();
 	}
 
 	public function TextColor()
 	{
-		$color = $this->Color();
-		if (!empty($color))
-		{
-			return new ContrastingColor($color);
-		}
+		return $this->_reservation->GetTextColor();
+	}
 
-		return null;
+	/**
+	 * @return ReservationItemView
+	 */
+	public function Reservation()
+	{
+		return $this->_reservation;
+	}
+
+	public function CollidesWith(Date $date)
+	{
+		return $this->_reservation->CollidesWith($date);
 	}
 }

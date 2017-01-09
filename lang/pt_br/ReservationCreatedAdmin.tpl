@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -16,22 +16,27 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 *}
-{include file='..\..\tpl\Email\emailheader.tpl'}
 
-	Reservation Details:
+
+	Detalhes da Reserva:
 	<br/>
 	<br/>
 
-	User: {$UserName}
-	Starting: {formatdate date=$StartDate key=reservation_email}<br/>
-	Ending: {formatdate date=$EndDate key=reservation_email}<br/>
-	Resource: {$ResourceName}<br/>
-	Title: {$Title}<br/>
-	Description: {$Description}<br/>
+	Usuário: {$UserName}<br/>
+	Inicio: {formatdate date=$StartDate key=reservation_email}<br/>
+	Fim: {formatdate date=$EndDate key=reservation_email}<br/>
+	Recurso: {$ResourceName}<br/>
+
+	{if $ResourceImage}
+		<div class="resource-image"><img src="{$ScriptUrl}/{$ResourceImage}"/></div>
+	{/if}
+
+	Título: {$Title}<br/>
+	Descrição: {$Description}<br/>
 
 	{if count($RepeatDates) gt 0}
 		<br/>
-		The reservation occurs on the following dates:
+		A reserva ocorrerá nas seguintes datas:
 		<br/>
 	{/if}
 
@@ -41,10 +46,9 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 
 	{if $RequiresApproval}
 		<br/>
-		One or more of the resources reserved require approval before usage.  Please ensure that this reservation request is approved or rejected.
+		Um ou mais recursos necessitam de aprovação antes do seu uso. Essa reserva ficará pendente até que a mesma seja aprovada.
 	{/if}
 
 	<br/>
-	<a href="{$ScriptUrl}{$ReservationUrl}">View this reservation</a> | <a href="{$ScriptUrl}">Log in to Booked Scheduler</a>
+	<a href="{$ScriptUrl}{$ReservationUrl}">Verifique esta reserva</a> | <a href="{$ScriptUrl}">Acessar o Booked Scheduler</a>
 
-{include file='..\..\tpl\Email\emailfooter.tpl'}

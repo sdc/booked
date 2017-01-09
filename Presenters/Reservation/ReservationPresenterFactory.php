@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright 2012-2014 Nick Korbel
+ * Copyright 2012-2016 Nick Korbel
  *
  * This file is part of Booked Scheduler.
  *
@@ -21,6 +21,8 @@
 require_once(ROOT_DIR . 'Presenters/Reservation/ReservationSavePresenter.php');
 require_once(ROOT_DIR . 'Presenters/Reservation/ReservationUpdatePresenter.php');
 require_once(ROOT_DIR . 'Presenters/Reservation/ReservationDeletePresenter.php');
+require_once(ROOT_DIR . 'Presenters/Reservation/ReservationCheckinPresenter.php');
+require_once(ROOT_DIR . 'Presenters/Reservation/ReservationWaitlistPresenter.php');
 
 interface IReservationPresenterFactory
 {
@@ -51,6 +53,20 @@ interface IReservationPresenterFactory
 	 * @return ReservationApprovalPresenter
 	 */
 	public function Approve(IReservationApprovalPage $approvePage, UserSession $userSession);
+
+	/**
+	 * @param IReservationWaitlistPage $page
+	 * @param UserSession $userSession
+	 * @return ReservationWaitlistPresenter
+	 */
+	public function JoinWaitlist(IReservationWaitlistPage $page, UserSession $userSession);
+
+	/**
+	 * @param IReservationCheckinPage $page
+	 * @param UserSession $userSession
+	 * @return ReservationCheckinPresenter
+	 */
+	public function Checkin(IReservationCheckinPage $page, UserSession $userSession);
 }
 
 class ReservationPresenterFactory implements IReservationPresenterFactory
@@ -59,24 +75,28 @@ class ReservationPresenterFactory implements IReservationPresenterFactory
 	{
 		$persistenceFactory = new ReservationPersistenceFactory();
 		$resourceRepository = new ResourceRepository();
+		$scheduleRepository = new ScheduleRepository();
 		$reservationAction = ReservationAction::Create;
+		$persistenceService = $persistenceFactory->Create($reservationAction);
 		$handler = ReservationHandler::Create($reservationAction,
-											  $persistenceFactory->Create($reservationAction),
+											  $persistenceService,
 											  $userSession);
 
-		return new ReservationSavePresenter($savePage, $persistenceFactory->Create($reservationAction), $handler, $resourceRepository, $userSession);
+		return new ReservationSavePresenter($savePage, $persistenceService, $handler, $resourceRepository, $scheduleRepository, $userSession);
 	}
 
 	public function Update(IReservationUpdatePage $updatePage, UserSession $userSession)
 	{
 		$persistenceFactory = new ReservationPersistenceFactory();
 		$resourceRepository = new ResourceRepository();
+		$scheduleRepository = new ScheduleRepository();
 		$reservationAction = ReservationAction::Update;
+		$persistenceService = $persistenceFactory->Create($reservationAction);
 		$handler = ReservationHandler::Create($reservationAction,
-											  $persistenceFactory->Create($reservationAction),
+											  $persistenceService,
 											  $userSession);
 
-		return new ReservationUpdatePresenter($updatePage, $persistenceFactory->Create($reservationAction), $handler, $resourceRepository, $userSession);
+		return new ReservationUpdatePresenter($updatePage, $persistenceService, $handler, $resourceRepository, $scheduleRepository, $userSession);
 	}
 
 	public function Delete(IReservationDeletePage $deletePage, UserSession $userSession)
@@ -85,37 +105,60 @@ class ReservationPresenterFactory implements IReservationPresenterFactory
 
 		$deleteAction = ReservationAction::Delete;
 
-		$handler = ReservationHandler::Create($deleteAction, $persistenceFactory->Create($deleteAction), $userSession);
+		$persistenceService = $persistenceFactory->Create($deleteAction);
+		$handler = ReservationHandler::Create($deleteAction, $persistenceService, $userSession);
 		return new ReservationDeletePresenter(
 				$deletePage,
-				$persistenceFactory->Create($deleteAction),
+				$persistenceService,
 				$handler,
 				$userSession
 		);
 	}
 
-	/**
-	 * @param IReservationApprovalPage $approvePage
-	 * @param UserSession $userSession
-	 * @return ReservationApprovalPresenter
-	 */
 	public function Approve(IReservationApprovalPage $approvePage, UserSession $userSession)
 	{
 		$persistenceFactory = new ReservationPersistenceFactory();
 
 		$approveAction = ReservationAction::Approve;
 
-		$handler = ReservationHandler::Create($approveAction, $persistenceFactory->Create($approveAction),
+		$persistenceService = $persistenceFactory->Create($approveAction);
+		$handler = ReservationHandler::Create($approveAction, $persistenceService,
 											  $userSession);
 
 		$auth = new ReservationAuthorization(PluginManager::Instance()->LoadAuthorization());
 
 		return new ReservationApprovalPresenter(
 				$approvePage,
-				$persistenceFactory->Create($approveAction),
+				$persistenceService,
 				$handler,
 				$auth,
 				$userSession
 		);
 	}
+
+	public function Checkin(IReservationCheckinPage $page, UserSession $userSession)
+	{
+		$persistenceFactory = new ReservationPersistenceFactory();
+
+		$action = ReservationAction::Checkout;
+		if ($page->GetAction() == ReservationAction::Checkin)
+		{
+			$action = ReservationAction::Checkin;
+		}
+
+		$persistenceService = $persistenceFactory->Create(ReservationAction::Update);
+		$handler = ReservationHandler::Create($action, $persistenceService, $userSession);
+
+		return new ReservationCheckinPresenter(
+				$page,
+				$persistenceService,
+				$handler,
+				$userSession
+		);
+	}
+
+    public function JoinWaitlist(IReservationWaitlistPage $page, UserSession $userSession)
+    {
+        return new ReservationWaitlistPresenter($page, $userSession, new ReservationWaitlistRepository());
+    }
 }

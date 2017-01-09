@@ -5,7 +5,7 @@ function Participation(opts)
 	var elements = {
 		invitationAction: $('.participationAction'),
 		referenceNumber: $("#referenceNumber"),
-		indicator: $('#indicator'),
+		indicator: $('#participate-indicator'),
 		jsonResult: $('#jsonResult')
 	};
 
@@ -46,12 +46,12 @@ function Participation(opts)
 				{
 					elements.indicator.hide();
 					element.hide();
-					element.after('<span class="error" id="invite-error">' + data + '</span>');
+					element.after('<div class="alert alert-danger" id="invite-error">' + data + '</span>');
 				}
 				else{
 					window.location.reload();
 				}
 			}
 		});
-	};
+	}
 }

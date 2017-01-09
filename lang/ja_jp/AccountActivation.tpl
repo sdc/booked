@@ -1,5 +1,5 @@
 {* -*-coding:utf-8-*-
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -16,10 +16,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 *}
-{include file='..\..\tpl\Email\emailheader.tpl'}
+
 
 {$FirstName} 様<br/>
 Booked Scheduler にご登録いただき、ありがとうございます。
 <a href="{$ActivationUrl}">アカウントのアクティベート</a>をお願いいたします。
 
-{include file='..\..\tpl\Email\emailfooter.tpl'}

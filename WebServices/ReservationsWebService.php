@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -75,7 +75,7 @@ class ReservationsWebService
 
 		Log::Debug('GetReservations called. userId=%s, startDate=%s, endDate=%s', $userId, $startDate, $endDate);
 
-		$reservations = $this->reservationViewRepository->GetReservationList($startDate, $endDate, $userId, null,
+		$reservations = $this->reservationViewRepository->GetReservations($startDate, $endDate, $userId, null,
 																			 $scheduleId, $resourceId);
 
 		$response = new ReservationsResponse($this->server, $reservations, $this->privacyFilter, $startDate, $endDate);

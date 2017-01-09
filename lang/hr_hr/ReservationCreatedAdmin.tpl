@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 *}
-{include file='..\..\tpl\Email\emailheader.tpl'}
+
 
 	Detalji o rezervaciji:
 	<br/>
@@ -33,12 +33,17 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 		{else}
 		Tereni: {$ResourceName}<br/>
 	{/if}
+
+	{if $ResourceImage}
+		<div class="resource-image"><img src="{$ScriptUrl}/{$ResourceImage}"/></div>
+	{/if}
+
 	Naziv: {$Title}<br/>
 	Opis: {$Description}<br/>
 
 	{if count($RepeatDates) gt 0}
 		<br/>
-		Rezevacija važi za navedeni datum:
+		Rezevacija vaï¿½i za navedeni datum:
 		<br/>
 	{/if}
 
@@ -62,11 +67,10 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 
 	{if $RequiresApproval}
 		<br/>
-		Jedan ili više terena zahtijevaju odobrenje prije upotrebe. Molimo provjerite da li je rezervacija prihvacena ili odbijena.
+		Jedan ili viï¿½e terena zahtijevaju odobrenje prije upotrebe. Molimo provjerite da li je rezervacija prihvacena ili odbijena.
 	{/if}
 
 	<br/>
 	<br/>
 	<a href="{$ScriptUrl}/{$ReservationUrl}">View this reservation</a> | <a href="{$ScriptUrl}">Ulogiraj se</a>
 
-{include file='..\..\tpl\Email\emailfooter.tpl'}

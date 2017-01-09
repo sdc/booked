@@ -1,19 +1,19 @@
 <?php
+
 /**
-Copyright 2012-2014 Nick Korbel
-
-This file is part of Booked SchedulerBooked SchedulereIt is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later versBooked SchedulerduleIt is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright 2012-2016 Nick Korbel
+ *
+ * This file is part of Booked Scheduler is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 class Report_Filter
 {
 	/**
@@ -34,7 +34,17 @@ class Report_Filter
 	/**
 	 * @var int|null
 	 */
+	private $participantId;
+
+	/**
+	 * @var int|null
+	 */
 	private $groupId;
+
+	/**
+	 * @var bool
+	 */
+	private $includeDeleted;
 
 	/**
 	 * @param $resourceId int|null
@@ -42,14 +52,18 @@ class Report_Filter
 	 * @param $userId int|null
 	 * @param $groupId int|null
 	 * @param $accessoryId int|null
+	 * @param $participantId int|null
+	 * @param $includeDeleted bool
 	 */
-	public function __construct($resourceId, $scheduleId, $userId, $groupId, $accessoryId)
+	public function __construct($resourceId, $scheduleId, $userId, $groupId, $accessoryId, $participantId, $includeDeleted)
 	{
 		$this->resourceId = $resourceId;
 		$this->scheduleId = $scheduleId;
 		$this->userId = $userId;
 		$this->groupId = $groupId;
 		$this->accessoryId = $accessoryId;
+		$this->participantId = $participantId;
+		$this->includeDeleted = $includeDeleted;
 	}
 
 	public function Add(ReportCommandBuilder $builder)
@@ -66,6 +80,10 @@ class Report_Filter
 		{
 			$builder->WithUserId($this->userId);
 		}
+		if (!empty($this->participantId))
+		{
+			$builder->WithParticipantId($this->participantId);
+		}
 		if (!empty($this->groupId))
 		{
 			$builder->WithGroupId($this->groupId);
@@ -73,6 +91,10 @@ class Report_Filter
 		if (!empty($this->accessoryId))
 		{
 			$builder->WithAccessoryId($this->accessoryId);
+		}
+		if ($this->includeDeleted)
+		{
+			$builder->WithDeleted();
 		}
 	}
 
@@ -103,6 +125,14 @@ class Report_Filter
 	/**
 	 * @return int|null
 	 */
+	public function ParticipantId()
+	{
+		return $this->participantId;
+	}
+
+	/**
+	 * @return int|null
+	 */
 	public function GroupId()
 	{
 		return $this->groupId;
@@ -115,7 +145,12 @@ class Report_Filter
 	{
 		return $this->accessoryId;
 	}
+
+	/**
+	 * @return bool
+	 */
+	public function IncludeDeleted()
+	{
+		return $this->includeDeleted === true;
+	}
 }
-
-
-?>

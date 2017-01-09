@@ -1,5 +1,5 @@
 {*
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 Translation: 2014 Nicola Ruggero <nicola@nxnt.org>
 
@@ -18,11 +18,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 *}
-{include file='..\..\tpl\Email\emailheader.tpl'}
+
 
 In allegato il report richiesto in Booked Scheduler.<br/>
 
 <br/>
 <a href="{$ScriptUrl}">Accedi a Booked Scheduler</a>
 
-{include file='..\..\tpl\Email\emailfooter.tpl'}

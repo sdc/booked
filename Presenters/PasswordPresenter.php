@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -50,12 +50,15 @@ class PasswordPresenter
 
 	public function PageLoad()
 	{
+		$this->page->SetAllowedActions(PluginManager::Instance()->LoadAuthentication());
+
 		if ($this->page->ResettingPassword())
 		{
 			$this->LoadValidators();
 
 			if ($this->page->IsValid())
 			{
+				$this->page->EnforceCSRFCheck();
 				$user = $this->GetUser();
 				$password = $this->page->GetPassword();
 				$encrypted = $this->passwordEncryption->EncryptPassword($password);

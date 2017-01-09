@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -48,10 +48,11 @@ $conf['settings']['css.extension.file'] = ''; 			      	// full or relative url 
 $conf['settings']['disable.password.reset'] = 'false'; 	      	// if the password reset functionality should be disabled
 $conf['settings']['home.url'] = ''; 	      					// the url to open when the logo is clicked
 $conf['settings']['logout.url'] = ''; 	      					// the url to be directed to after logging out
+$conf['settings']['default.homepage'] = '1'; 	      			// the default homepage to use when new users register (1 = Dashboard, 2 = Schedule, 3 = My Calendar, 4 = Resource Calendar)
 
 $conf['settings']['schedule']['use.per.user.colors'] = 'false'; 		// color reservations by user
 $conf['settings']['schedule']['show.inaccessible.resources'] = 'true';  // whether or not resources that are inaccessible to the user are visible
-$conf['settings']['schedule']['reservation.label'] = '{name}';    		// format for what to display on the reservation slot label. Available properties are: {name}, {title}, {description}, {email}, {phone}, {organization}, {position}
+$conf['settings']['schedule']['reservation.label'] = '{name}';    		// format for what to display on the reservation slot label.  Available properties are: {name}, {title}, {description}, {email}, {phone}, {organization}, {position}, {startdate}, {enddate} {resourcename} {participants} {invitees} {reservationAttributes}. Custom attributes can be added using att with the attribute id. For example {att1}
 $conf['settings']['schedule']['hide.blocked.periods'] = 'false';    	// if blocked periods should be hidden or shown
 
 /**
@@ -64,10 +65,11 @@ $conf['settings']['ics']['import.key'] = '';					// it's recommended  to set thi
 /**
  * Privacy configuration
  */
-$conf['settings']['privacy']['view.schedules'] = 'false';       			// if unauthenticated users can view schedules
+$conf['settings']['privacy']['view.schedules'] = 'true';       			// if unauthenticated users can view schedules
 $conf['settings']['privacy']['view.reservations'] = 'false';    			// if unauthenticated users can view reservations
 $conf['settings']['privacy']['hide.user.details'] = 'false';    			// if personal user details should be displayed to non-administrators
 $conf['settings']['privacy']['hide.reservation.details'] = 'false';			// if reservation details should be displayed to non-administrators
+$conf['settings']['privacy']['allow.guest.reservations'] = 'false';			// if reservations can be made by users without a Booked account, if true this overrides schedule and resource visibility
 /**
  * Reservation specific configuration
  */
@@ -76,18 +78,24 @@ $conf['settings']['reservation']['updates.require.approval'] = 'false';		// if u
 $conf['settings']['reservation']['prevent.participation'] = 'false';		// if participation and invitation options should be removed
 $conf['settings']['reservation']['prevent.recurrence'] = 'false';			// if recurring reservations are disabled for non-administrators
 $conf['settings']['reservation']['enable.reminders'] = 'false';				// if reminders are enabled. this requires email to be enabled and the reminder job to be configured
+$conf['settings']['reservation']['allow.guest.participation'] = 'false';
+$conf['settings']['reservation']['allow.wait.list'] = 'false';
+$conf['settings']['reservation']['checkin.minutes.prior'] = '5';
 /**
  * Email notification configuration
  */
 $conf['settings']['reservation.notify']['resource.admin.add'] = 'false';
 $conf['settings']['reservation.notify']['resource.admin.update'] = 'false';
 $conf['settings']['reservation.notify']['resource.admin.delete'] = 'false';
+$conf['settings']['reservation.notify']['resource.admin.approval'] = 'false';
 $conf['settings']['reservation.notify']['application.admin.add'] = 'false';
 $conf['settings']['reservation.notify']['application.admin.update'] = 'false';
 $conf['settings']['reservation.notify']['application.admin.delete'] = 'false';
+$conf['settings']['reservation.notify']['application.admin.approval'] = 'false';
 $conf['settings']['reservation.notify']['group.admin.add'] = 'false';
 $conf['settings']['reservation.notify']['group.admin.update'] = 'false';
 $conf['settings']['reservation.notify']['group.admin.delete'] = 'false';
+$conf['settings']['reservation.notify']['group.admin.approval'] = 'false';
 /**
  * File upload configuration
  */
@@ -156,3 +164,32 @@ $conf['settings']['reports']['allow.all.users'] = 'false';
 $conf['settings']['password']['minimum.letters'] = '6';
 $conf['settings']['password']['minimum.numbers'] = '0';
 $conf['settings']['password']['upper.and.lower'] = 'false';
+/**
+ * Label display settings
+ */
+$conf['settings']['reservation.labels']['ics.summary'] = '{title}';
+$conf['settings']['reservation.labels']['ics.my.summary'] = '{title}';
+$conf['settings']['reservation.labels']['rss.description'] = '<div><span>Start</span> {startdate}</div><div><span>End</span> {enddate}</div><div><span>Organizer</span> {name}</div><div><span>Description</span> {description}</div>';
+$conf['settings']['reservation.labels']['my.calendar'] = '{resourcename} {title}';
+$conf['settings']['reservation.labels']['resource.calendar'] = '{name}';
+$conf['settings']['reservation.labels']['reservation.popup'] = ''; // Format for what to display in reservation popups. Possible values: {name} {dates} {title} {resources} {participants} {accessories} {description} {attributes}. Custom attributes can be added using att with the attribute id. For example {att1}
+/**
+ * Security header settings
+ */
+$conf['settings']['security']['security.headers'] = 'false'; // Enable the following options
+$conf['settings']['security']['security.strict-transport'] = 'true';
+$conf['settings']['security']['security.x-frame'] = 'deny';
+$conf['settings']['security']['security.x-xss'] = '1; mode=block';
+$conf['settings']['security']['security.x-content-type'] = 'nosniff';
+$conf['settings']['security']['security.content-security-policy'] = "default-src 'self'"; // Requires careful tuning (know what your doing)
+/**
+ * Google Analytics settings
+ */
+$conf['settings']['google.analytics']['tracking.id'] = ''; // if set, Google Analytics tracking code will be added to every page in Booked
+
+$conf['settings']['authentication']['allow.social.login'] = 'false';
+$conf['settings']['authentication']['required.email.domains'] = '';
+/**
+ * Credits functionality
+ */
+$conf['settings']['credits']['enabled'] = 'false';

@@ -65,3 +65,9 @@ insert into dbversion values('2.4', now());
 
 
 insert into dbversion values('2.5', now());
+
+-- UPGRADE TO VERSION 2.6
+
+
+
+insert into dbversion values('2.6', now());

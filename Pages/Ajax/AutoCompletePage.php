@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -83,12 +83,12 @@ class AutoCompletePage extends SecurePage
 		$users = array();
 
 		$r = new UserRepository();
-		$results = $r->GetList(1, PageInfo::All, null, null, $filter)->Results();
+		$results = $r->GetList(1, PageInfo::All, null, null, $filter, AccountStatus::ACTIVE)->Results();
 
 		/** @var $result UserItemView */
 		foreach($results as $result)
 		{
-			$users[] = new AutocompleteUser($result->Id	, $result->First, $result->Last, $result->Email, $result->Username);
+			$users[] = new AutocompleteUser($result->Id, $result->First, $result->Last, $result->Email, $result->Username, $result->CurrentCreditCount);
 		}
 
 		return $users;
@@ -148,6 +148,7 @@ class AutoCompletePage extends SecurePage
 		$groupRepo = new GroupRepository();
 		$results = $groupRepo->GetUsersInGroup($groupId)->Results();
 
+		$users = array();
 		/** @var $result UserItemView */
 		foreach ($results as $result)
 		{
@@ -167,8 +168,9 @@ class AutocompleteUser
 	public $Name;
 	public $Email;
 	public $UserName;
+	public $CurrentCreditCount;
 
-	public function __construct($userId, $firstName, $lastName, $email, $userName)
+	public function __construct($userId, $firstName, $lastName, $email, $userName, $currentCreditCount = null)
 	{
 		$full = new FullName($firstName, $lastName);
 		$this->Id = $userId;
@@ -178,6 +180,7 @@ class AutocompleteUser
 		$this->Email = $email;
 		$this->UserName = $userName;
 		$this->DisplayName = "{$full} ($email)";
+        $this->CurrentCreditCount = $currentCreditCount;
 	}
 }
 
@@ -187,5 +190,3 @@ class AutoCompleteType
 	const Group = 'group';
 	const MyUsers = 'myUsers';
 }
-
-?>

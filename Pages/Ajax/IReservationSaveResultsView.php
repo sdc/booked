@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -34,4 +34,29 @@ interface IReservationSaveResultsView
 	 * @param array|string[] $warnings
 	 */
 	public function SetWarnings($warnings);
+
+	/**
+	 * @param array|string[] $messages
+	 */
+	public function SetRetryMessages($messages);
+
+	/**
+	 * @param bool $canBeRetried
+	 */
+	public function SetCanBeRetried($canBeRetried);
+
+	/**
+	 * @param ReservationRetryParameter[] $retryParameters
+	 */
+	public function SetRetryParameters($retryParameters);
+
+	/**
+	 * @return ReservationRetryParameter[]
+	 */
+	public function GetRetryParameters();
+
+    /**
+     * @param bool $canJoinWaitlist
+     */
+    public function SetCanJoinWaitList($canJoinWaitlist);
 }

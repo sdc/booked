@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -29,4 +29,3 @@ require_once(ROOT_DIR . 'lib/WebService/WebServiceSecurity.php');
 require_once(ROOT_DIR . 'lib/WebService/WebServiceQueryStringKeys.php');
 require_once(ROOT_DIR . 'lib/WebService/WebServiceParams.php');
 require_once(ROOT_DIR . 'lib/WebService/WebServiceDate.php');
-?>

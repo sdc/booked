@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -21,177 +21,307 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 <head>
 	<title>{if $TitleKey neq ''}{translate key=$TitleKey args=$TitleArgs}{else}{$Title}{/if}</title>
 	<meta http-equiv="Content-Type" content="text/html; charset={$Charset}"/>
-	<meta name="robots" content="noindex" />
-{if $ShouldLogout}
-	<meta http-equiv="REFRESH" content="{$SessionTimeoutSeconds};URL={$Path}logout.php?{QueryStringKeys::REDIRECT}={$smarty.server.REQUEST_URI|urlencode}">
-{/if}
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="robots" content="noindex"/>
+	{if $ShouldLogout}
+		<!--meta http-equiv="REFRESH"
+			  content="{$SessionTimeoutSeconds};URL={$Path}logout.php?{QueryStringKeys::REDIRECT}={$smarty.server.REQUEST_URI|urlencode}"-->
+	{/if}
 	<link rel="shortcut icon" href="{$Path}favicon.ico"/>
 	<link rel="icon" href="{$Path}favicon.ico"/>
+	<!-- JavaScript -->
 	{if $UseLocalJquery}
-		{jsfile src="js/jquery-1.8.2.min.js"}
-		{jsfile src="js/jquery-ui-1.9.0.custom.min.js"}
+		{jsfile src="js/jquery-2.1.1.min.js"}
+		{jsfile src="js/jquery-ui-1.10.4.custom.min.js"}
+		{jsfile src="bootstrap/js/bootstrap.min.js"}
+		{jsfile src="js/lodash.3.10.1.min.js"}
+		{jsfile src="js/moment.min.js"}
+		{jsfile src="js/jquery.form-3.09.min.js"}
+		{jsfile src="js/jquery.blockUI-2.66.0.min.js"}
+		{if $Qtip}
+			{jsfile src="js/jquery.qtip.min.js"}
+		{/if}
+		{if $Validator}
+			{jsfile src="js/bootstrapvalidator/bootstrapValidator.min.js"}
+		{/if}
+		{if $InlineEdit}
+			{jsfile src="js/x-editable/js/bootstrap-editable.min.js"}
+			{jsfile src="js/x-editable/wysihtml5/wysihtml5.js"}
+			{jsfile src="js/wysihtml5/bootstrap3-wysihtml5.all.min.js"}
+		{/if}
 	{else}
-		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-		<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/jquery-ui.min.js"></script>
+		<script type="text/javascript"
+				src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+		<script type="text/javascript"
+				src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+		<script type="text/javascript"
+				src="//netdna.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+		<script type="text/javascript"
+				src="//cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js"></script>
+		<script type="text/javascript"
+				src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.13.0/moment.min.js"></script>
+		<script type="text/javascript"
+				src="//cdnjs.cloudflare.com/ajax/libs/jquery.form/3.50/jquery.form.min.js"></script>
+		<script type="text/javascript"
+				src="//cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.66.0-2013.10.09/jquery.blockUI.min.js"></script>
+	{if $Qtip}
+		<script type="text/javascript"
+				src="//cdn.jsdelivr.net/qtip2/2.2.0/jquery.qtip.min.js"></script>
 	{/if}
+	{if $Validator}
+		<script type="text/javascript"
+				src="//cdnjs.cloudflare.com/ajax/libs/jquery.bootstrapvalidator/0.5.3/js/bootstrapValidator.min.js"></script>
+	{/if}
+
+	{if $InlineEdit}
+		<script type="text/javascript"
+				src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.1/bootstrap3-editable/js/bootstrap-editable.min.js"></script>
+		<script type="text/javascript"
+				src="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.1/inputs-ext/wysihtml5/wysihtml5.js"></script>
+		{jsfile src="js/wysihtml5/bootstrap3-wysihtml5.all.min.js"}
+	{/if}
+	{/if}
+	{if $Select2}
+		{jsfile src="js/select2.min.js"}
+	{/if}
+	{if $Timepicker}
+		{jsfile src="js/jquery.timePicker.min.js"}
+	{/if}
+	{jsfile src="js/jquery-ui-timepicker-addon.js"}
 	{jsfile src="phpscheduleit.js"}
-		{cssfile src="normalize.css"}
-		{cssfile src="nav.css"}
-		{cssfile src="style.css"}
-		{if $UseLocalJquery}
-			{cssfile src="scripts/css/smoothness/jquery-ui-1.9.0.custom.min.css"}
-		{else}
-			<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/themes/smoothness/jquery-ui.css" type="text/css"></link>
+	<!-- End JavaScript -->
+
+	<!-- CSS -->
+	{if $UseLocalJquery}
+		{cssfile src="scripts/css/smoothness/jquery-ui-1.10.4.custom.min.css"}
+		{cssfile src="css/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet"}
+		{cssfile src="scripts/bootstrap/css/bootstrap.css" rel="stylesheet"}
+		{if $Qtip}
+			{cssfile src="css/jquery.qtip.min.css" rel="stylesheet"}
 		{/if}
-		{if $cssFiles neq ''}
-			{assign var='CssFileList' value=','|explode:$cssFiles}
-			{foreach from=$CssFileList item=cssFile}
-				{cssfile src=$cssFile}
-			{/foreach}
+		{if $Validator}
+			{cssfile src="css/bootstrapValidator.min.css" rel="stylesheet"}
 		{/if}
-		{cssfile src=$CssUrl}
-		{if $CssExtensionFile neq ''}
-			{cssfile src=$CssExtensionFile}
+		{if $InlineEdit}
+			{cssfile src="scripts/js/x-editable/css/bootstrap-editable.css" rel="stylesheet"}
+			{cssfile src="scripts/js/wysihtml5/bootstrap3-wysihtml5.min.css" rel="stylesheet"}
 		{/if}
+
+	{else}
+		<link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.9.0/themes/smoothness/jquery-ui.css"
+			  type="text/css"/>
+		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"
+			  type="text/css"/>
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"
+			  type="text/css"/>
+		<link rel="stylesheet" href="//cdn.jsdelivr.net/qtip2/2.2.0/jquery.qtip.min.css"
+			  type="text/css"/>
+		{if $Validator}
+			<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jquery.bootstrapvalidator/0.5.3/css/bootstrapValidator.min.css"
+				  type="text/css"/>
+		{/if}
+		{if $InlineEdit}
+			<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/x-editable/1.5.1/bootstrap3-editable/css/bootstrap-editable.css"
+				  type="text/css"/>
+			{cssfile src="scripts/js/wysihtml5/bootstrap3-wysihtml5.min.css" rel="stylesheet"}
+		{/if}
+	{/if}
+	{if $Select2}
+		{cssfile src="scripts/css/select2/select2.min.css"}
+		{cssfile src="scripts/css/select2/select2-bootstrap.min.css"}
+	{/if}
+	{if $Timepicker}
+		{cssfile src="scripts/css/timePicker.css" rel="stylesheet"}
+	{/if}
+	{if $Fullcalendar}
+		{cssfile src="scripts/css/fullcalendar.min.css"}
+		<link rel='stylesheet' type='text/css' href='scripts/css/fullcalendar.print.css' media='print'/>
+		{jsfile src="js/fullcalendar.js"}
+	{/if}
+	{cssfile src="scripts/css/jquery-ui-timepicker-addon.css"}
+	{cssfile src="booked.css"}
+	{if $cssFiles neq ''}
+		{assign var='CssFileList' value=','|explode:$cssFiles}
+		{foreach from=$CssFileList item=cssFile}
+			{cssfile src=$cssFile}
+		{/foreach}
+	{/if}
+	{cssfile src=$CssUrl}
+	{if $CssExtensionFile neq ''}
+		{cssfile src=$CssExtensionFile}
+	{/if}
 
 	{if $printCssFiles neq ''}
 		{assign var='PrintCssFileList' value=','|explode:$printCssFiles}
 		{foreach from=$PrintCssFileList item=cssFile}
-		<link rel='stylesheet' type='text/css' href='{$Path}{$cssFile}' media='print' />
+			<link rel='stylesheet' type='text/css' href='{$Path}{$cssFile}' media='print'/>
 		{/foreach}
 	{/if}
-
-	<script type="text/javascript">
-		$(document).ready(function () {
-		initMenu();
-		});
-	</script>
+	<!-- End CSS -->
 </head>
 <body>
-<div id="wrapper">
-	<div id="doc">
-		<div id="logo"><a href="{$HomeUrl}">{html_image src="$LogoUrl"}</a></div>
-		<div id="header">
-			<div id="header-top">
-				<div id="signout">
-				{if $LoggedIn}
-					{translate key="SignedInAs"} {$UserName}<br/><a
-						href="{$Path}logout.php">{translate key="SignOut"}</a>
-					{else}
-					{translate key="NotSignedIn"}<br/>
-					<a href="{$Path}index.php">{translate key="LogIn"}</a>
-				{/if}
-				</div>
-			</div>
-			<div>
-				<ul id="nav" class="menubar">
-			{if $LoggedIn}
-				<li class="menubaritem first"><a href="{$Path}{Pages::DASHBOARD}">{translate key="Dashboard"}</a></li>
-				<li class="menubaritem"><a href="{$Path}{Pages::PROFILE}">{translate key="MyAccount"}</a>
-					<ul>
-						<li class="menuitem"><a href="{$Path}{Pages::PROFILE}">{translate key="Profile"}</a></li>
-						<li class="menuitem"><a href="{$Path}{Pages::PASSWORD}">{translate key="ChangePassword"}</a></li>
-						<li class="menuitem"><a href="{$Path}{Pages::NOTIFICATION_PREFERENCES}">{translate key="NotificationPreferences"}</a></li>
-						{if $ShowParticipation}<li class="menuitem"><a href="{$Path}{Pages::PARTICIPATION}">{translate key="OpenInvitations"}</a></li>{/if}
-					</ul>
-				</li>
-				<li class="menubaritem"><a href="{$Path}{Pages::SCHEDULE}">{translate key="Schedule"}</a>
-					<ul>
-						<li class="menuitem"><a href="{$Path}{Pages::SCHEDULE}">{translate key="Bookings"}</a></li>
-						<li class="menuitem"><a href="{$Path}{Pages::MY_CALENDAR}">{translate key="MyCalendar"}</a></li>
-						<li class="menuitem"><a href="{$Path}{Pages::CALENDAR}">{translate key="ResourceCalendar"}</a></li>
-						<!--<li class="menuitem"><a href="#">{translate key="Current Status"}</a></li>-->
-						<!--<li class="menuitem"><a href="{$Path}{Pages::OPENINGS}">{translate key="FindAnOpening"}</a></li>-->
-					</ul>
-				</li>
-			{if $CanViewAdmin}
-				<li class="menubaritem"><a href="#">{translate key=ApplicationManagement}</a>
-					<ul>
-						<li class="menuitem"><a
-								href="{$Path}admin/manage_reservations.php">{translate key="ManageReservations"}</a>
-							<ul>
-								<li class="menuitem"><a
-										href="{$Path}admin/manage_blackouts.php">{translate key="ManageBlackouts"}</a></li>
-							</ul>
-						</li>
-						<li class="menuitem"><a
-								href="{$Path}admin/manage_schedules.php">{translate key="ManageSchedules"}</a></li>
-						<li class="menuitem"><a
-								href="{$Path}admin/manage_resources.php">{translate key="ManageResources"}</a>
-							<ul>
-								<li class="menuitem"><a
-										href="{$Path}admin/manage_resource_groups.php">{translate key="ManageGroups"}</a></li>
-								<li class="menuitem"><a
-										href="{$Path}admin/manage_accessories.php">{translate key="ManageAccessories"}</a></li>
-								<li class="menuitem"><a
-										href="{$Path}admin/manage_resource_types.php">{translate key="ManageResourceTypes"}</a></li>
-								<li class="menuitem"><a
-										href="{$Path}admin/manage_resource_status.php">{translate key="ManageResourceStatus"}</a></li>
-							</ul>
-						</li>
-						<li class="menuitem"><a href="{$Path}admin/manage_users.php">{translate key="ManageUsers"}</a></li>
-						<li class="menuitem"><a href="{$Path}admin/manage_groups.php">{translate key="ManageGroups"}</a></li>
-						<li class="menuitem"><a href="{$Path}admin/manage_quotas.php">{translate key="ManageQuotas"}</a></li>
-						<li class="menuitem"><a href="{$Path}admin/manage_announcements.php">{translate key="ManageAnnouncements"}</a></li>
-						<li class="menuitem"><a href="#">{translate key="Customization"}</a>
-								<ul>
-									<li class="menuitem"><a
-											href="{$Path}admin/manage_attributes.php">{translate key="Attributes"}</a></li>
-									{if $EnableConfigurationPage}<li class="menuitem"><a
-											href="{$Path}admin/manage_configuration.php">{translate key="ManageConfiguration"}</a></li>
-									{/if}
-									<li class="menuitem"><a href="{$Path}admin/manage_theme.php">{translate key="LookAndFeel"}</a></li>
-								</ul>
-							</li>
-						<li class="menuitem"><a href="{$Path}admin/server_settings.php">{translate key="ServerSettings"}</a></li>
-					</ul>
-				</li>
-			{/if}
-			{if $CanViewResponsibilities}
-				<li class="menubaritem"><a href="#">{translate key=Responsibilities}</a>
-					<ul>
-						{if $CanViewGroupAdmin}
-							<li class="menuitem"><a
-									href="{$Path}admin/manage_group_users.php">{translate key="ManageUsers"}</a></li>
-							<li class="menuitem"><a href="{$Path}admin/manage_group_reservations.php">{translate key=GroupReservations}</a>
-							</li>
-							<li class="menuitem"><a href="{$Path}admin/manage_admin_groups.php">{translate key="ManageGroups"}</a>
 
-						{/if}
-						{if $CanViewResourceAdmin || $CanViewScheduleAdmin}
-							<li class="menuitem"><a href="{$Path}admin/manage_admin_resources.php">{translate key="ManageResources"}</a></li>
-							<li class="menuitem"><a href="{$Path}admin/manage_blackouts.php">{translate key="ManageBlackouts"}</a></li>
-						{/if}
-						{if $CanViewResourceAdmin}
-							<li class="menuitem"><a href="{$Path}admin/manage_resource_reservations.php">{translate key=ResourceReservations}</a></li>
-						{/if}
-						{if $CanViewScheduleAdmin}
-							<li class="menuitem"><a href="{$Path}admin/manage_admin_schedules.php">{translate key="ManageSchedules"}</a></li>
-							<li class="menuitem"><a href="{$Path}admin/manage_schedule_reservations.php">{translate key=ScheduleReservations}</a></li>
-						{/if}
-					</ul>
-				</li>
-			{/if}
-			{if $CanViewReports}
-			<li class="menubaritem"><a href="{$Path}reports/{Pages::REPORTS_GENERATE}">{translate key=Reports}</a>
-				<ul>
-					<li><a href="{$Path}reports/{Pages::REPORTS_GENERATE}">{translate key=GenerateReport}</a></li>
-					<li><a href="{$Path}reports/{Pages::REPORTS_SAVED}">{translate key=MySavedReports}</a></li>
-					<li><a href="{$Path}reports/{Pages::REPORTS_COMMON}">{translate key=CommonReports}</a></li>
-				</ul>
-			</li>
-			{/if}
-			{/if}
-				<li class="menubaritem help"><a href="{$Path}help.php">{translate key=Help}</a>
-					<ul>
+{if $HideNavBar == false}
+<nav class="navbar navbar-default {if $IsDesktop}navbar-fixed-top{else}navbar-static-top adjust-nav-bar-static{/if}" role="navigation">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#booked-navigation">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="{$HomeUrl}">{html_image src="$LogoUrl?2.6" alt="Scheduler Logo - Home Link"}</a>
+		</div>
+		<div class="collapse navbar-collapse" id="booked-navigation">
+			<ul class="nav navbar-nav">
+				{if $LoggedIn}
+					<li><a href="{$Path}{Pages::DASHBOARD}">{translate key="Dashboard"}</a></li>
+					<li class="dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown">{translate key="MyAccount"} <b
+									class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li><a href="{$Path}{Pages::PROFILE}">{translate key="Profile"}</a></li>
+							<li><a href="{$Path}{Pages::PASSWORD}">{translate key="ChangePassword"}</a></li>
+							<li>
+								<a href="{$Path}{Pages::NOTIFICATION_PREFERENCES}">{translate key="NotificationPreferences"}</a>
+							</li>
+							{if $ShowParticipation}
+								<li><a href="{$Path}{Pages::PARTICIPATION}">{translate key="OpenInvitations"}</a></li>
+							{/if}
+						</ul>
+					</li>
+					<li class="dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown">{translate key="Schedule"} <b
+									class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li><a href="{$Path}{Pages::SCHEDULE}">{translate key="Bookings"}</a></li>
+							<li><a href="{$Path}{Pages::MY_CALENDAR}">{translate key="MyCalendar"}</a></li>
+							<li><a href="{$Path}{Pages::CALENDAR}">{translate key="ResourceCalendar"}</a></li>
+							<!--<li class="menuitem"><a href="#">{translate key="Current Status"}</a></li>-->
+							<li class="menuitem"><a href="{$Path}{Pages::OPENINGS}">{translate key="FindATime"}</a></li>
+						</ul>
+					</li>
+					{if $CanViewAdmin}
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle"
+							   data-toggle="dropdown">{translate key="ApplicationManagement"}
+								<b class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li><a href="{$Path}admin/manage_reservations.php">{translate key="ManageReservations"}</a></li>
+								<li><a href="{$Path}admin/manage_blackouts.php">{translate key="ManageBlackouts"}</a></li>
+								<li><a href="{$Path}admin/manage_quotas.php">{translate key="ManageQuotas"}</a></li>
+								<li class="divider"></li>
+								<li><a href="{$Path}admin/manage_schedules.php">{translate key="ManageSchedules"}</a>
+								<li><a href="{$Path}admin/manage_resources.php">{translate key="ManageResources"}</a></li>
+								<li><a href="{$Path}admin/manage_accessories.php">{translate key="ManageAccessories"}</a></li>
+
+								<li class="divider"></li>
+								<li><a href="{$Path}admin/manage_users.php">{translate key="ManageUsers"}</a></li>
+								<li><a href="{$Path}admin/manage_groups.php">{translate key="ManageGroups"}</a></li>
+
+								<li><a href="{$Path}admin/manage_announcements.php">{translate key="ManageAnnouncements"}</a></li>
+								<li class="divider"></li>
+								{*<li class="dropdown-header">{translate key=Customization}</li>*}
+								<li><a href="{$Path}admin/manage_attributes.php">{translate key="CustomAttributes"}</a></li>
+								{if $EnableConfigurationPage}
+									<li><a href="{$Path}admin/manage_configuration.php">{translate key="ManageConfiguration"}</a></li>
+								{/if}
+								<li><a href="{$Path}admin/manage_theme.php">{translate key="LookAndFeel"}</a></li>
+								<li><a href="{$Path}admin/import.php">{translate key="Import"}</a></li>
+								<li><a href="{$Path}admin/server_settings.php">{translate key="ServerSettings"}</a></li>
+							</ul>
+						</li>
+					{/if}
+					{if $CanViewResponsibilities}
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle"
+							   data-toggle="dropdown">{translate key="Responsibilities"} <b
+										class="caret"></b></a>
+							<ul class="dropdown-menu">
+								{if $CanViewGroupAdmin}
+									<li><a href="{$Path}admin/manage_group_users.php">{translate key="ManageUsers"}</a>
+									</li>
+									<li>
+										<a href="{$Path}admin/manage_group_reservations.php">{translate key=GroupReservations}</a>
+									</li>
+									<li>
+										<a href="{$Path}admin/manage_admin_groups.php">{translate key="ManageGroups"}</a>
+									</li>
+								{/if}
+								{if $CanViewResourceAdmin || $CanViewScheduleAdmin}
+									<li>
+										<a href="{$Path}admin/manage_admin_resources.php">{translate key="ManageResources"}</a>
+									</li>
+									<li>
+										<a href="{$Path}admin/manage_blackouts.php">{translate key="ManageBlackouts"}</a>
+									</li>
+								{/if}
+								{if $CanViewResourceAdmin}
+									<li>
+										<a href="{$Path}admin/manage_resource_reservations.php">{translate key=ResourceReservations}</a>
+									</li>
+								{/if}
+								{if $CanViewScheduleAdmin}
+									<li>
+										<a href="{$Path}admin/manage_admin_schedules.php">{translate key="ManageSchedules"}</a>
+									</li>
+									<li>
+										<a href="{$Path}admin/manage_schedule_reservations.php">{translate key=ScheduleReservations}</a>
+									</li>
+								{/if}
+								<li><a href="{$Path}admin/manage_announcements.php">{translate key="ManageAnnouncements"}</a></li>
+							</ul>
+						</li>
+					{/if}
+					{if $CanViewReports}
+						<li class="dropdown">
+							<a href="#" class="dropdown-toggle" data-toggle="dropdown">{translate key="Reports"} <b
+										class="caret"></b></a>
+							<ul class="dropdown-menu">
+								<li>
+									<a href="{$Path}reports/{Pages::REPORTS_GENERATE}">{translate key=GenerateReport}</a>
+								</li>
+								<li><a href="{$Path}reports/{Pages::REPORTS_SAVED}">{translate key=MySavedReports}</a>
+								</li>
+								<li><a href="{$Path}reports/{Pages::REPORTS_COMMON}">{translate key=CommonReports}</a>
+								</li>
+							</ul>
+						</li>
+					{/if}
+				{/if}
+
+			</ul>
+			<ul class="nav navbar-nav navbar-right">
+				{if $ShowScheduleLink}
+					<li class="dropdown">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown">{translate key="Schedule"} <b
+									class="caret"></b></a>
+						<ul class="dropdown-menu">
+							<li><a href="view-schedule.php">{translate key='ViewSchedule'}</a></li>
+						</ul>
+					</li>
+				{/if}
+				<li class="dropdown">
+					<a href="#" class="dropdown-toggle" data-toggle="dropdown">{translate key="Help"} <b
+								class="caret"></b></a>
+					<ul class="dropdown-menu">
 						<li><a href="{$Path}help.php">{translate key=Help}</a></li>
-						{if $CanViewAdmin}<li><a href="{$Path}help.php?ht=admin">{translate key=Administration}</a></li>{/if}
+						{if $CanViewAdmin}
+							<li><a href="{$Path}help.php?ht=admin">{translate key=Administration}</a></li>{/if}
 						<li><a href="{$Path}help.php?ht=about">{translate key=About}</a></li>
 					</ul>
 				</li>
+				{if $LoggedIn}
+					<li><a href="{$Path}logout.php">{translate key="SignOut"}</a></li>
+				{else}
+					<li><a href="{$Path}index.php">{translate key="LogIn"}</a></li>
+				{/if}
 			</ul>
-			</div>
-			<!-- end #nav -->
 		</div>
-		<!-- end #header -->
-		<div id="content">
+	</div>
+</nav>
+
+{/if}
+
+<div id="main" class="container-fluid">

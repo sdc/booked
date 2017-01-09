@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -64,7 +64,7 @@ class UpcomingReservationsPresenter
 		$dayOfWeek = $today->Weekday();
 
 		$lastDate = $now->AddDays(13-$dayOfWeek-1);
-		$reservations = $this->repository->GetReservationList($now, $lastDate, $this->searchUserId, $this->searchUserLevel);
+		$reservations = $this->repository->GetReservations($now, $lastDate, $this->searchUserId, $this->searchUserLevel);
 		$tomorrow = $today->AddDays(1);
 
 		$startOfNextWeek = $today->AddDays(7-$dayOfWeek);

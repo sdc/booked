@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -26,6 +26,7 @@ require_once(ROOT_DIR . 'Domain/Values/ResourceLevel.php');
 require_once(ROOT_DIR . 'Domain/Values/SeriesUpdateScope.php');
 require_once(ROOT_DIR . 'Domain/Values/AttributeValue.php');
 require_once(ROOT_DIR . 'Domain/Values/AttributeEntityValue.php');
+require_once(ROOT_DIR . 'Domain/Values/ReservationColorRule.php');
 
 require_once(ROOT_DIR . 'Domain/Schedule.php');
 require_once(ROOT_DIR . 'Domain/BookableResource.php');
@@ -40,4 +41,3 @@ require_once(ROOT_DIR . 'Domain/User.php');
 require_once(ROOT_DIR . 'Domain/Group.php');
 require_once(ROOT_DIR . 'Domain/Quota.php');
 require_once(ROOT_DIR . 'Domain/ReservationAttachment.php');
-?>

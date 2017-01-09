@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -28,4 +28,3 @@ require_once(ROOT_DIR . 'lib/Server/Cookie.php');
 require_once(ROOT_DIR . 'lib/Server/UploadedFile.php');
 require_once(ROOT_DIR . 'lib/Server/Server.php');
 require_once(ROOT_DIR . 'lib/Server/Url.php');
-?>

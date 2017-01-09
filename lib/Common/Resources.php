@@ -1,17 +1,17 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
-
-This file is part of Booked SchedulerBooked SchedulereIt is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later versBooked SchedulerduleIt is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright 2011-2016 Nick Korbel
+ *
+ * This file is part of Booked Scheduler is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -42,6 +42,7 @@ class ResourceKeys
 {
 	const DATE_GENERAL = 'general_date';
 	const DATETIME_GENERAL = 'general_datetime';
+	const DATETIME_SHORT = 'short_datetime';
 	const DATETIME_SYSTEM = 'system_datetime';
 }
 
@@ -85,14 +86,16 @@ class Resources implements IResourceLocalization
 	 */
 	private $_lang;
 
-
-	public function __construct()
+	protected function __construct()
 	{
 		$this->LanguageDirectory = dirname(__FILE__) . '/../../lang/';
 
 		$this->systemDateKeys['js_general_date'] = 'yy-mm-dd';
+		$this->systemDateKeys['js_general_datetime'] = 'yy-mm-dd HH:mm';
+		$this->systemDateKeys['js_general_time'] = 'HH:mm';
 		$this->systemDateKeys['system_datetime'] = 'Y-m-d H:i:s';
 		$this->systemDateKeys['url'] = 'Y-m-d';
+		$this->systemDateKeys['url_full'] = 'Y-m-d H:i:s';
 		$this->systemDateKeys['ical'] = 'Ymd\THis\Z';
 		$this->systemDateKeys['system'] = 'Y-m-d';
 		$this->systemDateKeys['fullcalendar'] = 'Y-m-d H:i';
@@ -104,6 +107,7 @@ class Resources implements IResourceLocalization
 	{
 		$resources = new Resources();
 		$resources->SetCurrentLanguage($resources->GetLanguageCode());
+		$resources->LoadOverrides();
 		return $resources;
 	}
 
@@ -141,8 +145,8 @@ class Resources implements IResourceLocalization
 	public function IsLanguageSupported($languageCode)
 	{
 		return !empty($languageCode) &&
-			(array_key_exists($languageCode, $this->AvailableLanguages) &&
-			file_exists($this->LanguageDirectory . $this->AvailableLanguages[$languageCode]->LanguageFile));
+		(array_key_exists($languageCode, $this->AvailableLanguages) &&
+				file_exists($this->LanguageDirectory . $this->AvailableLanguages[$languageCode]->LanguageFile));
 	}
 
 	public function GetString($key, $args = array())
@@ -153,8 +157,6 @@ class Resources implements IResourceLocalization
 		}
 
 		$strings = $this->_lang->Strings;
-
-		$return = '';
 
 		if (!isset($strings[$key]) || empty($strings[$key]))
 		{
@@ -206,6 +208,11 @@ class Resources implements IResourceLocalization
 	public function GeneralDateTimeFormat()
 	{
 		return $this->GetDateFormat(ResourceKeys::DATETIME_GENERAL);
+	}
+
+	public function ShortDateTimeFormat()
+	{
+		return $this->GetDateFormat(ResourceKeys::DATETIME_SHORT);
 	}
 
 	public function SystemDateTimeFormat()
@@ -286,5 +293,16 @@ class Resources implements IResourceLocalization
 	private function LoadAvailableLanguages()
 	{
 		$this->AvailableLanguages = AvailableLanguages::GetAvailableLanguages();
+	}
+
+	private function LoadOverrides()
+	{
+		$overrideFile = ROOT_DIR . 'config/lang-overrides.php';
+		if (file_exists($overrideFile))
+		{
+			global $langOverrides;
+			include_once($overrideFile);
+			$this->_lang->Strings = array_merge($this->_lang->Strings, $langOverrides);
+		}
 	}
 }

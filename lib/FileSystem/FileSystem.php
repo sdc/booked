@@ -1,23 +1,22 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
-This file is part of Booked SchedulerBooked SchedulereIt is free software: you can redistribute it and/or modify
+This file is part of Booked Scheduler is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
-(at your option) any later versBooked SchedulerduleIt is distributed in the hope that it will be useful,
+(at your option) any later version is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
+along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 interface IFileSystem
 {
 	/**
-	 * @abstract
 	 * @param $path string
 	 * @param $fileName string
 	 * @param $fileContents string
@@ -26,18 +25,21 @@ interface IFileSystem
 	public function Add($path, $fileName, $fileContents);
 
 	/**
-	 * @abstract
 	 * @param $fullPath string
 	 * @return string
 	 */
 	public function GetFileContents($fullPath);
 
 	/**
-	 * @abstract
 	 * @param $fullPath string
 	 * @return void
 	 */
 	public function RemoveFile($fullPath);
+
+	/**
+	 * @return string
+	 */
+	public function GetReservationAttachmentsPath();
 }
 
 class FileSystem implements IFileSystem
@@ -81,5 +83,12 @@ class FileSystem implements IFileSystem
 			Log::Error('Could not delete file: %s', $fullPath);
 		}
 	}
+
+	/**
+	 * @return string
+	 */
+	public function GetReservationAttachmentsPath()
+	{
+		return Paths::ReservationAttachments();
+	}
 }
-?>

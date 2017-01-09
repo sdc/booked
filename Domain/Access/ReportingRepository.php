@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -73,6 +73,7 @@ class ReportingRepository implements IReportingRepository
 		$rows = array();
 		while ($row = $reader->GetRow())
 		{
+			$row[ColumnNames::DURATION_HOURS] = round($row[ColumnNames::DURATION_ALIAS]/3600, 2);
 			$rows[] = $row;
 		}
 		$reader->Free();
@@ -139,5 +140,3 @@ class ReportingRepository implements IReportingRepository
 		ServiceLocator::GetDatabase()->Execute(new DeleteSavedReportCommand($reportId, $userId));
 	}
 }
-
-?>

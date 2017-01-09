@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -24,4 +24,3 @@ require_once(ROOT_DIR . 'Pages/Admin/ScheduleAdminManageReservationsPage.php');
 
 $page = new RoleRestrictedPageDecorator(new ScheduleAdminManageReservationsPage(), array(RoleLevel::SCHEDULE_ADMIN));
 $page->PageLoad();
-?>

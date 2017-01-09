@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -33,13 +33,23 @@ class AttributeControl extends Control
 		$templates[CustomAttributeTypes::MULTI_LINE_TEXTBOX] = 'MultiLineTextbox.tpl';
 		$templates[CustomAttributeTypes::SELECT_LIST] = 'SelectList.tpl';
 		$templates[CustomAttributeTypes::SINGLE_LINE_TEXTBOX] = 'SingleLineTextbox.tpl';
-		/** @var $attribute Attribute */
+		$templates[CustomAttributeTypes::DATETIME] = 'Date.tpl';
+
+		/** @var $attribute Attribute|CustomAttribute */
 		$attribute = $this->Get('attribute');
 
+		if (is_a($attribute, 'CustomAttribute'))
+		{
+			$attributeVal = $this->Get('value');
+			$attribute = new Attribute($attribute, $attributeVal);
+			$this->Set('attribute', $attribute);
+		}
+
 		$prefix = $this->Get('namePrefix');
+		$idPrefix = $this->Get('idPrefix');
 
 		$this->Set('attributeName', sprintf('%s%s[%s]', $prefix, FormKeys::ATTRIBUTE_PREFIX, $attribute->Id()));
+		$this->Set('attributeId', sprintf('%s%s%s', $idPrefix, FormKeys::ATTRIBUTE_PREFIX, $attribute->Id()));
 		$this->Display('Controls/Attributes/' . $templates[$attribute->Type()]);
 	}
 }
-?>

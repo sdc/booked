@@ -1,6 +1,6 @@
 <?php
 /**
- Copyright 2013-2014 Nick Korbel
+ Copyright 2013-2016 Nick Korbel
 
  This file is part of Booked Scheduler.
 
@@ -41,9 +41,18 @@ class UserPreferences
 
 		$pairs = explode('!sep!', $allPreferences);
 
+		if (empty($pairs))
+		{
+			return $preferences;
+		}
+
 		foreach ($pairs as $pair)
 		{
 			$nv = explode('=', $pair);
+			if (count($nv) != 2)
+			{
+				continue;
+			}
 			$preferences->Add($nv[0], $nv[1]);
 		}
 
@@ -65,9 +74,15 @@ class UserPreferences
 	 */
 	public function Get($name)
 	{
+	    if ($name == UserPreferences::RESERVATION_COLOR &&
+            Configuration::Instance()->GetSectionKey(ConfigSection::SCHEDULE, ConfigKeys::SCHEDULE_PER_USER_COLORS, new BooleanConverter()) == false)
+        {
+            return null;
+        }
+
 		if (array_key_exists($name, $this->preferences))
 		{
-			return $this->preferences[$name];
+           return $this->preferences[$name];
 		}
 
 		return null;
@@ -86,11 +101,14 @@ class UserPreferences
 			$currentValue = $this->preferences[$name];
 			if ($value != $currentValue)
 			{
-				$this->changed[] = $name;
+                Log::Debug('changed ' . $name);
+
+                $this->changed[] = $name;
 			}
 		}
 		else
 		{
+		    Log::Debug('added ' . $name);
 			$this->added[] = $name;
 		}
 

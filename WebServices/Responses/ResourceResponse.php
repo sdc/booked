@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -40,8 +40,16 @@ class ResourceResponse extends RestResponse
 	public $statusId;
 	public $statusReasonId;
 	public $customAttributes = array();
+	public $typeId;
+	public $groupIds;
+    public $bufferTime;
+    public $autoReleaseMinutes;
+    public $requiresCheckIn;
+    public $color;
+    public $creditsPerSlot;
+    public $peakCreditsPerSlot;
 
-	/**
+    /**
 	 * @param IRestServer $server
 	 * @param BookableResource $resource
 	 * @param IEntityAttributeList $attributes
@@ -66,6 +74,13 @@ class ResourceResponse extends RestResponse
 		$this->statusId = $resource->GetStatusId();
 		$this->statusReasonId = $resource->GetStatusReasonId();
 		$this->bufferTime = $resource->GetBufferTime()->__toString();
+		$this->typeId = $resource->GetResourceTypeId();
+        $this->groupIds = $resource->GetResourceGroupIds();
+        $this->autoReleaseMinutes = $resource->GetAutoReleaseMinutes();
+        $this->requiresCheckIn = $resource->IsCheckInEnabled();
+        $this->color = $resource->GetColor();
+        $this->creditsPerSlot = $resource->GetCreditsPerSlot();
+        $this->peakCreditsPerSlot = $resource->GetPeakCreditsPerSlot();
 
 		$attributeValues = $attributes->GetAttributes($resourceId);
 
@@ -113,6 +128,13 @@ class ExampleResourceResponse extends ResourceResponse
 		$this->scheduleId = 123;
 		$this->statusId = ResourceStatus::AVAILABLE;
 		$this->statusReasonId = 3;
+		$this->typeId = 2;
+        $this->bufferTime = '1 hours 30 minutes';
+        $this->autoReleaseMinutes = 15;
+        $this->requiresCheckIn = true;
+        $this->color = '#ffffff';
+        $this->creditsPerSlot = 3;
+        $this->peakCreditsPerSlot = 6;
 
 		$this->customAttributes = array(CustomAttributeResponse::Example());
 	}

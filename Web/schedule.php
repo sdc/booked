@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -20,15 +20,7 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 
 define('ROOT_DIR', '../');
 
-require_once(ROOT_DIR . '/Pages/SchedulePage.php');
-
-
-//$tree = build_tree($_groups);
-//echo '<pre>';
-//var_export($tree);
-//echo '</pre>';
+require_once(ROOT_DIR . 'Pages/SchedulePage.php');
 
 $page = new SecurePageDecorator(new SchedulePage());
 $page->PageLoad();
-
-?>

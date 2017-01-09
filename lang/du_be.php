@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -39,9 +39,8 @@ class du_be extends en_us
         $dates['res_popup'] = 'd/m/Y H:i A';
         $dates['dashboard'] = 'l, d/m/Y H:i';
         $dates['period_time'] = "H:i";
-	$dates['general_date_js'] = "dd/mm/yy";
-//added http://php.brickhost.com/forums/index.php?topic=11670.0
-	$dates['calendar_time'] = 'h:mmt';
+		$dates['general_date_js'] = "dd/mm/yy";
+		$dates['calendar_time'] = 'h:mmt';
         $dates['calendar_dates'] = 'M/d';
 
 
@@ -479,5 +478,3 @@ class du_be extends en_us
         return 'en_us';
     }
 }
-
-?>

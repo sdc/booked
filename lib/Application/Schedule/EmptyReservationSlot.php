@@ -1,17 +1,17 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
-This file is part of Booked SchedulerBooked SchedulereIt is free software: you can redistribute it and/or modify
+This file is part of Booked Scheduler is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
-(at your option) any later versBooked SchedulerduleIt is distributed in the hope that it will be useful,
+(at your option) any later version is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
+along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 require_once(ROOT_DIR . 'Domain/Values/ReservationStartTimeConstraint.php');
@@ -78,49 +78,32 @@ class EmptyReservationSlot implements IReservationSlot
 		$this->_endPeriod = $end;
 	}
 
-	/**
-	 * @return Time
-	 */
 	public function Begin()
 	{
 		return $this->_beginDisplayTime;
 	}
 
-	/**
-	 * @return Date
-	 */
 	public function BeginDate()
 	{
 		return $this->_begin;
 	}
 
-	/**
-	 * @return Time
-	 */
+
 	public function End()
 	{
 		return $this->_endDisplayTime;
 	}
 
-	/**
-	 * @return Date
-	 */
 	public function EndDate()
 	{
 		return $this->_end;
 	}
 
-	/**
-	 * @return Date
-	 */
 	public function Date()
 	{
 		return $this->_date;
 	}
 
-	/**
-	 * @return int
-	 */
 	public function PeriodSpan()
 	{
 		return 1;
@@ -171,7 +154,8 @@ class EmptyReservationSlot implements IReservationSlot
 
 	public function ToTimezone($timezone)
 	{
-		return new EmptyReservationSlot($this->_beginPeriod->ToTimezone($timezone), $this->_endPeriod->ToTimezone($timezone), $this->Date(), $this->_isReservable);
+		return new EmptyReservationSlot($this->_beginPeriod->ToTimezone($timezone), $this->_endPeriod->ToTimezone($timezone), $this->Date(),
+										$this->_isReservable);
 	}
 
 	public function IsOwnedBy(UserSession $session)
@@ -199,19 +183,44 @@ class EmptyReservationSlot implements IReservationSlot
 		return null;
 	}
 
-	/**
-	 * @return bool
-	 */
 	public function HasCustomColor()
 	{
 		return false;
 	}
 
-	/**
-	 * @return string
-	 */
 	public function TextColor()
 	{
 		return null;
+	}
+
+	public function CollidesWith(Date $date)
+	{
+		if ($this->IsReservable())
+		{
+			return false;
+		}
+
+		$range = new DateRange($this->_begin, $this->_end);
+		return $range->Contains($date, false);
+	}
+
+	public function RequiresCheckin()
+	{
+		return false;
+	}
+
+	public function AutoReleaseMinutes()
+	{
+		return null;
+	}
+
+	public function AutoReleaseMinutesRemaining()
+	{
+		return null;
+	}
+
+	public function Id()
+	{
+		return '';
 	}
 }

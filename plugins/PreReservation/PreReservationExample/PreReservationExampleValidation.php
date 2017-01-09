@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -30,13 +30,9 @@ class PreReservationExampleValidation implements IReservationValidationService
 		$this->serviceToDecorate = $serviceToDecorate;
 	}
 
-	/**
-	 * @param ReservationSeries|ExistingReservationSeries $series
-	 * @return IReservationValidationResult
-	 */
-	public function Validate($series)
+	public function Validate($series, $retryParameters = null)
 	{
-		$result = $this->serviceToDecorate->Validate($series);
+		$result = $this->serviceToDecorate->Validate($series, $retryParameters);
 
 		// don't bother validating this rule if others have failed
 		if (!$result->CanBeSaved())

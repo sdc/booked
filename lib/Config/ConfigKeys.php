@@ -1,17 +1,17 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
-This file is part of Booked SchedulerBooked SchedulereIt is free software: you can redistribute it and/or modify
+This file is part of Booked Scheduler is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
-(at your option) any later versBooked SchedulerduleIt is distributed in the hope that it will be useful,
+(at your option) any later version is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
+along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
@@ -20,7 +20,9 @@ class ConfigKeys
     const ADMIN_EMAIL = 'admin.email';
     const ADMIN_EMAIL_NAME = 'admin.email.name';
     const ALLOW_REGISTRATION = 'allow.self.registration';
+	const CREDITS_ENABLED = 'enabled';
 	const CSS_EXTENSION_FILE = 'css.extension.file';
+	const DEFAULT_HOMEPAGE = 'default.homepage';
     const DEFAULT_PAGE_SIZE = 'default.page.size';
     const DISABLE_PASSWORD_RESET = 'disable.password.reset';
     const ENABLE_EMAIL = 'enable.email';
@@ -60,6 +62,9 @@ class ConfigKeys
     const RESERVATION_PREVENT_PARTICIPATION = 'prevent.participation';
     const RESERVATION_PREVENT_RECURRENCE = 'prevent.recurrence';
     const RESERVATION_REMINDERS_ENABLED = 'enable.reminders';
+	const RESERVATION_ALLOW_GUESTS = 'allow.guest.participation';
+	const RESERVATION_ALLOW_WAITLIST = 'allow.wait.list';
+	const RESERVATION_CHECKIN_MINUTES = 'checkin.minutes.prior';
 
     const IMAGE_UPLOAD_DIRECTORY = 'image.upload.directory';
     const IMAGE_UPLOAD_URL = 'image.upload.url';
@@ -76,6 +81,7 @@ class ConfigKeys
     const PRIVACY_HIDE_RESERVATION_DETAILS = 'hide.reservation.details';
     const PRIVACY_VIEW_RESERVATIONS = 'view.reservations';
     const PRIVACY_VIEW_SCHEDULES = 'view.schedules';
+    const PRIVACY_ALLOW_GUEST_BOOKING = 'allow.guest.reservations';
 
     const NOTIFY_CREATE_RESOURCE_ADMINS = 'resource.admin.add';
     const NOTIFY_CREATE_APPLICATION_ADMINS = 'application.admin.add';
@@ -88,6 +94,10 @@ class ConfigKeys
     const NOTIFY_DELETE_RESOURCE_ADMINS = 'resource.admin.delete';
     const NOTIFY_DELETE_APPLICATION_ADMINS = 'application.admin.delete';
     const NOTIFY_DELETE_GROUP_ADMINS = 'group.admin.delete';
+
+	const NOTIFY_APPROVAL_RESOURCE_ADMINS = 'resource.admin.approval';
+	const NOTIFY_APPROVAL_APPLICATION_ADMINS = 'application.admin.approval';
+	const NOTIFY_APPROVAL_GROUP_ADMINS = 'group.admin.approval';
 
 	const UPLOAD_ENABLE_RESERVATION_ATTACHMENTS = 'enable.reservation.attachments';
 	const UPLOAD_RESERVATION_ATTACHMENTS = 'reservation.attachment.path';
@@ -112,11 +122,32 @@ class ConfigKeys
 	const PASSWORD_UPPER_AND_LOWER = 'upper.and.lower';
 	const PASSWORD_LETTERS = 'minimum.letters';
 	const PASSWORD_NUMBERS = 'minimum.numbers';
+
+	const RESERVATION_LABELS_ICS_SUMMARY = 'ics.summary';
+	const RESERVATION_LABELS_MY_ICS_SUMMARY = 'ics.my.summary';
+	const RESERVATION_LABELS_RSS_DESCRIPTION = 'rss.description';
+	const RESERVATION_LABELS_MY_CALENDAR = 'my.calendar';
+	const RESERVATION_LABELS_RESOURCE_CALENDAR = 'resource.calendar';
+	const RESERVATION_LABELS_RESERVATION_POPUP = 'reservation.popup';
+	
+    const SECURITY_HEADERS = 'security.headers';
+    const SECURITY_STRICT_TRANSPORT = 'security.strict-transport';
+    const SECURITY_X_FRAME = 'security.x-frame';
+    const SECURITY_X_XSS = 'security.x-xss';
+    const SECURITY_X_CONTENT_TYPE = 'security.x-content-type';
+    const SECURITY_CONTENT_SECURITY_POLICY = 'security.content-security-policy';
+
+    const GOOGLE_ANALYTICS_TRACKING_ID = 'tracking.id';
+
+    const AUTHENTICATION_ALLOW_SOCIAL = 'allow.social.login';
+	const AUTHENTICATION_REQUIRED_EMAIL_DOMAINS = 'required.email.domains';
 }
 
 class ConfigSection
 {
     const API = 'api';
+    const AUTHENTICATION = 'authentication';
+	const CREDITS = 'credits';
     const DATABASE = 'database';
 	const EMAIL = 'email';
     const ICS = 'ics';
@@ -126,11 +157,12 @@ class ConfigSection
     const PRIVACY = 'privacy';
 	const REPORTS = 'reports';
     const RESERVATION = 'reservation';
+	const RESERVATION_LABELS = 'reservation.labels';
     const RESERVATION_NOTIFY = 'reservation.notify';
     const SCHEDULE = 'schedule';
+	const SECURITY = 'security';
 	const UPLOADS = 'uploads';
 	const RECAPTCHA = 'recaptcha';
 	const USERS = 'users';
+    const GOOGLE_ANALYTICS = 'google.analytics';
 }
-
-?>

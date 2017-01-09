@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -41,6 +41,15 @@ class en_gb extends en_us
         $dates['dashboard'] = 'l, d/m/Y H:i';
         $dates['period_time'] = "H:i";
         $dates['general_date_js'] = "dd/mm/yy";
+		$dates['short_datetime'] = 'j/n/y H:i';
+		$dates['schedule_daily'] = 'l, d/m/Y';
+		$dates['res_popup_time'] = 'D, d/n H:i';
+		$dates['short_reservation_date'] = 'j/n/y H:i';
+		$dates['mobile_reservation_date'] = 'j/n H:i';
+		$dates['general_time_js'] = 'h:mm tt';
+		$dates['momentjs_datetime'] = 'D/M/YY h:mm A';
+		$dates['calendar_time'] = 'h:mmt';
+		$dates['calendar_dates'] = 'd M';
 
         $this->Dates = $dates;
     }
@@ -66,5 +75,3 @@ class en_gb extends en_us
         // change defaults here
     }
 }
-
-?>

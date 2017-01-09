@@ -1,29 +1,30 @@
 <?php
+
 /**
-Copyright 2012-2014 Nick Korbel
-
-This file is part of Booked Scheduler.
-
-Booked Scheduler is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Booked Scheduler is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright 2012-2016 Nick Korbel
+ *
+ * This file is part of Booked Scheduler.
+ *
+ * Booked Scheduler is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Booked Scheduler is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 class CustomAttributeTypes
 {
 	const SINGLE_LINE_TEXTBOX = 1;
 	const MULTI_LINE_TEXTBOX = 2;
 	const SELECT_LIST = 3;
 	const CHECKBOX = 4;
+	const DATETIME = 5;
 }
 
 class CustomAttributeCategory
@@ -68,14 +69,29 @@ class CustomAttribute
 	protected $required;
 
 	/**
-	 * @var int
+	 * @var int[]
 	 */
-	protected $entityId;
+	protected $entityIds = array();
 
 	/**
-	 * @var string|null
+	 * @var int[]
 	 */
-	protected $entityDescription;
+	protected $addedEntityIds = array();
+
+	/**
+	 * @var int[]
+	 */
+	protected $removedEntityIds = array();
+
+	/**
+	 * @var string[]
+	 */
+	protected $entityDescriptions = array();
+
+	/**
+	 * @var bool
+	 */
+	protected $adminOnly = false;
 
 	/**
 	 * @var string
@@ -86,6 +102,26 @@ class CustomAttribute
 	 * @var int
 	 */
 	protected $sortOrder;
+
+	/**
+	 * @var CustomAttributeTypes|int
+	 */
+	protected $secondaryCategory;
+
+	/**
+	 * @var int[]
+	 */
+	protected $secondaryEntityIds = array();
+
+	/**
+	 * @var string[]
+	 */
+	protected $secondaryEntityDescriptions = array();
+
+	/**
+	 * @var bool
+	 */
+	protected $isPrivate = false;
 
 	/**
 	 * @return int
@@ -140,27 +176,43 @@ class CustomAttribute
 	 */
 	public function UniquePerEntity()
 	{
-		return !empty($this->entityId);
+		return !empty($this->entityIds);
 	}
 
 	/**
-	 * @return int|null
+	 * @return int[]
 	 */
-	public function EntityId()
+	public function EntityIds()
 	{
-		return empty($this->entityId) ? null : $this->entityId;
+		return empty($this->entityIds) ? array() : $this->entityIds;
 	}
 
 	/**
-	 * @return null|string
+	 * @return int[]
 	 */
-	public function EntityDescription()
+	public function AddedEntityIds()
 	{
-		return $this->entityDescription;
+		return empty($this->addedEntityIds) ? array() : $this->addedEntityIds;
 	}
 
 	/**
-	 * @return \CustomAttributeCategory|int
+	 * @return int[]
+	 */
+	public function RemovedEntityIds()
+	{
+		return empty($this->removedEntityIds) ? array() : $this->removedEntityIds;
+	}
+
+	/**
+	 * @return array|string[]
+	 */
+	public function EntityDescriptions()
+	{
+		return empty($this->entityDescriptions) ? array() : $this->entityDescriptions;
+	}
+
+	/**
+	 * @return CustomAttributeCategory|int
 	 */
 	public function Category()
 	{
@@ -168,11 +220,40 @@ class CustomAttribute
 	}
 
 	/**
-	 * @return \CustomAttributeTypes|int
+	 * @return CustomAttributeTypes|int
 	 */
 	public function Type()
 	{
 		return $this->type;
+	}
+
+	public function HasSecondaryEntities()
+	{
+		return !empty($this->secondaryCategory) && !empty($this->secondaryEntityIds);
+	}
+
+	/**
+	 * @return CustomAttributeCategory|int|null
+	 */
+	public function SecondaryCategory()
+	{
+		return $this->secondaryCategory;
+	}
+
+	/**
+	 * @return int[]
+	 */
+	public function SecondaryEntityIds()
+	{
+		return empty($this->secondaryEntityIds) ? array() : $this->secondaryEntityIds;
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function SecondaryEntityDescriptions()
+	{
+		return empty($this->secondaryEntityDescriptions) ? array() : $this->secondaryEntityDescriptions;
 	}
 
 	/**
@@ -184,6 +265,35 @@ class CustomAttribute
 	}
 
 	/**
+	 * @return bool
+	 */
+	public function AdminOnly()
+	{
+		return (int)$this->adminOnly;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function IsPrivate()
+	{
+		return $this->isPrivate;
+	}
+
+	/**
+	 * @param $entityId
+	 * @return bool
+	 */
+	public function AppliesToEntity($entityId)
+	{
+		if ($this->UniquePerEntity())
+		{
+			return $this->EntityIds() == $entityId;
+		}
+		return true;
+	}
+
+	/**
 	 * @param int $id
 	 * @param string $label
 	 * @param CustomAttributeTypes|int $type
@@ -192,18 +302,21 @@ class CustomAttribute
 	 * @param bool $required
 	 * @param string $possibleValues
 	 * @param int $sortOrder
-	 * @param int|null $entityId
+	 * @param int[] $entityIds
+	 * @param bool $adminOnly
 	 * @return CustomAttribute
 	 */
-	public function __construct($id, $label, $type, $category, $regex, $required, $possibleValues, $sortOrder,$entityId = null)
+	public function __construct($id, $label, $type, $category, $regex, $required, $possibleValues, $sortOrder,
+								$entityIds = array(), $adminOnly = false)
 	{
 		$this->id = $id;
 		$this->label = $label;
 		$this->type = $type;
 		$this->category = $category;
-		$this->regex = $regex;
+		$this->SetRegex($regex);
 		$this->required = $required;
-		$this->entityId = $entityId;
+		$this->entityIds = is_array($entityIds) ? $entityIds : array($entityIds);
+		$this->adminOnly = $adminOnly;
 		$this->SetSortOrder($sortOrder);
 		$this->SetPossibleValues($possibleValues);
 	}
@@ -217,35 +330,62 @@ class CustomAttribute
 	 * @param bool $required
 	 * @param string $possibleValues
 	 * @param int $sortOrder
-	 * @param int|null $entityId
+	 * @param int[] $entityIds
+	 * @param bool $adminOnly
 	 * @return CustomAttribute
 	 */
-	public static function Create($label, $type, $category, $regex, $required, $possibleValues, $sortOrder, $entityId = null)
+	public static function Create($label, $type, $category, $regex, $required, $possibleValues, $sortOrder,
+								  $entityIds = array(), $adminOnly = false)
 	{
-		return new CustomAttribute(null, $label, $type, $category, $regex, $required, $possibleValues, $sortOrder, $entityId);
+		return new CustomAttribute(null, $label, $type, $category, $regex, $required, $possibleValues, $sortOrder,
+								   $entityIds, $adminOnly);
 	}
 
 	/**
 	 * @static
 	 * @param $row array
-	 * @return Attribute
+	 * @return CustomAttribute
 	 */
 	public static function FromRow($row)
 	{
+		$entityIds = array();
+		if (!empty($row[ColumnNames::ATTRIBUTE_ENTITY_IDS]))
+		{
+			$entityIds = explode('!sep!', $row[ColumnNames::ATTRIBUTE_ENTITY_IDS]);
+		}
+
+		$descriptions = array();
+		if (!empty($row[ColumnNames::ATTRIBUTE_ENTITY_DESCRIPTIONS]))
+		{
+			$descriptions = explode('!sep!', $row[ColumnNames::ATTRIBUTE_ENTITY_DESCRIPTIONS]);
+		}
+
 		$attribute = new CustomAttribute(
-			$row[ColumnNames::ATTRIBUTE_ID],
-			$row[ColumnNames::ATTRIBUTE_LABEL],
-			$row[ColumnNames::ATTRIBUTE_TYPE],
-			$row[ColumnNames::ATTRIBUTE_CATEGORY],
-			$row[ColumnNames::ATTRIBUTE_CONSTRAINT],
-			$row[ColumnNames::ATTRIBUTE_REQUIRED],
-			$row[ColumnNames::ATTRIBUTE_POSSIBLE_VALUES],
-			$row[ColumnNames::ATTRIBUTE_SORT_ORDER],
-			$row[ColumnNames::ATTRIBUTE_ENTITY_ID],
-			$row[ColumnNames::ATTRIBUTE_ENTITY_ID]
+				$row[ColumnNames::ATTRIBUTE_ID],
+				$row[ColumnNames::ATTRIBUTE_LABEL],
+				$row[ColumnNames::ATTRIBUTE_TYPE],
+				$row[ColumnNames::ATTRIBUTE_CATEGORY],
+				$row[ColumnNames::ATTRIBUTE_CONSTRAINT],
+				$row[ColumnNames::ATTRIBUTE_REQUIRED],
+				$row[ColumnNames::ATTRIBUTE_POSSIBLE_VALUES],
+				$row[ColumnNames::ATTRIBUTE_SORT_ORDER],
+				$entityIds,
+				$row[ColumnNames::ATTRIBUTE_ADMIN_ONLY]
 		);
 
-		$attribute->WithEntityDescription($row[ColumnNames::ATTRIBUTE_ENTITY_DESCRIPTION]);
+		$attribute->WithEntityDescriptions($descriptions);
+
+		if (isset($row[ColumnNames::ATTRIBUTE_SECONDARY_CATEGORY]))
+		{
+			$attribute->WithSecondaryEntities($row[ColumnNames::ATTRIBUTE_SECONDARY_CATEGORY],
+											  $row[ColumnNames::ATTRIBUTE_SECONDARY_ENTITY_IDS],
+											  $row[ColumnNames::ATTRIBUTE_SECONDARY_ENTITY_DESCRIPTIONS]);
+		}
+
+		if (isset($row[ColumnNames::ATTRIBUTE_IS_PRIVATE]))
+		{
+			$attribute->WithIsPrivate($row[ColumnNames::ATTRIBUTE_IS_PRIVATE]);
+		}
 
 		return $attribute;
 	}
@@ -296,14 +436,28 @@ class CustomAttribute
 	 * @param bool $required
 	 * @param string $possibleValues
 	 * @param int $sortOrder
-	 * @param int|null $entityId
+	 * @param int[] $entityIds
+	 * @param bool $adminOnly
 	 */
-	public function Update($label, $regex, $required, $possibleValues, $sortOrder, $entityId)
+	public function Update($label, $regex, $required, $possibleValues, $sortOrder, $entityIds, $adminOnly)
 	{
 		$this->label = $label;
-		$this->regex = $regex;
+		$this->SetRegex($regex);
 		$this->required = $required;
-		$this->entityId = $entityId;
+
+		$entityIds = is_array($entityIds) ? $entityIds : array($entityIds);
+		$removed = array_diff($this->entityIds, $entityIds);
+		$added = array_diff($entityIds, $this->entityIds);
+
+		if (!empty($removed) || !empty($added))
+		{
+			$this->removedEntityIds = $removed;
+			$this->addedEntityIds = $added;
+		}
+
+		$this->entityIds = $entityIds;
+
+		$this->adminOnly = $adminOnly;
 		$this->SetPossibleValues($possibleValues);
 		$this->SetSortOrder($sortOrder);
 	}
@@ -328,10 +482,74 @@ class CustomAttribute
 	}
 
 	/**
-	 * @param string $entityDescription
+	 * @param string[] $entityDescriptions
 	 */
-	public function WithEntityDescription($entityDescription)
+	public function WithEntityDescriptions($entityDescriptions)
 	{
-		$this->entityDescription = $entityDescription;
+		$this->entityDescriptions = $entityDescriptions;
+	}
+
+	/**
+	 * @param int|CustomAttributeCategory $category
+	 * @param string|int[] $entityIds
+	 * @param string|null $entityDescriptions
+	 */
+	public function WithSecondaryEntities($category, $entityIds, $entityDescriptions = null)
+	{
+		if (!empty($category) && !empty($entityIds))
+		{
+			$this->secondaryCategory = $category;
+
+			if (is_array($entityIds))
+			{
+				$this->secondaryEntityIds = $entityIds;
+			}
+			else
+			{
+				$this->secondaryEntityIds = explode(',', $entityIds);
+			}
+
+			$descriptions = array();
+			if (!empty($entityDescriptions))
+			{
+				$descriptions = explode('!sep!', $entityDescriptions);
+			}
+			$this->secondaryEntityDescriptions = $descriptions;
+		}
+		else
+		{
+			$this->secondaryCategory = null;
+			$this->secondaryEntityIds = null;
+			$this->secondaryEntityDescriptions = null;
+		}
+	}
+
+	/**
+	 * @param int|bool $isPrivate
+	 */
+	public function WithIsPrivate($isPrivate)
+	{
+		$this->isPrivate = BooleanConverter::ConvertValue($isPrivate);
+	}
+
+	/**
+	 * @param string $regex
+	 */
+	private function SetRegex($regex)
+	{
+		$this->regex = $regex;
+		if (empty($this->regex))
+		{
+			return;
+		}
+
+		if (!BookedStringHelper::StartsWith($this->regex, '/'))
+		{
+			$this->regex = '/' . $this->regex;
+		}
+		if (!BookedStringHelper::EndsWith($this->regex, '/'))
+		{
+			$this->regex = $this->regex . '/';
+		}
 	}
 }

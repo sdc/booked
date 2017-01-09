@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 File ini adalah bagian dari phpShceduleIt.
 
@@ -21,10 +21,9 @@ bersamaan dengan Booked Scheduler. Jika tidak, lihat
 <http://www.gnu.org/licenses/>.
 
 *}
-{include file='..\..\tpl\Email\emailheader.tpl'}
+
 
 Laporan Anda dari Booked Scheduler terlampir.<br/>
 
 <a href="{$ScriptUrl}">Masuk Booked Scheduler</a>
 
-{include file='..\..\tpl\Email\emailfooter.tpl'}

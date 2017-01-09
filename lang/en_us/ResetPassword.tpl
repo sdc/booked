@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -16,8 +16,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 *}
-{include file='..\..\tpl\Email\emailheader.tpl'}
-
 Here is your temporary Booked Scheduler password: {$TemporaryPassword}
 
 <br/>
@@ -27,5 +25,3 @@ Your old password will no longer work.
 <br/>
 
 Please <a href="{$ScriptUrl}">Log in to Booked Scheduler</a> and change your password as soon as possible.
-
-{include file='..\..\tpl\Email\emailfooter.tpl'}

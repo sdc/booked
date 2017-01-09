@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -18,14 +18,14 @@ You should have received a copy of the GNU General Public License
 along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-require_once(ROOT_DIR . 'WebServices/Responses/CustomAttributeResponse.php');
+require_once(ROOT_DIR . 'WebServices/Responses/CustomAttributes/CustomAttributeResponse.php');
 require_once(ROOT_DIR . 'WebServices/Responses/ResourceItemResponse.php');
 require_once(ROOT_DIR . 'WebServices/Responses/GroupItemResponse.php');
 
 class UserResponse extends RestResponse
 {
 	public $id;
-	public $username;
+	public $userName;
 	public $firstName;
 	public $lastName;
 	public $emailAddress;
@@ -37,6 +37,10 @@ class UserResponse extends RestResponse
 	public $position;
 	public $language;
 	public $icsUrl;
+	public $defaultScheduleId;
+	public $currentCredits;
+	public $reservationColor;
+
 	/** @var array|CustomAttributeResponse[] */
 	public $customAttributes = array();
 	/** @var array|ResourceItemResponse[] */
@@ -58,7 +62,10 @@ class UserResponse extends RestResponse
 		$this->position = $user->GetAttribute(UserAttribute::Position);
 		$this->statusId = $user->StatusId();
 		$this->timezone = $user->Timezone();
-		$this->username = $user->Username();
+		$this->userName = $user->Username();
+		$this->defaultScheduleId = $user->GetDefaultScheduleId();
+		$this->currentCredits = $user->GetCurrentCredits();
+		$this->reservationColor = $user->GetPreference(UserPreferences::RESERVATION_COLOR);
 
 		$attributeValues = $attributes->GetAttributes($userId);
 
@@ -108,14 +115,14 @@ class ExampleUserResponse extends UserResponse
 		$this->phoneNumber = 'phone';
 		$this->statusId = 'statusId';
 		$this->timezone = 'timezone';
-		$this->username = 'username';
+		$this->userName = 'username';
 		$this->position = 'position';
 		$this->icsUrl = 'webcal://url/to/calendar';
 		$this->customAttributes = array(CustomAttributeResponse::Example());
 		$this->permissions = array(ResourceItemResponse::Example());
 		$this->groups = array(GroupItemResponse::Example());
-
+		$this->defaultScheduleId = 1;
+		$this->currentCredits = '2.50';
+		$this->reservationColor = '#000000';
 	}
 }
-
-?>

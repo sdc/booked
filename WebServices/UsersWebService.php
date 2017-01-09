@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -51,26 +51,33 @@ class UsersWebService
 
 	/**
 	 * @name GetAllUsers
-	 * @description Loads all users that the current user can see
+	 * @description Loads all users that the current user can see.
+	 * Optional query string parameters: username, email, firstName, lastName, phone, organization, position and any custom attributes.
+	 * If searching on custom attributes, the query string parameter has to be in the format att#=value.
+	 * For example, Users/?att1=ExpectedAttribute1Value
 	 * @response UsersResponse
 	 * @return void
 	 */
 	public function GetUsers()
 	{
-		$repository = $this->repositoryFactory->Create($this->server->GetSession());
-		$data = $repository->GetList(null, null);
-		$users = $data->Results();
+		$attributes = $this->attributeService->GetByCategory(CustomAttributeCategory::USER);
+		$filter = $this->GetUserFilter($attributes);
 
-		$userIds = array();
-		/** @var $user UserItemView */
-		foreach ($users as $user)
+		$repository = $this->repositoryFactory->Create($this->server->GetSession());
+		$data = $repository->GetList(null, null, null, null, $filter->GetFilter(), AccountStatus::ACTIVE);
+
+		$attributeLabels = array();
+		foreach ($attributes as $attribute)
 		{
-			$userIds[] = $user->Id;
+			$attributeLabels[$attribute->Id()] = $attribute->Label();
 		}
 
-		$attributes = $this->attributeService->GetAttributes(CustomAttributeCategory::USER, $userIds);
+		$usersResponse = new UsersResponse($this->server, $data->Results(), $attributeLabels);
 
-		$this->server->WriteResponse(new UsersResponse($this->server, $users, $attributes));
+		unset($data);
+		unset($attributeLabels);
+
+		$this->server->WriteResponse($usersResponse);
 	}
 
 	/**
@@ -122,6 +129,34 @@ class UsersWebService
 
 		$this->server->WriteResponse($response, $responseCode);
 	}
-}
 
-?>
+	/**
+	 * @param CustomAttribute[] $attributes
+	 * @return UserFilter
+	 */
+	private function GetUserFilter($attributes)
+	{
+		$attributeFilters = array();
+		foreach ($attributes as $attribute)
+		{
+			$attributeValue = $this->server->GetQueryString(WebServiceQueryStringKeys::ATTRIBUTE_PREFIX . $attribute->Id());
+			if (!empty($attributeValue))
+			{
+				$attributeFilters[] = new Attribute($attribute, $attributeValue);
+			}
+		}
+
+		$filter = new UserFilter(
+				$this->server->GetQueryString(WebServiceQueryStringKeys::USERNAME),
+				$this->server->GetQueryString(WebServiceQueryStringKeys::EMAIL),
+				$this->server->GetQueryString(WebServiceQueryStringKeys::FIRST_NAME),
+				$this->server->GetQueryString(WebServiceQueryStringKeys::LAST_NAME),
+				$this->server->GetQueryString(WebServiceQueryStringKeys::PHONE),
+				$this->server->GetQueryString(WebServiceQueryStringKeys::ORGANIZATION),
+				$this->server->GetQueryString(WebServiceQueryStringKeys::POSITION),
+				$attributeFilters
+		);
+
+		return $filter;
+	}
+}

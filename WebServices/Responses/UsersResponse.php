@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -31,13 +31,13 @@ class UsersResponse extends RestResponse
 	/**
 	 * @param IRestServer $server
 	 * @param array|UserItemView[] $users
-	 * @param IEntityAttributeList $attributes
+	 * @param array|string[] $attributeLabels
 	 */
-	public function __construct(IRestServer $server, $users, IEntityAttributeList $attributes)
+	public function __construct(IRestServer $server, $users, $attributeLabels)
 	{
 		foreach ($users as $user)
 		{
-			$this->users[] = new UserItemResponse($server, $user, $attributes);
+			$this->users[] = new UserItemResponse($server, $user, $attributeLabels);
 		}
 	}
 
@@ -55,5 +55,3 @@ class ExampleUsersResponse extends UsersResponse
 		$this->users = array(UserItemResponse::Example());
 	}
 }
-
-?>

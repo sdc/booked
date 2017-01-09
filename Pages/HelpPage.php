@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -30,6 +30,8 @@ class HelpPage extends Page
 	public function PageLoad()
 	{
 		$this->Set('RemindersPath', realpath(ROOT_DIR . 'Jobs/sendreminders.php'));
+		$this->Set('AutoReleasePath', realpath(ROOT_DIR . 'Jobs/autorelease.php'));
+		$this->Set('WaitListPath', realpath(ROOT_DIR . 'Jobs/sendwaitlist.php'));
 		$this->Set('ServerTimezone', date_default_timezone_get());
 
 		$helpType = $this->GetQuerystring('ht');
@@ -48,4 +50,3 @@ class HelpPage extends Page
 		}
 	}
 }
-?>

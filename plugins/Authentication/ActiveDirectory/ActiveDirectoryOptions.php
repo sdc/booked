@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -40,10 +40,12 @@ class ActiveDirectoryOptions
 		$this->SetOption('ad_port', $this->GetConfig(ActiveDirectoryConfig::PORT), new IntConverter());
 		$this->SetOption('admin_username', $this->GetConfig(ActiveDirectoryConfig::USERNAME));
 		$this->SetOption('admin_password', $this->GetConfig(ActiveDirectoryConfig::PASSWORD));
-		$this->SetOption('base_dn', $this->GetConfig(ActiveDirectoryConfig::BASEDN));
+		$baseDn = $this->GetConfig(ActiveDirectoryConfig::BASEDN);
+		$this->SetOption('base_dn', empty($baseDn) ? null : $baseDn);
 		$this->SetOption('use_ssl', $this->GetConfig(ActiveDirectoryConfig::USE_SSL, new BooleanConverter()));
 		$this->SetOption('account_suffix', $this->GetConfig(ActiveDirectoryConfig::ACCOUNT_SUFFIX));
 		$this->SetOption('ldap_version', $this->GetConfig(ActiveDirectoryConfig::VERSION), new IntConverter());
+		$this->SetOption('sso', $this->GetConfig(ActiveDirectoryConfig::USE_SSO), new BooleanConverter());
 
 		return $this->_options;
 	}
@@ -71,6 +73,14 @@ class ActiveDirectoryOptions
 	private function GetConfig($keyName, $converter = null)
 	{
 		return Configuration::Instance()->File(ActiveDirectoryConfig::CONFIG_ID)->GetKey($keyName, $converter);
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function SyncGroups()
+	{
+		return $this->GetConfig(ActiveDirectoryConfig::SYNC_GROUPS, new BooleanConverter());
 	}
 
 	private function GetHosts()
@@ -113,6 +123,22 @@ class ActiveDirectoryOptions
 
 		return $attributes;
 	}
-}
 
-?>
+	/**
+	 * @return bool
+	 */
+	public function HasRequiredGroups()
+	{
+		$groupList = $this->GetConfig(ActiveDirectoryConfig::REQUIRED_GROUPS);
+		return !empty($groupList);
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public function RequiredGroups()
+	{
+		$groupList = $this->GetConfig(ActiveDirectoryConfig::REQUIRED_GROUPS);
+		return explode(',', strtolower($groupList));
+	}
+}

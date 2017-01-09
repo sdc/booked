@@ -1,5 +1,4 @@
-function BlackoutManagement(opts)
-{
+function BlackoutManagement(opts) {
 	var options = opts;
 
 	var elements = {
@@ -7,8 +6,8 @@ function BlackoutManagement(opts)
 		endDate: $("#formattedEndDate"),
 		scheduleId: $("#scheduleId"),
 		resourceId: $("#resourceId"),
-        blackoutTable: $("#blackoutTable"),
-        reservationTable: $("#reservationTable"),
+		blackoutTable: $("#blackoutTable"),
+		reservationTable: $("#reservationTable"),
 
 		allResources: $('#allResources'),
 		addResourceId: $('#addResourceId'),
@@ -17,107 +16,101 @@ function BlackoutManagement(opts)
 		deleteDialog: $('#deleteDialog'),
 		deleteRecurringDialog: $('#deleteRecurringDialog'),
 
-        deleteForm: $('#deleteForm'),
+		deleteForm: $('#deleteForm'),
 		deleteRecurringForm: $('#deleteRecurringForm'),
 		addBlackoutForm: $('#addBlackoutForm'),
 
 		referenceNumberList: $(':hidden.reservationId')
 	};
 
-	var blackouts = new Object();
-    var blackoutId;
+	var blackoutId;
 
-	BlackoutManagement.prototype.init = function()
-	{
-        ConfigureAdminDialog(elements.deleteDialog, 'auto', 'auto');
-        ConfigureAdminDialog(elements.deleteRecurringDialog, 'auto', 'auto');
+	BlackoutManagement.prototype.init = function () {
 
 		wireUpUpdateButtons();
 
-		$(".save").click(function() {
+		$(".save").click(function () {
 			$(this).closest('form').submit();
 		});
 
-		$(".cancel").click(function() {
-			$(this).closest('.dialog').dialog("close");
+		$(".cancel").click(function () {
+			$(this).closest('.modal').modal("hide");
 		});
 
-		$('#createDiv').delegate('.reload', 'click', function(e) {
+		$('#result').delegate('.reload', 'click', function (e) {
 			location.reload();
 		});
 
-		$('#createDiv').delegate('.close', 'click', function(e) {
-			$('#createDiv').hide();
-			$.colorbox.close();
+		$('#result').delegate('.unblock', 'click', function (e) {
+			$('#result').hide();
+			$.unblockUI();
 		});
 
-		elements.blackoutTable.find('.editable td:not(.update)').click(function (e)
-		{
+		elements.blackoutTable.find('.edit').click(function (e) {
+			$('#update-spinner').show();
 			var tr = $(this).parents('tr');
-			var id = tr.find('.id').text();
+			var id = tr.attr('data-blackout-id');
 
-			$.colorbox(
-					{   inline: false,
-						href: opts.editUrl + id,
-						transition: "none",
-						width: "75%",
-						height: "75%",
-						overlayClose: false,
-						onComplete: function ()
-						{
-							ConfigureAdminForm($('#editBlackoutForm'), getUpdateUrl, onAddSuccess, null, {onBeforeSubmit: onBeforeAddSubmit, target: '#result'});
+			$.blockUI({
+				message: $('#update-box'),
+				css: {textAlign: 'left'}
+			});
 
-							wireUpUpdateButtons();
+			var updateDiv = $('#update-contents');
 
-							$(".save").click(function() {
-								$(this).closest('form').submit();
-							});
+			updateDiv.empty();
+			updateDiv.load(opts.editUrl + id, function () {
+				$('.blockUI').css('cursor', 'default');
 
-							$('#cancelUpdate').click(function (e)
-							{
-								$.colorbox.close();
-							});
+				$('#update-spinner').hide();
 
-							$('.blackoutResources').click(function (e)
-							{
-								if ($(".blackoutResources input:checked").length == 0)
-								{
-									e.preventDefault();
-								}
-							});
+				ConfigureAsyncForm($('#editBlackoutForm'), getUpdateUrl, onAddSuccess, null, {
+					onBeforeSubmit: onBeforeAddSubmit,
+					target: '#result'
+				});
 
-							$('#updateStartTime').timepicker({
-								show24Hours: false
-							});
+				wireUpUpdateButtons();
 
-							$('#updateEndTime').timepicker({
-								show24Hours: false
-							});
+				$(".save").click(function () {
+					$(this).closest('form').submit();
+				});
 
-						}});
+				$('#cancelUpdate').click(function (e) {
+					$.unblockUI();
+				});
+
+				$('.blackoutResources').click(function (e) {
+					if ($(".blackoutResources input:checked").length == 0)
+					{
+						e.preventDefault();
+					}
+				});
+				wireUpTimePickers();
+
+                $('#update-box').removeClass('no-show');
+            });
 		});
 
 		handleBlackoutApplicabilityChange();
 		wireUpTimePickers();
 
-		elements.blackoutTable.delegate('.update', 'click', function(e) {
-            e.preventDefault();
+		elements.blackoutTable.delegate('.update', 'click', function (e) {
+			e.preventDefault();
 
-            var tr = $(this).parents('tr');
-            var id = tr.find('.id').text();
-            setActiveBlackoutId(id);
+			var tr = $(this).parents('tr');
+			var id = tr.attr('data-blackout-id');
+			setActiveBlackoutId(id);
 		});
 
-        elements.blackoutTable.delegate('.delete', 'click', function() {
-            showDeleteBlackout();
+		elements.blackoutTable.delegate('.delete', 'click', function () {
+			showDeleteBlackout();
 		});
 
-		elements.blackoutTable.delegate('.delete-recurring', 'click', function() {
-            showDeleteRecurringBlackout();
+		elements.blackoutTable.delegate('.delete-recurring', 'click', function () {
+			showDeleteRecurringBlackout();
 		});
 
-		$('#showAll').click(function(e)
-		{
+		$('#showAll').click(function (e) {
 			e.preventDefault();
 			elements.startDate.val('');
 			elements.endDate.val('');
@@ -126,120 +119,98 @@ function BlackoutManagement(opts)
 
 			filterReservations();
 		});
-		$('#filter').click(filterReservations);
 
-		ConfigureAdminForm(elements.addBlackoutForm, getAddUrl, onAddSuccess, null, {onBeforeSubmit: onBeforeAddSubmit, target: '#result'});
-		ConfigureAdminForm(elements.deleteForm, getDeleteUrl, onDeleteSuccess, null, {onBeforeSubmit: onBeforeDeleteSubmit, target: '#result'});
-		ConfigureAdminForm(elements.deleteRecurringForm, getDeleteUrl, onDeleteSuccess, null, {onBeforeSubmit: onBeforeDeleteSubmit, target: '#result'});
+		$('#filter').click(function (e) {
+			e.preventDefault();
+			filterReservations();
+		});
+
+		ConfigureAsyncForm(elements.addBlackoutForm, getAddUrl, onAddSuccess, null, {
+			onBeforeSubmit: onBeforeAddSubmit,
+			target: '#result'
+		});
+		ConfigureAsyncForm(elements.deleteForm, getDeleteUrl, onDeleteSuccess, null, {
+			onBeforeSubmit: onBeforeDeleteSubmit,
+			target: '#result'
+		});
+		ConfigureAsyncForm(elements.deleteRecurringForm, getDeleteUrl, onDeleteSuccess, null, {
+			onBeforeSubmit: onBeforeDeleteSubmit,
+			target: '#result'
+		});
 	};
 
-    function showDeleteBlackout() {
-        elements.deleteDialog.dialog('open');
-    }
+	function showDeleteBlackout() {
+		elements.deleteDialog.modal('show');
+	}
 
 	function showDeleteRecurringBlackout() {
-        elements.deleteRecurringDialog.dialog('open');
-    }
+		elements.deleteRecurringDialog.modal('show');
+	}
 
-    function setActiveBlackoutId(id) {
-        blackoutId = id;
-    }
+	function setActiveBlackoutId(id) {
+		blackoutId = id;
+	}
 
-    function getActiveBlackoutId() {
-       return blackoutId;
-    }
+	function getActiveBlackoutId() {
+		return blackoutId;
+	}
 
-	function onBeforeAddSubmit(formData, jqForm, opts)
-	{
+	function showWaitBox() {
+		$.blockUI({message: $('#wait-box')});
+
+		$('#result').hide();
+		$('#creatingNotification').show();
+	}
+
+	function onBeforeAddSubmit(formData, jqForm, opts) {
 		var isValid = BeforeFormSubmit(formData, jqForm, opts);
 
 		if (isValid)
 		{
-			$.colorbox({inline:true, href:"#createDiv", transition:"none", width:"75%", height:"75%", overlayClose: false});
-			$('#result').hide();
-			$('#creating, #createDiv').show();
+			showWaitBox();
 		}
 		return isValid;
 	}
 
-    function onBeforeDeleteSubmit()
-    {
-        $.colorbox({inline:true, href:"#createDiv", transition:"none", width:"75%", height:"75%", overlayClose: false});
-        $('#result').hide();
-        $('#creating, #createDiv').show();
-    }
-
-	function onAddSuccess()
-	{
-		$('#creating').hide();
-		$('#result').show();
-
-        $("#reservationTable").find('.editable').each(function() {
-           var refNum = $(this).find('.referenceNumber').text();
-           $(this).attachReservationPopup(refNum, options.popupUrl);
-       });
-
-        $("#reservationTable").delegate('.editable', 'click', function() {
-            $(this).addClass('clicked');
-            var td = $(this).find('.referenceNumber');
-            viewReservation(td.text());
-        });
+	function onBeforeDeleteSubmit() {
+		$('.modal').modal('hide');
+		showWaitBox();
 	}
 
-    function onDeleteSuccess()
-    {
-        location.reload();
-    }
-	
-	function getDeleteUrl()
-	{
+	function onAddSuccess() {
+		$('.blockUI').css('cursor', 'default');
+		$('#creatingNotification').hide();
+		$('#result').show();
+
+		$("#reservationTable").find('.editable').each(function () {
+			var refNum = $(this).find('.referenceNumber').text();
+			$(this).attachReservationPopup(refNum, options.popupUrl);
+		});
+
+		$("#reservationTable").delegate('.editable', 'click', function () {
+			$(this).addClass('clicked');
+			var td = $(this).find('.referenceNumber');
+			viewReservation(td.text());
+		});
+	}
+
+	function onDeleteSuccess() {
+		location.reload();
+	}
+
+	function getDeleteUrl() {
 		return opts.deleteUrl + getActiveBlackoutId();
 	}
 
-	function getAddUrl()
-	{
+	function getAddUrl() {
 		return opts.addUrl;
 	}
 
-	function getUpdateUrl()
-	{
+	function getUpdateUrl() {
 		return opts.updateUrl;
 	}
 
-	function setActiveReferenceNumber(referenceNumber)
-	{
-		this.referenceNumber = referenceNumber;
-	}
-
-	function getActiveReferenceNumber()
-	{
-		return this.referenceNumber;
-	}
-
-	function setActiveReservationId(reservationId)
-	{
-		this.reservationId = reservationId;
-	}
-
-	function getActiveReservationId()
-	{
-		return this.reservationId;
-	}
-
-	function showDeleteReservation(referenceNumber)
-	{
-		if (reservations[referenceNumber].isRecurring == '1')
-		{
-			elements.deleteSeriesDialog.dialog('open');
-		}
-		else
-		{
-			elements.deleteInstanceDialog.dialog('open');
-		}
-	}
-	
-	function filterReservations()
-	{
+	function filterReservations() {
 		var filterQuery =
 				'sd=' + elements.startDate.val() +
 				'&ed=' + elements.endDate.val() +
@@ -249,14 +220,12 @@ function BlackoutManagement(opts)
 		window.location = document.location.pathname + '?' + encodeURI(filterQuery);
 	}
 
-	function viewReservation(referenceNumber)
-	{
+	function viewReservation(referenceNumber) {
 		window.location = options.reservationUrlTemplate.replace('[refnum]', referenceNumber);
 	}
 
-	function handleBlackoutApplicabilityChange()
-	{
-		elements.allResources.change(function(){
+	function handleBlackoutApplicabilityChange() {
+		elements.allResources.change(function () {
 			if ($(this).is(':checked'))
 			{
 				elements.addResourceId.attr('disabled', 'disabled');
@@ -270,30 +239,22 @@ function BlackoutManagement(opts)
 		});
 	}
 
-	function wireUpTimePickers()
-	{
-		$('#addStartTime').timepicker({
-			show24Hours: false
-		});
-		$('#addEndTime').timepicker({
-			show24Hours: false
+	function wireUpTimePickers() {
+		$('.timepicker').timepicker({
+			timeFormat: options.timeFormat
 		});
 	}
 
-	function ChangeUpdateScope(updateScopeValue)
-	{
+	function ChangeUpdateScope(updateScopeValue) {
 		$('.hdnSeriesUpdateScope').val(updateScopeValue);
 	}
 
-	function wireUpUpdateButtons()
-	{
-		$('.btnUpdateThisInstance').click(function ()
-		{
+	function wireUpUpdateButtons() {
+		$('.btnUpdateThisInstance').click(function () {
 			ChangeUpdateScope(options.scopeOpts.instance);
 		});
 
-		$('.btnUpdateAllInstances').click(function ()
-		{
+		$('.btnUpdateAllInstances').click(function () {
 			ChangeUpdateScope(options.scopeOpts.full);
 		});
 	}

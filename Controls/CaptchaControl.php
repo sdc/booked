@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2013-2014 Nick Korbel
+Copyright 2013-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -41,8 +41,11 @@ class CaptchaControl extends Control
 	{
 		Log::Debug('CaptchaControl using Recaptcha');
 		require_once(ROOT_DIR . 'lib/external/recaptcha/recaptchalib.php');
+
+		$isHttps = ServiceLocator::GetServer()->GetIsHttps();
+
 		$response = recaptcha_get_html(Configuration::Instance()->GetSectionKey(ConfigSection::RECAPTCHA,
-																				ConfigKeys::RECAPTCHA_PUBLIC_KEY));
+																				ConfigKeys::RECAPTCHA_PUBLIC_KEY), null, $isHttps);
 		echo $response;
 	}
 
@@ -54,10 +57,7 @@ class CaptchaControl extends Control
 		$label = Resources::GetInstance()->GetString('SecurityCode');
 		$formName = FormKeys::CAPTCHA;
 
-		echo "<img src='$url' alt='captcha' id='captchaImg'/>";
-		echo "<br/><label class=\"reg\">$label<br/><input type=\"text\" class=\"input\" name=\"$formName\" size=\"20\" id=\"captchaValue\"/>";
+		echo "<div class=\"form-group\"><div><img src='$url' alt='captcha' id='captchaImg'/></div>";
+		echo "<label for=\"captchaValue\">$label</label><input type=\"text\" class=\"form-control\" name=\"$formName\" size=\"20\" id=\"captchaValue\"/></div>";
 	}
 }
-
-
-?>

@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -18,71 +18,104 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 *}
 {include file='globalheader.tpl'}
 
-{if $ShowLoginError}
-<div id="loginError">
-	{translate key='LoginError'}
-</div>
-{/if}
-
-<div id="loginbox">
-	<!--This "$smarty.server.SCRIPT_NAME" sets up the form to post back to the same page that it is on.-->
-	<form name="login" id="login" class="login" method="post" action="{$smarty.server.SCRIPT_NAME}">
-		<div>
-			{if $ShowUsernamePrompt}
-			<p>
-				<label class="login">{translate key='UsernameOrEmail'}<br/>
-				{textbox name="EMAIL" class="input" size="20" tabindex="10"}</label>
-			</p>
-			{/if}
-
-			{if $ShowPasswordPrompt}
-			<p>
-				<label class="login">{translate key='Password'}<br/>
-				{textbox type="password" name="PASSWORD" class="input" value="" size="20" tabindex="20"}</label>
-			</p>
-			{/if}
-
-			<p>
-				<label class="login">{translate key='Language'}<br/>
-					<select {formname key='LANGUAGE'} class="input-small" id="languageDropDown">
-					{object_html_options options=$Languages key='GetLanguageCode' label='GetDisplayName' selected=$SelectedLanguage}
-					</select>
-			</p>
-
-			{if $ShowPersistLoginPrompt}
-			<p class="stayloggedin">
-				<label class="login"><input type="checkbox" name="{FormKeys::PERSIST_LOGIN}" value="true"
-											tabindex="30"/> {translate key='RememberMe'}</label>
-
-			</p>
-			{/if}
-
-			<p class="loginsubmit">
-				<button type="submit" name="{Actions::LOGIN}" class="button" tabindex="100" value="submit"><img
-						src="img/door-open-in.png"/> {translate key='LogIn'} </button>
-				<input type="hidden" name="{FormKeys::RESUME}" value="{$ResumeUrl}"/>
-			</p>
+<div id="page-login">
+	{if $ShowLoginError}
+		<div id="loginError" class="alert alert-danger">
+			{translate key='LoginError'}
 		</div>
-		<div style="clear:both;">&nbsp;</div>
-	{if $ShowRegisterLink}
-		<h4 class="register">
-			{translate key='FirstTimeUser?'}
-				{html_link href="register.php" key="CreateAnAccount"}
-		</h4>
 	{/if}
-	</form>
-</div>
 
-<div id="login-links">
-	<p>
-		{if $ShowScheduleLink}
-		<a href="view-schedule.php">{translate key='ViewSchedule'}</a>
-		{/if}
-		{if $ShowScheduleLink && $ShowForgotPasswordPrompt}|{/if}
-		{if $ShowForgotPasswordPrompt}
-		<a href="forgot.php">{translate key='ForgotMyPassword'}</a>
-		{/if}
-	</p>
+	<div class="col-md-offset-3 col-md-6 col-xs-12 ">
+		<div id="login-header" class="default-box-header">
+			<span class="sign-in">{translate key=SignIn}</span>
+
+		</div>
+		<form role="form" name="login" id="login" class="form-horizontal" method="post"
+			  action="{$smarty.server.SCRIPT_NAME}">
+			<div id="login-box" class="col-xs-12 default-box straight-top">
+				{if $ShowUsernamePrompt}
+					<div class="col-xs-12">
+						<div class="input-group margin-bottom-25">
+							<span class="input-group-addon"><i class="glyphicon glyphicon-user"></i></span>
+							<input type="text" required="" class="form-control"
+								   id="email" {formname key=EMAIL}
+								   placeholder="{translate key=UsernameOrEmail}"/>
+						</div>
+					</div>
+				{/if}
+
+				{if $ShowPasswordPrompt}
+					<div class="col-xs-12">
+						<div class="input-group margin-bottom-25">
+							<span class="input-group-addon">
+							<i class="glyphicon glyphicon-lock"></i>
+							</span>
+							<input type="password" required="" id="password" {formname key=PASSWORD}
+								   class="form-control"
+								   value="" placeholder="{translate key=Password}"/>
+						</div>
+					</div>
+				{/if}
+
+				<div class="col-xs-12">
+					<button type="submit" class="btn btn-large btn-primary  btn-block" name="{Actions::LOGIN}"
+							value="submit">{translate key='LogIn'}</button>
+					<input type="hidden" {formname key=RESUME} value="{$ResumeUrl}"/>
+				</div>
+
+				<div class="col-xs-12 {if $ShowRegisterLink}col-sm-6{/if}">
+					<div class="checkbox">
+						<input id="rememberMe" type="checkbox" {formname key=PERSIST_LOGIN}>
+						<label for="rememberMe">{translate key=RememberMe}</label>
+					</div>
+				</div>
+
+                {if $ShowRegisterLink}
+                    <div class="col-xs-12 col-sm-6 register">
+                    <span class="bold">{translate key="FirstTimeUser?"}
+                    <a href="{$RegisterUrl}" {$RegisterUrlNew}
+                       title="{translate key=Register}">{translate key=Register}</a>
+                    </span>
+                    </div>
+                {/if}
+
+				{if $AllowSocialLogin}
+					<div class="col-lg-6 col-md-12">
+						<a href="https://accounts.google.com/o/oauth2/v2/auth?scope=email%20profile&state={$GoogleState}&redirect_uri=http://www.social.twinkletoessoftware.com/googleresume.php&response_type=code&client_id=531675809673-3sfvrchh6svd9bfl7m55dao8n4s6cqpc.apps.googleusercontent.com"
+						   class="pull-left-lg">
+							<img src="img/external/btn_google_signin_dark_normal_web.png" alt="Sign in with Google"/>
+						</a>
+					</div>
+					<div class="col-lg-6 col-md-12">
+						<a href="http://www.social.twinkletoessoftware.com/fblogin.php?protocol={$Protocol}&resume={$ScriptUrlNoProtocol}/external-auth.php%3Ftype%3Dfb" class="pull-right-lg">
+							<img style="max-height:42px" src="img/external/btn_facebook_login.png" alt="Sign in with Facebook"/>
+						</a>
+					</div>
+				{/if}
+			</div>
+			<div id="login-footer" class="col-xs-12">
+				{if $ShowForgotPasswordPrompt}
+					<div id="forgot-password" class="col-xs-12 col-sm-6">
+						<a href="{$ForgotPasswordUrl}" {$ForgotPasswordUrlNew} class="btn btn-link pull-left-sm"><span><i
+										class="glyphicon glyphicon-question-sign"></i></span> {translate key='ForgotMyPassword'}</a>
+					</div>
+				{/if}
+				<div id="change-language" class="col-xs-12 col-sm-6">
+					<button type="button" class="btn btn-link pull-right-sm" data-toggle="collapse"
+							data-target="#change-language-options"><span><i class="glyphicon glyphicon-globe"></i></span>
+						{translate key=ChangeLanguage}
+					</button>
+					<div id="change-language-options" class="collapse">
+						<select {formname key=LANGUAGE} class="form-control input-sm" id="languageDropDown">
+							{object_html_options options=$Languages key='GetLanguageCode' label='GetDisplayName' selected=$SelectedLanguage}
+						</select>
+					</div>
+				</div>
+			</div>
+
+
+		</form>
+	</div>
 </div>
 
 {setfocus key='EMAIL'}
@@ -90,14 +123,14 @@ along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 <script type="text/javascript">
 	var url = 'index.php?{QueryStringKeys::LANGUAGE}=';
 	$(document).ready(function () {
-		$('#languageDropDown').change(function()
-		{
+		$('#languageDropDown').change(function () {
 			window.location.href = url + $(this).val();
 		});
 
 		var langCode = readCookie('{CookieKeys::LANGUAGE}');
 
-		if (!langCode) {
+		if (!langCode)
+		{
 		}
 	});
 </script>

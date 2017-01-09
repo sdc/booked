@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -68,11 +68,10 @@ class CalendarExportPresenter
 		if (!empty($referenceNumber))
 		{
 			$res = $this->reservationViewRepository->GetReservationForEditing($referenceNumber);
-			$reservations = array(new iCalendarReservationView($res, $currentUser, $this->privacyFilter));
+			$item = ReservationItemView::FromReservationView($res);
+			$reservations = array(new iCalendarReservationView($item, $currentUser, $this->privacyFilter));
 		}
 
 		$this->page->SetReservations($reservations);
 	}
 }
-
-?>

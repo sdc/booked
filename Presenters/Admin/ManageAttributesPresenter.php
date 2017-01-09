@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2012-2014 Nick Korbel
+Copyright 2012-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -65,11 +65,15 @@ class ManageAttributesPresenter extends ActionPresenter
 		$required = $this->page->GetIsRequired();
 		$possibleValues = $this->page->GetPossibleValues();
 		$sortOrder = $this->page->GetSortOrder();
-		$entityId = $this->page->GetEntityId();
+		$entityIds = $this->page->GetEntityIds();
+		$adminOnly = $this->page->GetIsAdminOnly();
 
         Log::Debug('Adding new attribute named: %s', $attributeName);
 
-        $attribute = CustomAttribute::Create($attributeName, $type, $scope, $regex, $required, $possibleValues, $sortOrder, $entityId);
+        $attribute = CustomAttribute::Create($attributeName, $type, $scope, $regex, $required, $possibleValues, $sortOrder, $entityIds, $adminOnly);
+		$this->AddSecondaryEntities($attribute);
+		$attribute->WithIsPrivate($this->page->GetIsPrivate());
+
 		$this->attributeRepository->Add($attribute);
     }
 
@@ -88,12 +92,15 @@ class ManageAttributesPresenter extends ActionPresenter
 		$required = $this->page->GetIsRequired();
 		$possibleValues = $this->page->GetPossibleValues();
 		$sortOrder = $this->page->GetSortOrder();
-		$entityId = $this->page->GetEntityId();
+		$entityIds = $this->page->GetEntityIds();
+		$adminOnly = $this->page->GetIsAdminOnly();
 
 		Log::Debug('Updating attribute with id: %s', $attributeId);
 
 		$attribute = $this->attributeRepository->LoadById($attributeId);
-		$attribute->Update($attributeName, $regex, $required, $possibleValues, $sortOrder, $entityId);
+		$attribute->Update($attributeName, $regex, $required, $possibleValues, $sortOrder, $entityIds, $adminOnly);
+		$this->AddSecondaryEntities($attribute);
+		$attribute->WithIsPrivate($this->page->GetIsPrivate());
 
 		$this->attributeRepository->Update($attribute);
 	}
@@ -107,7 +114,22 @@ class ManageAttributesPresenter extends ActionPresenter
 			$categoryId = CustomAttributeCategory::RESERVATION;
 		}
 
+		$this->page->SetCategory($categoryId);
 		$this->page->BindAttributes($this->attributeRepository->GetByCategory($categoryId));
 	}
+
+	private function AddSecondaryEntities(CustomAttribute $attribute)
+	{
+		if ($this->page->GetLimitAttributeScope())
+		{
+			$secondaryEntityIds = $this->page->GetSecondaryEntityIds();
+			$secondaryCategory = $this->page->GetSecondaryCategory();
+
+			$attribute->WithSecondaryEntities($secondaryCategory, $secondaryEntityIds);
+		}
+		else
+		{
+			$attribute->WithSecondaryEntities(null, null);
+		}
+	}
 }
-?>

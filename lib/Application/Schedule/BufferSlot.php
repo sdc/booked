@@ -1,22 +1,24 @@
 <?php
+
 /**
- * Copyright 2013-2014 Nick Korbel
+ * Copyright 2013-2016 Nick Korbel
  *
- * This file is part of phpScheduleIt.
+ * This file is part of Booked Scheduler.
  *
- * phpScheduleIt is free software: you can redistribute it and/or modify
+ * Booked Scheduler is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * phpScheduleIt is distributed in the hope that it will be useful,
+ * Booked Scheduler is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with phpScheduleIt.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 class BufferSlot implements IReservationSlot
 {
 	/**
@@ -87,49 +89,31 @@ class BufferSlot implements IReservationSlot
 		$this->_endPeriod = $end;
 	}
 
-	/**
-	 * @return Time
-	 */
 	public function Begin()
 	{
 		return $this->_begin->GetTime();
 	}
 
-	/**
-	 * @return Date
-	 */
 	public function BeginDate()
 	{
 		return $this->_begin;
 	}
 
-	/**
-	 * @return Time
-	 */
 	public function End()
 	{
 		return $this->_end->GetTime();
 	}
 
-	/**
-	 * @return Date
-	 */
 	public function EndDate()
 	{
 		return $this->_end;
 	}
 
-	/**
-	 * @return Date
-	 */
 	public function Date()
 	{
 		return $this->_displayDate;
 	}
 
-	/**
-	 * @return int
-	 */
 	public function PeriodSpan()
 	{
 		return $this->_periodSpan;
@@ -163,7 +147,8 @@ class BufferSlot implements IReservationSlot
 
 	public function ToTimezone($timezone)
 	{
-		return new BufferSlot($this->_beginPeriod->ToTimezone($timezone), $this->_endPeriod->ToTimezone($timezone), $this->Date(), $this->PeriodSpan(), $this->_reservation);
+		return new BufferSlot($this->_beginPeriod->ToTimezone($timezone), $this->_endPeriod->ToTimezone($timezone),
+							  $this->Date(), $this->PeriodSpan(), $this->_reservation);
 	}
 
 	public function Id()
@@ -210,4 +195,25 @@ class BufferSlot implements IReservationSlot
 	{
 		return null;
 	}
+
+	public function CollidesWith(Date $date)
+	{
+		$range = new DateRange($this->_begin, $this->_end);
+		return $range->Contains($date, false);
+	}
+
+    public function RequiresCheckin()
+    {
+        return false;
+    }
+
+    public function AutoReleaseMinutes()
+    {
+        return null;
+    }
+
+    public function AutoReleaseMinutesRemaining()
+    {
+        return null;
+    }
 }

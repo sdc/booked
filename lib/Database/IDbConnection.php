@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -48,8 +48,7 @@ interface IDbConnection
 	public function Execute(ISqlCommand $command);
 
 	/**
-	 * @return long last auto-increment id inserted for this connection
+	 * @return int last auto-increment id inserted for this connection
 	 */
 	public function GetLastInsertId();
 }
-?>

@@ -1,38 +1,52 @@
 <?php
+
 /**
-Copyright 2012-2014 Nick Korbel
-
-This file is part of Booked Scheduler.
-
-Booked Scheduler is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-Booked Scheduler is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
+ * Copyright 2012-2016 Nick Korbel
+ *
+ * This file is part of Booked Scheduler.
+ *
+ * Booked Scheduler is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Booked Scheduler is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 class ReportCommandBuilder
 {
 	const REPORT_TEMPLATE = 'SELECT [SELECT_TOKEN]
 				FROM reservation_instances ri
 				INNER JOIN reservation_series rs ON rs.series_id = ri.series_id
 				INNER JOIN users owner ON owner.user_id = rs.owner_id
+
 				[JOIN_TOKEN]
-				WHERE rs.status_id <> 2
+				WHERE 1=1
+				[STATUS_TOKEN]
 				[AND_TOKEN]
 				[GROUP_BY_TOKEN]
 				[ORDER_TOKEN]
 				[LIMIT_TOKEN]';
 
-	const RESERVATION_LIST_FRAGMENT = 'rs.date_created as date_created, rs.last_modified as last_modified, rs.repeat_type,
-		rs.description as description, rs.title as title, rs.status_id as status_id, ri.reference_number, ri.start_date, ri.end_date';
+	const RESERVATION_LIST_FRAGMENT = 'rs.date_created as date_created, rs.last_modified as last_modified, rs.repeat_type, rs.description as description,
+	rs.title as title, rs.status_id as status_id,
+		ri.reference_number, ri.start_date, ri.end_date, ri.checkin_date, ri.checkout_date, ri.previous_end_date, TIMESTAMPDIFF(SECOND, ri.start_date, ri.end_date) as duration,
+							(SELECT GROUP_CONCAT(CONCAT(cav.custom_attribute_id,\'=\', cav.attribute_value) SEPARATOR "!sep!")
+								FROM custom_attribute_values cav WHERE cav.entity_id = ri.series_id AND cav.attribute_category = 1) as attribute_list,
+							(SELECT GROUP_CONCAT(CONCAT(participant_users.fname, " ", participant_users.lname) SEPARATOR "!sep!")
+								FROM reservation_users participants INNER JOIN users participant_users ON participant_users.user_id = participants.user_id WHERE participants.reservation_instance_id = ri.reservation_instance_id AND participants.reservation_user_level = 2) as participant_list,
+							(SELECT GROUP_CONCAT(CONCAT(cav.custom_attribute_id,\'=\', cav.attribute_value) SEPARATOR "!sep!")
+								FROM custom_attribute_values cav WHERE cav.entity_id = rs.owner_id AND cav.attribute_category = 2) as user_attribute_list,
+							(SELECT GROUP_CONCAT(CONCAT(cav.custom_attribute_id,\'=\', cav.attribute_value) SEPARATOR "!sep!")
+								FROM custom_attribute_values cav WHERE cav.entity_id = resources.resource_id AND cav.attribute_category = 4) as resource_attribute_list,
+							(SELECT GROUP_CONCAT(CONCAT(cav.custom_attribute_id,\'=\', cav.attribute_value) SEPARATOR "!sep!")
+								FROM custom_attribute_values cav WHERE cav.entity_id = resources.resource_type_id AND cav.attribute_category = 5) as resource_type_attribute_list
+								';
 
 	const COUNT_FRAGMENT = 'COUNT(1) as total';
 
@@ -44,13 +58,16 @@ class ReportCommandBuilder
 
 	const ACCESSORY_LIST_FRAGMENT = 'accessories.accessory_name, accessories.accessory_id, ar.quantity';
 
-	const USER_LIST_FRAGMENT = 'owner.fname as owner_fname, owner.lname as owner_lname, CONCAT(owner.fname, \' \', owner.lname) as owner_name, owner.user_id as owner_id';
+	const USER_LIST_FRAGMENT = 'owner.fname as owner_fname, owner.lname as owner_lname, owner.email as email, CONCAT(owner.fname, \' \', owner.lname) as owner_name, owner.user_id as owner_id';
 
 	const GROUP_LIST_FRAGMENT = 'groups.name as group_name, groups.group_id';
 
 	const RESOURCE_JOIN_FRAGMENT = 'INNER JOIN reservation_resources rr ON rs.series_id = rr.series_id
 				INNER JOIN resources ON rr.resource_id = resources.resource_id
 				INNER JOIN schedules ON resources.schedule_id = schedules.schedule_id';
+
+	const PARTICIPANT_JOIN_FRAGMENT = 'INNER JOIN users participants ON participants.user_id = @participant_id
+			INNER JOIN reservation_users pu ON pu.user_id = participants.user_id AND pu.reservation_user_level = 2 AND pu.reservation_instance_id = ri.reservation_instance_id ';
 
 	const ACCESSORY_JOIN_FRAGMENT = 'INNER JOIN reservation_accessories ar ON rs.series_id = ar.series_id
 				INNER JOIN accessories ON ar.accessory_id = accessories.accessory_id';
@@ -105,6 +122,10 @@ class ReportCommandBuilder
 	/**
 	 * @var bool
 	 */
+	private $joinParticipants = false;
+	/**
+	 * @var bool
+	 */
 	private $joinGroups = false;
 	/**
 	 * @var bool
@@ -141,6 +162,10 @@ class ReportCommandBuilder
 	 * @var null|int
 	 */
 	private $userId = null;
+	/**
+	 * @var null|int
+	 */
+	private $participantId = null;
 	/**
 	 * @var null|int
 	 */
@@ -181,6 +206,10 @@ class ReportCommandBuilder
 	 * @var int
 	 */
 	private $limit = 0;
+	/**
+	 * @var bool
+	 */
+	private $includeDeleted = false;
 	/**
 	 * @var array|Parameter[]
 	 */
@@ -272,6 +301,17 @@ class ReportCommandBuilder
 	}
 
 	/**
+	 * @param int $userId
+	 * @return ReportCommandBuilder
+	 */
+	public function WithParticipantId($userId)
+	{
+		$this->joinParticipants = true;
+		$this->participantId = $userId;
+		return $this;
+	}
+
+	/**
 	 * @param int $scheduleId
 	 * @return ReportCommandBuilder
 	 */
@@ -357,6 +397,15 @@ class ReportCommandBuilder
 	}
 
 	/**
+	 * @return ReportCommandBuilder
+	 */
+	public function WithDeleted()
+	{
+		$this->includeDeleted = true;
+		return $this;
+	}
+
+	/**
 	 * @return ISqlCommand
 	 */
 	public function Build()
@@ -368,8 +417,9 @@ class ReportCommandBuilder
 		$sql = str_replace('[GROUP_BY_TOKEN]', $this->GetGroupBy(), $sql);
 		$sql = str_replace('[ORDER_TOKEN]', $this->GetOrderBy(), $sql);
 		$sql = str_replace('[LIMIT_TOKEN]', $this->GetLimit(), $sql);
+		$sql = str_replace('[STATUS_TOKEN]', $this->GetStatusFilter(), $sql);
 
-		$query = new AdHocCommand($sql);
+		$query = new AdHocCommand($sql, true);
 		foreach ($this->parameters as $parameter)
 		{
 			$query->AddParameter($parameter);
@@ -435,7 +485,7 @@ class ReportCommandBuilder
 	{
 		$join = new ReportQueryFragment();
 
-		if ($this->joinResources)
+		if ($this->joinResources || $this->joinAccessories)
 		{
 			$join->Append(self::RESOURCE_JOIN_FRAGMENT);
 		}
@@ -448,6 +498,11 @@ class ReportCommandBuilder
 		if ($this->joinGroups)
 		{
 			$join->Append(self::GROUP_JOIN_FRAGMENT);
+		}
+
+		if ($this->joinParticipants)
+		{
+			$join->Append(self::PARTICIPANT_JOIN_FRAGMENT);
 		}
 
 		return $join;
@@ -470,6 +525,12 @@ class ReportCommandBuilder
 		{
 			$and->Append(self::USER_ID_FRAGMENT);
 			$this->AddParameter(new Parameter(ParameterNames::USER_ID, $this->userId));
+		}
+
+
+		if (!empty($this->participantId))
+		{
+			$this->AddParameter(new Parameter(ParameterNames::PARTICIPANT_ID, $this->participantId));
 		}
 
 		if (!empty($this->groupId))
@@ -543,7 +604,8 @@ class ReportCommandBuilder
 		{
 			$orderBy->Append(self::ORDER_BY_FRAGMENT);
 		}
-		else {
+		else
+		{
 			if ($this->count)
 			{
 				$orderBy->Append(self::TOTAL_ORDER_BY_FRAGMENT);
@@ -575,6 +637,16 @@ class ReportCommandBuilder
 	{
 		$this->parameters[] = $parameter;
 	}
+
+	private function GetStatusFilter()
+	{
+		if ($this->includeDeleted)
+		{
+			return '';
+		}
+
+		return 'AND rs.status_id <> 2';
+	}
 }
 
 class ReportQueryFragment
@@ -596,5 +668,3 @@ class ReportQueryFragment
 		return $this->sql;
 	}
 }
-
-?>

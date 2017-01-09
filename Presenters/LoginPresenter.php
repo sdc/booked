@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -17,8 +17,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 require_once(ROOT_DIR . 'lib/Config/namespace.php');
 require_once(ROOT_DIR . 'lib/Common/namespace.php');
+require_once(ROOT_DIR . 'Presenters/Authentication/LoginRedirector.php');
 
 class LoginPresenter
 {
@@ -84,17 +86,18 @@ class LoginPresenter
 		}
 
 		$allowRegistration = Configuration::Instance()->GetKey(ConfigKeys::ALLOW_REGISTRATION, new BooleanConverter());
-		$allowAnonymousSchedule = Configuration::Instance()->GetSectionKey(ConfigSection::PRIVACY,
-																		   ConfigKeys::PRIVACY_VIEW_SCHEDULES,
-																		   new BooleanConverter());
+		$allowAnonymousSchedule = Configuration::Instance()->GetSectionKey(ConfigSection::PRIVACY,  ConfigKeys::PRIVACY_VIEW_SCHEDULES,  new BooleanConverter());
+		$allowGuestBookings = Configuration::Instance()->GetSectionKey(ConfigSection::PRIVACY, ConfigKeys::PRIVACY_ALLOW_GUEST_BOOKING,  new BooleanConverter());
 		$this->_page->SetShowRegisterLink($allowRegistration);
-		$this->_page->SetShowScheduleLink($allowAnonymousSchedule);
+		$this->_page->SetShowScheduleLink($allowAnonymousSchedule || $allowGuestBookings);
 
 		$this->_page->ShowForgotPasswordPrompt(!Configuration::Instance()->GetKey(ConfigKeys::DISABLE_PASSWORD_RESET,
 																				  new BooleanConverter()) && $this->authentication->ShowForgotPasswordPrompt());
 		$this->_page->ShowPasswordPrompt($this->authentication->ShowPasswordPrompt());
 		$this->_page->ShowPersistLoginPrompt($this->authentication->ShowPersistLoginPrompt());
 		$this->_page->ShowUsernamePrompt($this->authentication->ShowUsernamePrompt());
+		$this->_page->SetRegistrationUrl($this->authentication->GetRegistrationUrl());
+		$this->_page->SetPasswordResetUrl($this->authentication->GetPasswordResetUrl());
 	}
 
 	public function Login()
@@ -142,17 +145,7 @@ class LoginPresenter
 
 	private function _Redirect()
 	{
-		$redirect = $this->_page->GetResumeUrl();
-
-		if (!empty($redirect))
-		{
-			$this->_page->Redirect(html_entity_decode($redirect));
-		}
-		else
-		{
-			$defaultId = ServiceLocator::GetServer()->GetUserSession()->HomepageId;
-			$this->_page->Redirect(Pages::UrlFromId($defaultId));
-		}
+		LoginRedirector::Redirect($this->_page);
 	}
 
 	private function IsCookieLogin($loginCookie)
@@ -173,7 +166,7 @@ class LoginPresenter
 		$languageHeader = ServiceLocator::GetServer()->GetLanguage();
 		$languageCode = Configuration::Instance()->GetKey(ConfigKeys::LANGUAGE);
 
-		$resources = Resources::GetInstance($languageCookie);
+		$resources = Resources::GetInstance();
 
 		if ($resources->IsLanguageSupported($languageCookie))
 		{

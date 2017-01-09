@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -78,6 +78,9 @@ class ReservationApprovalPresenter implements IReservationApprovalPresenter
 			$series->Approve($this->userSession);
 			$this->handler->Handle($series, $this->page);
 		}
+		else {
+			$this->page->SetErrors('error');
+		}
 	}
 }
 
@@ -114,7 +117,14 @@ class ReservationViewAdapter extends ReservationView
 
 		foreach($series->AllResources() as $resource)
 		{
-			$this->Resources[] = new ReservationResourceView($resource->GetId(), $resource->GetName(), $resource->GetAdminGroupId(), $resource->GetScheduleId(), $resource->GetScheduleAdminGroupId(), $resource->GetStatusId());
+			$this->Resources[] = new ReservationResourceView($resource->GetId(),
+															 $resource->GetName(),
+															 $resource->GetAdminGroupId(),
+															 $resource->GetScheduleId(),
+															 $resource->GetScheduleAdminGroupId(),
+															 $resource->GetStatusId(),
+															 $resource->IsCheckInEnabled(),
+															 $resource->GetAutoReleaseMinutes());
 		}
 
 		$this->ScheduleId = $series->ScheduleId();

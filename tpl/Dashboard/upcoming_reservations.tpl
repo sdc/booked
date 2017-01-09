@@ -1,5 +1,5 @@
 {*
-Copyright 2011-2014 Nick Korbel
+Copyright 2011-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -17,55 +17,56 @@ You should have received a copy of the GNU General Public License
 along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
 *}
 
-{function name=displayReservation}
-<tr class="reservation" id="{$reservation->ReferenceNumber}">
-	<td style="min-width: 250px;">{$reservation->Title|default:$DefaultTitle}</td>
-	<td style="min-width:150px;">{fullname first=$reservation->FirstName last=$reservation->LastName ignorePrivacy=$reservation->IsUserOwner($UserId)} {if !$reservation->IsUserOwner($UserId)}{html_image src="users.png" altKey=Participant}{/if}</td>
-	<td width="200px">{formatdate date=$reservation->StartDate->ToTimezone($Timezone) key=dashboard}</td>
-	<td width="200px">{formatdate date=$reservation->EndDate->ToTimezone($Timezone) key=dashboard}</td>
-	<td style="min-width: 150px; max-width: 250px;">{$reservation->ResourceName}</td>
-</tr>
-{/function}
-
 
 <div class="dashboard upcomingReservationsDashboard" id="upcomingReservationsDashboard">
 	<div class="dashboardHeader">
-		<a href="javascript:void(0);" title="{translate key='ShowHide'}">{translate key="UpcomingReservations"}</a> ({$Total})
+		<div class="pull-left">{translate key="UpcomingReservations"} <span class="badge">{$Total}</span></div>
+		<div class="pull-right">
+			<a href="#" title="{translate key=ShowHide} {translate key="UpcomingReservations"}">
+				<i class="glyphicon"></i>
+			</a>
+		</div>
+		<div class="clearfix"></div>
 	</div>
 	<div class="dashboardContents">
 		{assign var=colspan value="5"}
 		{if $Total > 0}
-		<table>
-			<tr class="timespan">
-				<td colspan="{$colspan}">{translate key="Today"} ({$TodaysReservations|count})</td>
-			</tr>
-			{foreach from=$TodaysReservations item=reservation}
-                {displayReservation reservation=$reservation}
-			{/foreach}
+			<div>
+				<div class="timespan">
+					{translate key="Today"} ({$TodaysReservations|count})
+				</div>
+				{foreach from=$TodaysReservations item=reservation}
+                    {include file='Dashboard/dashboard_reservation.tpl' reservation=$reservation}
+				{/foreach}
 
-			<tr class="timespan">
-				<td colspan="{$colspan}">{translate key="Tomorrow"} ({$TomorrowsReservations|count})</td>
-			</tr>
-			{foreach from=$TomorrowsReservations item=reservation}
-                {displayReservation reservation=$reservation}
-			{/foreach}
+				<div class="timespan">
+					{translate key="Tomorrow"} ({$TomorrowsReservations|count})
+				</div>
+				{foreach from=$TomorrowsReservations item=reservation}
+                    {include file='Dashboard/dashboard_reservation.tpl' reservation=$reservation}
+				{/foreach}
 
-			<tr class="timespan">
-				<td colspan="{$colspan}">{translate key="LaterThisWeek"} ({$ThisWeeksReservations|count})</td>
-			</tr>
-			{foreach from=$ThisWeeksReservations item=reservation}
-                {displayReservation reservation=$reservation}
-			{/foreach}
+				<div class="timespan">
+					{translate key="LaterThisWeek"} ({$ThisWeeksReservations|count})
+				</div>
+				{foreach from=$ThisWeeksReservations item=reservation}
+                    {include file='Dashboard/dashboard_reservation.tpl' reservation=$reservation}
+				{/foreach}
 
-			<tr class="timespan">
-				<td colspan="{$colspan}">{translate key="NextWeek"} ({$NextWeeksReservations|count})</td>
-			</tr>
-			{foreach from=$NextWeeksReservations item=reservation}
-                {displayReservation reservation=$reservation}
-			{/foreach}
-		</table>
+				<div class="timespan">
+					{translate key="NextWeek"} ({$NextWeeksReservations|count})
+				</div>
+				{foreach from=$NextWeeksReservations item=reservation}
+                    {include file='Dashboard/dashboard_reservation.tpl' reservation=$reservation}
+				{/foreach}
+			</div>
 		{else}
 			<div class="noresults">{translate key="NoUpcomingReservations"}</div>
 		{/if}
 	</div>
+
+	<form id="form-checkin" method="post" action="ajax/reservation_checkin.php?action={ReservationAction::Checkin}">
+		<input type="hidden" id="referenceNumber" {formname key=REFERENCE_NUMBER} />
+		{csrf_token}
+	</form>
 </div>

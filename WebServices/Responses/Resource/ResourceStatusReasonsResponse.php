@@ -1,6 +1,6 @@
 <?php
 /**
-Copyright 2013-2014 Nick Korbel
+Copyright 2013-2016 Nick Korbel
 
 This file is part of Booked Scheduler.
 
@@ -54,5 +54,3 @@ class ExampleResourceStatusReasonsResponse extends ResourceStatusReasonsResponse
 		$this->AddReason(1, 'reason description', ResourceStatus::UNAVAILABLE);
 	}
 }
-
-?>

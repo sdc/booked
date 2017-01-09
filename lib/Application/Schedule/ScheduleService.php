@@ -1,20 +1,21 @@
 <?php
 /**
- * Copyright 2013-2014 Nick Korbel
+ * Copyright 2013-2016 Nick Korbel
  *
  * This file is part of Booked Scheduler.
  *
-Booked SchedulereIt is free software: you can redistribute it and/or modify
+ * Booked Scheduler is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
-Booked SchedulerduleIt is distributed in the hope that it will be useful,
+ *
+ * Booked Scheduler is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * alBooked SchedulercheduleIt.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Booked Scheduler.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 interface IScheduleService
@@ -32,6 +33,14 @@ interface IScheduleService
 	 * @return IScheduleLayout
 	 */
 	public function GetLayout($scheduleId, ILayoutFactory $layoutFactory);
+
+    /**
+     * @param int $scheduleId
+     * @param ILayoutFactory $layoutFactory
+     * @param IReservationListing $reservationListing
+     * @return IDailyLayout
+     */
+    public function GetDailyLayout($scheduleId, ILayoutFactory $layoutFactory, $reservationListing);
 }
 
 class ScheduleService implements IScheduleService
@@ -46,10 +55,16 @@ class ScheduleService implements IScheduleService
 	 */
 	private $resourceService;
 
-	public function __construct(IScheduleRepository $scheduleRepository, IResourceService $resourceService)
+    /**
+     * @var IDailyLayoutFactory
+     */
+    private $dailyLayoutFactory;
+
+    public function __construct(IScheduleRepository $scheduleRepository, IResourceService $resourceService, IDailyLayoutFactory $dailyLayoutFactory)
 	{
 		$this->scheduleRepository = $scheduleRepository;
 		$this->resourceService = $resourceService;
+        $this->dailyLayoutFactory = $dailyLayoutFactory;
 	}
 
 	public function GetAll($includeInaccessible = true, UserSession $session = null)
@@ -88,6 +103,10 @@ class ScheduleService implements IScheduleService
 	{
 		return $this->scheduleRepository->GetLayout($scheduleId, $layoutFactory);
 	}
-}
 
-?>
+    public function GetDailyLayout($scheduleId, ILayoutFactory $layoutFactory, $reservationListing)
+    {
+        return $this->dailyLayoutFactory->Create($reservationListing, $this->GetLayout($scheduleId, $layoutFactory));
+
+    }
+}
